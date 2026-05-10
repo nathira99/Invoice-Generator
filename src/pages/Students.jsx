@@ -79,30 +79,30 @@ function Students() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-100 lg:flex-row">
       <Sidebar />
 
-      <main className="flex-1 overflow-auto">
+      <main className="min-w-0 flex-1 overflow-auto">
         <Header />
 
-        <div className="p-8">
-          <div className="bg-white rounded-2xl shadow-sm p-6">
+        <div className="m-4 lg:m-8">
+          <div className="w-full max-w-full rounded-2xl bg-white p-4 shadow-sm sm:p-6">
             {/* TOP */}
 
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold">Students</h1>
+            <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+              <h1 className="text-2xl font-bold sm:text-3xl">Students</h1>
             </div>
 
             {/* FORM */}
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
               <input
                 type="text"
                 name="name"
                 value={studentData.name}
                 onChange={handleChange}
                 placeholder="Student Name"
-                className="border rounded-xl px-4 py-3"
+                className="w-full rounded-xl border px-4 py-3"
               />
 
               <input
@@ -111,12 +111,12 @@ function Students() {
                 value={studentData.contact}
                 onChange={handleChange}
                 placeholder="Contact Number"
-                className="border rounded-xl px-4 py-3"
+                className="w-full rounded-xl border px-4 py-3"
               />
 
               <button
                 onClick={handleAddStudent}
-                className="bg-blue-900 text-white rounded-xl px-5 py-3"
+                className="rounded-xl bg-blue-900 px-5 py-3 font-semibold text-white"
               >
                 Add Student
               </button>
@@ -127,94 +127,98 @@ function Students() {
             {students.length === 0 ? (
               <div className="text-gray-500">No students found.</div>
             ) : (
-              <table className="w-full">
-                {/* HEADER */}
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[640px]">
+                  {/* HEADER */}
 
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-4">Student Name</th>
+                  <thead>
+                    <tr className="border-b text-left text-gray-500">
+                      <th className="py-4">Student Name</th>
 
-                    <th>Contact Number</th>
+                      <th>Contact Number</th>
 
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-
-                {/* BODY */}
-
-                <tbody>
-                  {students.map((student, index) => (
-                    <tr key={index} className="border-b">
-                      {/* NAME */}
-
-                      <td className="py-4">
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.name}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                name: e.target.value,
-                              })
-                            }
-                            className="border rounded-lg px-3 py-2"
-                          />
-                        ) : (
-                          student.name
-                        )}
-                      </td>
-
-                      {/* CONTACT */}
-
-                      <td>
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.contact}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                contact: e.target.value,
-                              })
-                            }
-                            className="border rounded-lg px-3 py-2"
-                          />
-                        ) : (
-                          student.contact
-                        )}
-                      </td>
-
-                      {/* ACTIONS */}
-
-                      <td className="py-3 flex gap-3">
-                        {editIndex === index ? (
-                          <button
-                            onClick={handleSaveEdit}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
-                          >
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditStudent(student, index)}
-                            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm"
-                          >
-                            Edit
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleDeleteStudent(index)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
-                        >
-                          Delete
-                        </button>
-                      </td>
+                      <th>Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+
+                  {/* BODY */}
+
+                  <tbody>
+                    {students.map((student, index) => (
+                      <tr key={index} className="border-b">
+                        {/* NAME */}
+
+                        <td className="py-4 pr-4">
+                          {editIndex === index ? (
+                            <input
+                              type="text"
+                              value={editData.name}
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  name: e.target.value,
+                                })
+                              }
+                              className="w-full rounded-lg border px-3 py-2"
+                            />
+                          ) : (
+                            student.name
+                          )}
+                        </td>
+
+                        {/* CONTACT */}
+
+                        <td className="pr-4">
+                          {editIndex === index ? (
+                            <input
+                              type="text"
+                              value={editData.contact}
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  contact: e.target.value,
+                                })
+                              }
+                              className="w-full rounded-lg border px-3 py-2"
+                            />
+                          ) : (
+                            student.contact
+                          )}
+                        </td>
+
+                        {/* ACTIONS */}
+
+                        <td className="py-3">
+                          <div className="flex flex-wrap gap-3">
+                            {editIndex === index ? (
+                              <button
+                                onClick={handleSaveEdit}
+                                className="rounded-lg bg-green-600 px-4 py-2 text-sm text-white"
+                              >
+                                Save
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleEditStudent(student, index)}
+                                className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
+                              >
+                                Edit
+                              </button>
+                            )}
+
+                            <button
+                              onClick={() => handleDeleteStudent(index)}
+                              className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
           </div>
         </div>

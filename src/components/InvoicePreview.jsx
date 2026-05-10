@@ -6,11 +6,11 @@ function InvoicePreview({ invoiceData }) {
 
   return (
 
-    <div className="w-full">
+    <div className="w-full overflow-x-auto">
 
       <div
         id="invoice-preview"
-        className="bg-white mx-auto px-10 py-8 shadow-sm overflow-hidden"
+        className="mx-auto min-w-[640px] overflow-hidden bg-white px-10 py-8 shadow-sm sm:min-w-0"
         style={{
           maxWidth: "220mm",
           width: "100%",

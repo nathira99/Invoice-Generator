@@ -95,18 +95,20 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
   };
 
   return (
-    <div className="bg-white rounded-2xl p-8 shadow-sm border">
+    <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6 lg:p-8">
       {/* TITLE */}
 
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900">Invoice Details</h2>
+        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
+          Invoice Details
+        </h2>
 
         <p className="text-gray-500 mt-2">Fill student and payment details</p>
       </div>
 
       {/* FORM */}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
         {/* INVOICE NUMBER */}
 
         <div>
@@ -308,7 +310,7 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
 
         {/* PAID AMOUNT */}
 
-        <div className="col-span-2">
+        <div className="sm:col-span-2">
           <label className="block mb-2 font-medium text-gray-700">
             Paid Amount
           </label>
@@ -325,7 +327,7 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
 
       {/* BUTTON */}
 
-      <div className="mt-8 flex gap-4">
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
         {/* SAVE */}
 
         <button
