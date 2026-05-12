@@ -3,7 +3,7 @@ import InvoicePreview from "../components/InvoicePreview";
 
 function MainLayout({ invoiceData, setInvoiceData }) {
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-100 lg:flex-row">
+    <div className="min-h-screen bg-gray-100 lg:flex">
 
   {/* SIDEBAR */}
 

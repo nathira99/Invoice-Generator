@@ -1,70 +1,166 @@
 import { Link, useLocation } from "react-router-dom";
 
-function Sidebar() {
+import {
+  LayoutDashboard,
+  History,
+  Users,
+  BookOpen,
+  Settings,
+  GraduationCap,
+  Briefcase,
+} from "lucide-react";
 
+function Sidebar() {
   const location = useLocation();
 
   const menu = [
     {
       name: "Dashboard",
       path: "/",
+      icon: LayoutDashboard,
+    },
+    {
+      name: "Invoices",
+      path: "/invoice-history",
+      icon: History,
     },
     {
       name: "Students",
       path: "/students",
+      icon: Users,
     },
     {
       name: "Courses",
       path: "/courses",
+      icon: BookOpen,
     },
     {
-      name: "Invoice History",
-      path: "/invoice-history",
+      name: "Teachers",
+      path: "/teachers",
+      icon: GraduationCap,
+    },
+    {
+      name: "Staff",
+      path: "/staff",
+      icon: Briefcase,
+    },
+    {
+      name: "Settings",
+      path: "/settings",
+      icon: Settings,
     },
   ];
 
   return (
-    <aside className="w-full border-b bg-white px-3 py-4 lg:sticky lg:top-0 lg:flex lg:h-screen lg:w-64 lg:shrink-0 lg:flex-col lg:border-b-0 lg:border-r lg:p-6">
-      <div className="grid gap-3 lg:flex lg:flex-1 lg:flex-col">
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 lg:block">
-          <div className="flex min-w-0 items-center gap-2 lg:flex-col lg:items-center lg:gap-4 lg:pt-2">
+    <>
+      {/* MOBILE TOPBAR */}
+
+      <aside className="border-b border-gray-200 bg-white px-4 py-4 shadow-sm lg:hidden">
+        {/* TOP */}
+
+        <div className="flex items-center gap-3">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="h-11 w-11 rounded-xl object-contain"
+          />
+
+          <div>
+            <h1 className="text-lg font-bold text-blue-900">Ilmul Jannah</h1>
+
+            <p className="text-xs text-gray-500">Admin Panel</p>
+          </div>
+        </div>
+
+        {/* MENU */}
+
+        <nav className="mt-4 grid grid-cols-2 gap-2">
+          {menu.map((item) => {
+            const Icon = item.icon;
+
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-medium transition-all
+
+                ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700"
+                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <Icon size={18} />
+
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
+
+      {/* DESKTOP SIDEBAR */}
+
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-200 bg-white px-4 py-6 shadow-sm lg:flex">
+        {/* LOGO */}
+
+        <div className="border-b border-gray-100 pb-6">
+          <div className="flex items-center gap-4">
             <img
               src="/logo.png"
-              alt="Ilmul Jannah logo"
-              className="h-9 w-9 shrink-0 object-contain lg:h-20 lg:w-20"
+              alt="Logo"
+              className="h-14 w-14 rounded-2xl object-contain"
             />
 
-            <h1 className="min-w-0 truncate text-xl font-bold text-blue-900 sm:text-2xl lg:text-center lg:text-3xl">
-              Ilmul Jannah
-            </h1>
+            <div>
+              <h1 className="text-2xl font-bold tracking-tight text-blue-900">
+                Ilmul Jannah
+              </h1>
+
+              <p className="mt-1 text-sm text-gray-500">Institute Panel</p>
+            </div>
           </div>
-
-          <div className="inline-flex w-fit max-w-full items-center rounded-full border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-700 sm:px-3 sm:text-sm lg:hidden">
-            Admin Panel
-          </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4 lg:mt-8 lg:block lg:space-y-3">
-          {menu.map((item) => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap rounded-xl px-2 py-2 text-center text-[11px] transition-all sm:px-3 sm:text-sm lg:px-4 lg:py-3 lg:text-left lg:text-base ${
-                location.pathname === item.path
-                  ? "bg-blue-900 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
+        {/* NAVIGATION */}
 
-        <div className="hidden lg:mt-auto lg:inline-flex lg:w-full lg:items-center lg:justify-center lg:rounded-full lg:border lg:border-gray-200 lg:px-3 lg:py-2 lg:text-sm lg:font-semibold lg:text-gray-700">
-          Admin Panel
+        <nav className="mt-8 flex flex-col gap-2">
+          {menu.map((item) => {
+            const Icon = item.icon;
+
+            const isActive = location.pathname === item.path;
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all
+
+                ${
+                  isActive
+                    ? "bg-blue-50 text-blue-700 shadow-sm"
+                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                }`}
+              >
+                <Icon size={20} />
+
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* ADMIN */}
+
+        <div className="mt-auto rounded-2xl border border-gray-100 bg-gray-50 p-4">
+          <p className="text-sm font-semibold text-gray-800">Admin</p>
+
+          <p className="mt-1 text-xs text-green-600">Online</p>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </>
   );
 }
 

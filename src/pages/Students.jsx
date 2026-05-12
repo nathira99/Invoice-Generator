@@ -8,7 +8,7 @@ import {
   getStudents,
   deleteStudent,
   updateStudent,
-} from "../utils/localStorage";
+} from "../utils/Storage";
 
 function Students() {
   const [students, setStudents] = useState(getStudents());
@@ -24,6 +24,9 @@ function Students() {
     name: "",
     contact: "",
   });
+
+  const inputStyle =
+    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
   const handleChange = (e) => {
     setStudentData({
@@ -50,7 +53,9 @@ function Students() {
   };
 
   const handleDeleteStudent = (index) => {
-    const confirmDelete = window.confirm("Delete this student?");
+    const confirmDelete = window.confirm(
+      "Delete this student?"
+    );
 
     if (!confirmDelete) return;
 
@@ -64,6 +69,7 @@ function Students() {
 
     setEditData(student);
   };
+
   const handleSaveEdit = () => {
     if (!editData.name || !editData.contact) {
       alert("Please fill all fields.");
@@ -79,30 +85,48 @@ function Students() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-100 lg:flex-row">
+    <div className="min-h-screen bg-gray-100 lg:flex">
       <Sidebar />
 
-      <main className="min-w-0 flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto">
         <Header />
 
-        <div className="m-4 lg:m-8">
-          <div className="w-full max-w-full rounded-2xl bg-white p-4 shadow-sm sm:p-6">
-            {/* TOP */}
+        <div className="p-4 lg:p-8">
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
+            {/* HEADER */}
 
-            <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-              <h1 className="text-2xl font-bold sm:text-3xl">Students</h1>
+            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  Students
+                </h1>
+
+                <p className="mt-2 text-gray-500">
+                  Manage all student details
+                </p>
+              </div>
+
+              <div className="rounded-2xl bg-blue-50 px-5 py-4">
+                <p className="text-sm text-blue-600">
+                  Total Students
+                </p>
+
+                <h2 className="mt-1 text-2xl font-bold text-blue-900">
+                  {students.length}
+                </h2>
+              </div>
             </div>
 
             {/* FORM */}
 
-            <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="mb-10 grid grid-cols-1 gap-4 lg:grid-cols-3">
               <input
                 type="text"
                 name="name"
                 value={studentData.name}
                 onChange={handleChange}
                 placeholder="Student Name"
-                className="w-full rounded-xl border px-4 py-3"
+                className={inputStyle}
               />
 
               <input
@@ -111,12 +135,12 @@ function Students() {
                 value={studentData.contact}
                 onChange={handleChange}
                 placeholder="Contact Number"
-                className="w-full rounded-xl border px-4 py-3"
+                className={inputStyle}
               />
 
               <button
                 onClick={handleAddStudent}
-                className="rounded-xl bg-blue-900 px-5 py-3 font-semibold text-white"
+                className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
               >
                 Add Student
               </button>
@@ -125,19 +149,27 @@ function Students() {
             {/* TABLE */}
 
             {students.length === 0 ? (
-              <div className="text-gray-500">No students found.</div>
+              <div className="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-500">
+                No students found.
+              </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[640px]">
+              <div className="overflow-x-auto rounded-2xl border border-gray-100">
+                <table className="w-full min-w-[700px]">
                   {/* HEADER */}
 
-                  <thead>
-                    <tr className="border-b text-left text-gray-500">
-                      <th className="py-4">Student Name</th>
+                  <thead className="bg-gray-50">
+                    <tr className="text-left text-sm font-semibold text-gray-600">
+                      <th className="px-6 py-5">
+                        Student Name
+                      </th>
 
-                      <th>Contact Number</th>
+                      <th className="px-6 py-5">
+                        Contact Number
+                      </th>
 
-                      <th>Actions</th>
+                      <th className="px-6 py-5 text-center">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
 
@@ -145,10 +177,13 @@ function Students() {
 
                   <tbody>
                     {students.map((student, index) => (
-                      <tr key={index} className="border-b">
+                      <tr
+                        key={index}
+                        className="border-t border-gray-100 transition hover:bg-gray-50"
+                      >
                         {/* NAME */}
 
-                        <td className="py-4 pr-4">
+                        <td className="px-6 py-5">
                           {editIndex === index ? (
                             <input
                               type="text"
@@ -159,16 +194,20 @@ function Students() {
                                   name: e.target.value,
                                 })
                               }
-                              className="w-full rounded-lg border px-3 py-2"
+                              className={inputStyle}
                             />
                           ) : (
-                            student.name
+                            <div>
+                              <p className="font-medium text-gray-900">
+                                {student.name}
+                              </p>
+                            </div>
                           )}
                         </td>
 
                         {/* CONTACT */}
 
-                        <td className="pr-4">
+                        <td className="px-6 py-5 text-gray-600">
                           {editIndex === index ? (
                             <input
                               type="text"
@@ -179,7 +218,7 @@ function Students() {
                                   contact: e.target.value,
                                 })
                               }
-                              className="w-full rounded-lg border px-3 py-2"
+                              className={inputStyle}
                             />
                           ) : (
                             student.contact
@@ -188,27 +227,34 @@ function Students() {
 
                         {/* ACTIONS */}
 
-                        <td className="py-3">
-                          <div className="flex flex-wrap gap-3">
+                        <td className="px-6 py-5">
+                          <div className="flex items-center justify-center gap-3">
                             {editIndex === index ? (
                               <button
                                 onClick={handleSaveEdit}
-                                className="rounded-lg bg-green-600 px-4 py-2 text-sm text-white"
+                                className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
                               >
                                 Save
                               </button>
                             ) : (
                               <button
-                                onClick={() => handleEditStudent(student, index)}
-                                className="rounded-lg bg-blue-600 px-4 py-2 text-sm text-white"
+                                onClick={() =>
+                                  handleEditStudent(
+                                    student,
+                                    index
+                                  )
+                                }
+                                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
                               >
                                 Edit
                               </button>
                             )}
 
                             <button
-                              onClick={() => handleDeleteStudent(index)}
-                              className="rounded-lg bg-red-500 px-4 py-2 text-sm text-white hover:bg-red-600"
+                              onClick={() =>
+                                handleDeleteStudent(index)
+                              }
+                              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
                             >
                               Delete
                             </button>

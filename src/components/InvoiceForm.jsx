@@ -1,4 +1,5 @@
 import generatePDF from "../utils/generatePDF";
+
 import {
   saveInvoice,
   getInvoices,
@@ -6,113 +7,206 @@ import {
   getStudents,
   getCourses,
   updateInvoice,
-} from "../utils/localStorage";
+} from "../utils/Storage";
 
-function InvoiceForm({ invoiceData, setInvoiceData }) {
+
+function InvoiceForm({ invoiceData, setInvoiceData, loadInvoices }) {
+  const students = getStudents();
+
+  const courses = getCourses();
+
   const handleChange = (e) => {
     setInvoiceData({
       ...invoiceData,
       [e.target.name]: e.target.value,
     });
   };
-  const students = getStudents();
 
-  const courses = getCourses();
+  const inputStyle =
+    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
-  const handleSaveInvoice = () => {
-    if (
-      !invoiceData.invoiceNumber ||
-      !invoiceData.invoiceDate ||
-      !invoiceData.studentName ||
-      !invoiceData.courseName
-    ) {
-      alert("Please fill required fields.");
+  const readOnlyStyle =
+    "w-full rounded-2xl border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500 outline-none";
 
-      return;
-    }
+const validateInvoice = () => {
 
-    const existingInvoices = getInvoices();
+  if (
+    !invoiceData.invoiceNumber ||
+    !invoiceData.invoiceDate ||
+    !invoiceData.studentName ||
+    !invoiceData.courseName
+  ) {
 
-    const alreadyExists = existingInvoices.find(
-      (invoice) => invoice.invoiceNumber === invoiceData.invoiceNumber,
+    alert("Please fill required fields.");
+
+    return false;
+
+  }
+
+  return true;
+
+};
+
+const resetInvoiceForm = async () => {
+
+  const nextInvoiceNumber =
+    await generateInvoiceNumber();
+
+  setInvoiceData({
+
+    invoiceNumber:
+      nextInvoiceNumber,
+
+    invoiceDate:
+      new Date()
+        .toISOString()
+        .split("T")[0],
+
+    studentName: "",
+
+    contactNumber: "",
+
+    courseName: "",
+
+    paidMonth:
+      new Date().toLocaleString(
+        "default",
+        {
+          month: "long",
+          year: "numeric",
+        }
+      ),
+
+    courseFee: "",
+
+    daysPerWeek: "",
+
+    discount: "0",
+
+    paidAmount: "",
+
+    status: "Paid",
+
+  });
+
+};
+
+const saveOrUpdateInvoice = async () => {
+
+  const existingInvoices =
+    await getInvoices();
+
+  const alreadyExists =
+    existingInvoices.find(
+      (invoice) =>
+        invoice.invoiceNumber ===
+        invoiceData.invoiceNumber
     );
 
-    if (alreadyExists) {
-      updateInvoice(invoiceData.invoiceNumber, {
+  if (alreadyExists) {
+
+    await updateInvoice(
+      alreadyExists._id,
+      {
         ...invoiceData,
-        status: "draft",
-      });
+      }
+    );
 
-      alert("Invoice updated.");
-    } else {
-      saveInvoice({
-        ...invoiceData,
-        status: "draft",
-      });
+  } else {
 
-      alert("Invoice saved.");
-    }
-
-    setInvoiceData({
-      invoiceNumber: generateInvoiceNumber(),
-
-      invoiceDate: "",
-
-      studentName: "",
-
-      contactNumber: "",
-
-      courseName: "",
-
-      paidMonth: new Date().toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      }),
-
-      courseFee: "",
-
-      daysPerWeek: "",
-
-      discount: "0",
-
-      paidAmount: "",
+    await saveInvoice({
+      ...invoiceData,
     });
-  };
 
-  const handleDownloadPDF = () => {
-    if (
-      !invoiceData.invoiceNumber ||
-      !invoiceData.invoiceDate ||
-      !invoiceData.studentName ||
-      !invoiceData.courseName
-    ) {
-      alert("Please fill required fields.");
+  }
 
-      return;
-    }
+  await loadInvoices();
 
-    generatePDF();
-  };
+};
+
+const handleSaveInvoice = async () => {
+
+  if (!validateInvoice()) {
+
+    return;
+
+  }
+
+  try {
+
+    await saveOrUpdateInvoice();
+
+    toast.success("Invoice saved.");
+
+    await resetInvoiceForm();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Failed to save invoice"
+    );
+
+  }
+
+};
+
+const handleDownloadPDF = async () => {
+
+  if (invoiceData.status === "Pending") {
+
+    alert(
+      "Pending invoices cannot be downloaded."
+    );
+
+    return;
+
+  }
+
+  if (!validateInvoice()) {
+
+    return;
+
+  }
+
+  try {
+
+    await saveOrUpdateInvoice();
+
+    await generatePDF();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      error.message ||
+      "Failed to save invoice"
+    );
+
+  }
+
+};
 
   return (
-    <div className="rounded-2xl border bg-white p-4 shadow-sm sm:p-6 lg:p-8">
+    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
       {/* TITLE */}
 
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">
-          Invoice Details
-        </h2>
+        <h2 className="text-3xl font-bold text-gray-900">Invoice Details</h2>
 
-        <p className="text-gray-500 mt-2">Fill student and payment details</p>
+        <p className="mt-2 text-gray-500">Fill student and payment details</p>
       </div>
 
       {/* FORM */}
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* INVOICE NUMBER */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Invoice Number
           </label>
 
@@ -121,15 +215,14 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
             name="invoiceNumber"
             value={invoiceData.invoiceNumber}
             onChange={handleChange}
-            placeholder="INV-001"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            className={inputStyle}
           />
         </div>
 
         {/* DATE */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Invoice Date
           </label>
 
@@ -138,19 +231,18 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
             name="invoiceDate"
             value={invoiceData.invoiceDate}
             onChange={handleChange}
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            className={inputStyle}
           />
         </div>
 
-        {/* STUDENT NAME */}
+        {/* STUDENT */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Student Name
           </label>
 
           <select
-            name="studentName"
             value={invoiceData.studentName}
             onChange={(e) => {
               const selectedStudent = students.find(
@@ -159,12 +251,13 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
 
               setInvoiceData({
                 ...invoiceData,
+
                 studentName: selectedStudent?.name || "",
 
                 contactNumber: selectedStudent?.contact || "",
               });
             }}
-            className="w-full border rounded-xl px-4 py-3"
+            className={inputStyle}
           >
             <option value="">Select Student</option>
 
@@ -176,32 +269,29 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
           </select>
         </div>
 
-        {/* CONTACT NUMBER */}
+        {/* CONTACT */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Contact Number
           </label>
 
           <input
             type="text"
-            name="contactNumber"
             value={invoiceData.contactNumber}
-            onChange={handleChange}
-            placeholder="+91 9876543210"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            readOnly
+            className={readOnlyStyle}
           />
         </div>
 
-        {/* COURSE NAME */}
+        {/* COURSE */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Course Name
           </label>
 
           <select
-            name="courseName"
             value={invoiceData.courseName}
             onChange={(e) => {
               const selectedCourse = courses.find(
@@ -214,11 +304,13 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
                 courseName: selectedCourse?.courseName || "",
 
                 courseFee: selectedCourse?.fee || "",
+
                 paidAmount: selectedCourse?.fee || "",
+
                 daysPerWeek: selectedCourse?.daysPerWeek || "",
               });
             }}
-            className="w-full border rounded-xl px-4 py-3"
+            className={inputStyle}
           >
             <option value="">Select Course</option>
 
@@ -233,7 +325,7 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
         {/* PAID MONTH */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Paid Month
           </label>
 
@@ -242,45 +334,44 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
             name="paidMonth"
             value={invoiceData.paidMonth}
             onChange={handleChange}
-            placeholder="May 2026"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            className={inputStyle}
           />
         </div>
 
         {/* COURSE FEE */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Course Fee
           </label>
 
           <input
             type="number"
-            name="courseFee"
             value={invoiceData.courseFee}
-            onChange={handleChange}
-            placeholder="5000"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            readOnly
+            className={readOnlyStyle}
           />
         </div>
 
+        {/* DAYS */}
+
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Days Per Week
           </label>
 
           <input
             type="text"
-            value={invoiceData.daysPerWeek || ""}
+            value={invoiceData.daysPerWeek}
             readOnly
-            className="w-full border rounded-xl px-4 py-3 bg-gray-100"
+            className={readOnlyStyle}
           />
         </div>
 
         {/* DISCOUNT */}
 
         <div>
-          <label className="block mb-2 font-medium text-gray-700">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Discount
           </label>
 
@@ -303,46 +394,64 @@ function InvoiceForm({ invoiceData, setInvoiceData }) {
                 paidAmount,
               });
             }}
-            placeholder="0"
-            className="w-full border rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-200"
+            className={inputStyle}
           />
         </div>
 
         {/* PAID AMOUNT */}
 
-        <div className="sm:col-span-2">
-          <label className="block mb-2 font-medium text-gray-700">
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
             Paid Amount
           </label>
 
           <input
             type="number"
-            name="paidAmount"
             value={invoiceData.paidAmount}
             readOnly
-            className="w-full border rounded-xl px-4 py-3 bg-gray-100"
+            className={readOnlyStyle}
           />
+        </div>
+
+        {/* STATUS */}
+
+        <div className="md:col-span-2">
+          <label className="mb-2 block text-sm font-semibold text-gray-700">
+            Status
+          </label>
+
+          <select
+            name="status"
+            value={invoiceData.status}
+            onChange={handleChange}
+            className={inputStyle}
+          >
+            <option value="Paid">Paid</option>
+
+            <option value="Pending">Pending</option>
+          </select>
         </div>
       </div>
 
-      {/* BUTTON */}
+      {/* BUTTONS */}
 
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:gap-4">
-        {/* SAVE */}
-
+      <div className="mt-10 flex flex-col gap-4 sm:flex-row">
         <button
           onClick={handleSaveInvoice}
-          className="flex-1 bg-blue-900 hover:bg-blue-950 text-white font-semibold px-6 py-4 rounded-xl transition-all"
+          className="flex-1 rounded-2xl bg-blue-700 px-6 py-4 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
         >
           Save Invoice
         </button>
 
-        {/* DOWNLOAD */}
-
         <button
-          id="download-pdf-btn"
           onClick={handleDownloadPDF}
-          className="flex-1 bg-green-700 hover:bg-green-800 text-white font-semibold px-6 py-4 rounded-xl transition-all"
+          className={`flex-1 rounded-2xl px-6 py-4 font-semibold text-white transition-all
+
+          ${
+            invoiceData.status === "Pending"
+              ? "cursor-not-allowed bg-gray-400"
+              : "bg-green-600 hover:bg-green-700 hover:shadow-lg"
+          }`}
         >
           Download PDF
         </button>

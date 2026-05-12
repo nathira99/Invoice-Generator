@@ -1,25 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
-import { getStudents, getCourses, getInvoices } from "../utils/localStorage";
-import { generateInvoiceNumber } from "../utils/localStorage";
+
+import {
+  getStudents,
+  getCourses,
+  getInvoices,
+  generateInvoiceNumber,
+} from "../utils/Storage";
+
 import InvoiceForm from "../components/InvoiceForm";
 import InvoicePreview from "../components/InvoicePreview";
 
 function Dashboard() {
+
   const location = useLocation();
+
   const students = getStudents();
 
   const courses = getCourses();
 
-  const invoices = getInvoices();
+  const [invoices, setInvoices] = useState([]);
+
+  const [isLoadingInvoices, setIsLoadingInvoices] =
+    useState(true);
 
   const [invoiceData, setInvoiceData] = useState(
     location.state || {
-      invoiceNumber: generateInvoiceNumber(),
 
-      invoiceDate: "",
+      invoiceNumber: "",
+
+      invoiceDate:
+        new Date()
+          .toISOString()
+          .split("T")[0],
 
       studentName: "",
 
@@ -27,10 +43,14 @@ function Dashboard() {
 
       courseName: "",
 
-      paidMonth: new Date().toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      }),
+      paidMonth:
+        new Date().toLocaleString(
+          "default",
+          {
+            month: "long",
+            year: "numeric",
+          }
+        ),
 
       courseFee: "",
 
@@ -39,73 +59,273 @@ function Dashboard() {
       discount: "0",
 
       paidAmount: "",
-    },
+
+      status: "Paid",
+
+    }
   );
-  const totalRevenue = invoices.reduce((total, invoice) => {
-    return total + Number(invoice.paidAmount || 0);
-  }, 0);
+
+  /* LOAD INVOICES */
+
+  const loadInvoices = async () => {
+
+    try {
+
+      setIsLoadingInvoices(true);
+
+      const invoiceList =
+        await getInvoices();
+
+      setInvoices(
+        Array.isArray(invoiceList)
+          ? invoiceList
+          : []
+      );
+
+    } catch (error) {
+
+      console.error(
+        "Failed to load invoices:",
+        error
+      );
+
+      setInvoices([]);
+
+    } finally {
+
+      setIsLoadingInvoices(false);
+
+    }
+
+  };
+
+  /* INITIAL LOAD */
+
+  useEffect(() => {
+
+    loadInvoices();
+
+  }, []);
+
+  /* GENERATE INVOICE NUMBER */
+
+  useEffect(() => {
+
+    if (location.state?.invoiceNumber) {
+
+      return;
+
+    }
+
+    let isMounted = true;
+
+    const loadInvoiceNumber = async () => {
+
+      try {
+
+        const invoiceNumber =
+          await generateInvoiceNumber();
+
+        if (isMounted) {
+
+          setInvoiceData((currentData) => ({
+            ...currentData,
+            invoiceNumber,
+          }));
+
+        }
+
+      } catch (error) {
+
+        console.error(
+          "Failed to generate invoice number:",
+          error
+        );
+
+      }
+
+    };
+
+    loadInvoiceNumber();
+
+    return () => {
+
+      isMounted = false;
+
+    };
+
+  }, [location.state]);
+
+  /* TOTAL REVENUE */
+
+  const totalRevenue =
+    invoices
+      .filter(
+        (invoice) =>
+          invoice.status === "Paid"
+      )
+      .reduce(
+        (total, invoice) =>
+          total +
+          Number(invoice.paidAmount || 0),
+        0
+      );
+
+  /* PENDING AMOUNT */
+
+  const pendingAmount =
+    invoices
+      .filter(
+        (invoice) =>
+          invoice.status === "Pending"
+      )
+      .reduce(
+        (total, invoice) =>
+          total +
+          Number(invoice.paidAmount || 0),
+        0
+      );
 
   return (
-    <div className="flex min-h-screen flex-col overflow-x-hidden bg-gray-100 lg:flex-row">
+
+    <div className="min-h-screen bg-gray-100 lg:flex">
+
+      {/* SIDEBAR */}
+
       <Sidebar />
 
-      <main className="min-w-0 flex-1 overflow-auto">
+      {/* MAIN */}
+
+      <main className="flex-1 overflow-auto">
+
         <Header />
-        <div className="m-4 mb-0 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:m-8 lg:mb-0 lg:grid-cols-4 lg:gap-6">
+
+        {/* PAGE TITLE */}
+
+        <div className="mb-6 px-4 pt-6 lg:px-8">
+
+          <h1 className="text-3xl font-bold text-gray-900">
+            Dashboard
+          </h1>
+
+          <p className="mt-1 text-gray-500">
+            Manage invoices, students and payments
+          </p>
+
+        </div>
+
+        {/* DASHBOARD CARDS */}
+
+        <div className="m-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 lg:m-8">
+
           {/* STUDENTS */}
 
-          <div className="w-full max-w-full rounded-2xl bg-white p-5 shadow-sm lg:p-6">
-            <p className="text-gray-500 text-sm">Total Students</p>
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
-            <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
+            <p className="text-sm font-medium text-gray-500">
+              Total Students
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold text-gray-900">
               {students.length}
             </h2>
+
           </div>
 
           {/* COURSES */}
 
-          <div className="w-full max-w-full rounded-2xl bg-white p-5 shadow-sm lg:p-6">
-            <p className="text-gray-500 text-sm">Total Courses</p>
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
-            <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
+            <p className="text-sm font-medium text-gray-500">
+              Total Courses
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold text-gray-900">
               {courses.length}
             </h2>
+
           </div>
 
           {/* INVOICES */}
 
-          <div className="w-full max-w-full rounded-2xl bg-white p-5 shadow-sm lg:p-6">
-            <p className="text-gray-500 text-sm">Total Invoices</p>
+          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
-            <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
-              {invoices.length}
+            <p className="text-sm font-medium text-gray-500">
+              Total Invoices
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold text-gray-900">
+              {isLoadingInvoices
+                ? "..."
+                : invoices.length}
             </h2>
+
           </div>
 
           {/* REVENUE */}
 
-          <div className="w-full max-w-full rounded-2xl bg-white p-5 shadow-sm lg:p-6">
-            <p className="text-gray-500 text-sm">Total Revenue</p>
+          <div className="rounded-3xl border border-green-100 bg-green-50 p-6 shadow-sm">
 
-            <h2 className="mt-3 break-words text-2xl font-bold sm:text-3xl">
-              Rs. {totalRevenue}
+            <p className="text-sm font-medium text-green-700">
+              Total Revenue
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold text-green-800">
+              {isLoadingInvoices
+                ? "..."
+                : `Rs. ${totalRevenue}`}
             </h2>
+
           </div>
+
+          {/* PENDING */}
+
+          <div className="rounded-3xl border border-orange-100 bg-orange-50 p-6 shadow-sm">
+
+            <p className="text-sm font-medium text-orange-700">
+              Pending Amount
+            </p>
+
+            <h2 className="mt-4 text-4xl font-bold text-orange-700">
+              {isLoadingInvoices
+                ? "..."
+                : `Rs. ${pendingAmount}`}
+            </h2>
+
+          </div>
+
         </div>
-        
+
+        {/* MAIN CONTENT */}
+
         <div className="m-4 grid grid-cols-1 items-start gap-6 lg:m-8 lg:grid-cols-2 lg:gap-8">
+
+          {/* FORM */}
+
           <InvoiceForm
             invoiceData={invoiceData}
             setInvoiceData={setInvoiceData}
+            loadInvoices={loadInvoices}
           />
 
+          {/* PREVIEW */}
+
           <div className="min-w-0 lg:sticky lg:top-8">
-            <InvoicePreview invoiceData={invoiceData} />
+
+            <InvoicePreview
+              invoiceData={invoiceData}
+            />
+
           </div>
+
         </div>
+
       </main>
+
     </div>
+
   );
+
 }
 
 export default Dashboard;
