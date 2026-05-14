@@ -117,6 +117,12 @@ function Students() {
 
   };
 
+  const handleEditStudent = (student, index) => {
+    setEditIndex(index);
+
+    setEditData(student);
+  };
+
   const handleSaveEdit =
   async () => {
 
@@ -141,20 +147,6 @@ function Students() {
 
     }
 
-  };
-
-  const handleSaveEdit = () => {
-    if (!editData.name || !editData.contact) {
-      alert("Please fill all fields.");
-
-      return;
-    }
-
-    updateStudent(editIndex, editData);
-
-    setStudents(getStudents());
-
-    setEditIndex(null);
   };
 
   return (
@@ -300,7 +292,7 @@ function Students() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  handleSaveEdit(student, index)
+                                  handleEditStudent(student, index)
                                 }
                                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
                               >
