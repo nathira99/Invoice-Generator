@@ -8,6 +8,7 @@ import {
   Settings,
   GraduationCap,
   Briefcase,
+  Sparkles,
 } from "lucide-react";
 
 function Sidebar() {
@@ -51,48 +52,68 @@ function Sidebar() {
     },
   ];
 
+  const isActivePath = (path) => location.pathname === path;
+
   return (
     <>
-      {/* MOBILE TOPBAR */}
+      {/* MOBILE NAVBAR */}
 
-      <aside className="border-b border-gray-200 bg-white px-4 py-4 shadow-sm lg:hidden">
+      <aside className="sticky top-0 z-50 py-4 border-b border-slate-200/70 bg-white/95 backdrop-blur lg:hidden">
         {/* TOP */}
 
-        <div className="flex items-center gap-3">
-          <img
-            src="/logo.png"
-            alt="Logo"
-            className="h-11 w-11 rounded-xl object-contain"
-          />
+        <div className="flex items-center justify-between px-4 py-2">
+          <Link to="/" className="flex min-w-0 items-center gap-3">
+            {/* LOGO */}
 
-          <div>
-            <h1 className="text-lg font-bold text-blue-900">Ilmul Jannah</h1>
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center  shadow-sm">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-10 w-10 object-contain"
+              />
+            </div>
 
-            <p className="text-xs text-gray-500">Admin Panel</p>
+            {/* TITLE */}
+
+            <div className="min-w-0">
+              <h1 className="truncate text-sm font-bold tracking-tight max-lg:text-lg text-slate-950">
+                Ilmul Jannah
+              </h1>
+
+              <p className="text-[11px] font-medium text-slate-500">
+                Admin Panel
+              </p>
+            </div>
+          </Link>
+
+          {/* RIGHT ICON */}
+
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
+            <Sparkles size={16} />
           </div>
         </div>
 
-        {/* MENU */}
+        {/* MOBILE MENU */}
 
-        <nav className="mt-4 grid grid-cols-2 gap-2">
+        <nav className="flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {menu.map((item) => {
             const Icon = item.icon;
 
-            const isActive = location.pathname === item.path;
+            const isActive = isActivePath(item.path);
 
             return (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-sm font-medium transition-all
+                className={`flex shrink-0 items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-all duration-200
 
                 ${
                   isActive
-                    ? "bg-blue-50 text-blue-700"
-                    : "bg-gray-50 text-gray-600 hover:bg-gray-100"
+                    ? "bg-slate-900 text-white shadow-md"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-950"
                 }`}
               >
-                <Icon size={18} />
+                <Icon size={16} strokeWidth={2.2} />
 
                 <span>{item.name}</span>
               </Link>
@@ -103,61 +124,130 @@ function Sidebar() {
 
       {/* DESKTOP SIDEBAR */}
 
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-gray-200 bg-white px-4 py-6 shadow-sm lg:flex">
-        {/* LOGO */}
+      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-slate-200/70 bg-white lg:flex lg:flex-col">
+        {/* HEADER */}
 
-        <div className="border-b border-gray-100 pb-6">
-          <div className="flex items-center gap-4">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="h-14 w-14 rounded-2xl object-contain"
-            />
+        <div className="border-b border-slate-100 px-5 py-5">
 
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-blue-900">
-                Ilmul Jannah
-              </h1>
+  <Link
+    to="/"
+    className="flex items-center gap-4"
+  >
 
-              <p className="mt-1 text-sm text-gray-500">Institute Panel</p>
-            </div>
-          </div>
-        </div>
+    {/* LOGO */}
+
+    <div className="flex h-14 w-14 shrink-0 items-center justify-center">
+
+      <img
+        src="/logo.png"
+        alt="Logo"
+        className="h-[52px] w-[52px] object-contain drop-shadow-sm"
+      />
+
+    </div>
+
+    {/* TITLE */}
+
+    <div className="min-w-0">
+
+      <h1 className="truncate text-lg font-bold tracking-tight text-slate-950">
+        Ilmul Jannah
+      </h1>
+
+      <p className="mt-0.5 text-sm font-medium text-slate-500">
+        Institute Admin
+      </p>
+
+    </div>
+
+  </Link>
+
+</div>
 
         {/* NAVIGATION */}
 
-        <nav className="mt-8 flex flex-col gap-2">
-          {menu.map((item) => {
-            const Icon = item.icon;
+        <div className="flex-1 overflow-y-auto px-3 py-5">
+          <p className="px-3 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            Navigation
+          </p>
 
-            const isActive = location.pathname === item.path;
+          <nav className="mt-4 flex flex-col gap-1.5">
+            {menu.map((item) => {
+              const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all
+              const isActive = isActivePath(item.path);
 
-                ${
-                  isActive
-                    ? "bg-blue-50 text-blue-700 shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
-                }`}
-              >
-                <Icon size={20} />
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition-all duration-200
 
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
+                  ${
+                    isActive
+                      ? "bg-slate-900 text-white shadow-md"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+                  }`}
+                >
+                  {/* ACTIVE BAR */}
 
-        {/* ADMIN */}
+                  <span
+                    className={`absolute left-0 top-1/2 h-5 w-1 -translate-y-1/2 rounded-r-full transition-all
 
-        <div className="mt-auto rounded-2xl border border-gray-100 bg-gray-50 p-4">
-          <p className="text-sm font-semibold text-gray-800">Admin</p>
+                    ${isActive ? "bg-blue-500 opacity-100" : "opacity-0"}`}
+                  />
 
-          <p className="mt-1 text-xs text-green-600">Online</p>
+                  {/* ICON */}
+
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition-all duration-200
+
+                    ${
+                      isActive
+                        ? "bg-slate-800 text-white"
+                        : "bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-slate-900"
+                    }`}
+                  >
+                    <Icon size={17} strokeWidth={2.2} />
+                  </span>
+
+                  {/* TEXT */}
+
+                  <span className="truncate">{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* FOOTER */}
+
+        <div className="border-t border-slate-100 p-4">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
+            <div className="flex items-center gap-3">
+              {/* AVATAR */}
+
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">
+                A
+              </div>
+
+              {/* INFO */}
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-bold text-slate-900">
+                  Administrator
+                </p>
+
+                <div className="mt-1 flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-emerald-500" />
+
+                  <p className="text-xs font-medium text-slate-500">
+                    System Online
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </aside>
     </>

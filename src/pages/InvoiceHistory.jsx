@@ -1,283 +1,570 @@
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
-import { useState, useEffect } from "react";
+import {
+  Search,
+  Receipt,
+  Download,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
-import { useLocation, useNavigate } from "react-router-dom";
+import {
+  useState,
+  useEffect,
+} from "react";
 
-import { getInvoices, deleteInvoice } from "../utils/Storage";
+import {
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
+
+import {
+  getInvoices,
+  deleteInvoice,
+} from "../utils/Storage";
 
 function InvoiceHistory() {
-  const [invoices, setInvoices] = useState([]);
 
-  const [isLoadingInvoices, setIsLoadingInvoices] = useState(true);
+  const [invoices, setInvoices] =
+    useState([]);
 
-  const [search, setSearch] = useState("");
+  const [
+    isLoadingInvoices,
+    setIsLoadingInvoices,
+  ] = useState(true);
 
-  const location = useLocation();
+  const [search, setSearch] =
+    useState("");
 
-  const navigate = useNavigate();
+  const location =
+    useLocation();
 
-  const fetchInvoices = async () => {
-    const invoiceList = await getInvoices();
+  const navigate =
+    useNavigate();
 
-    return Array.isArray(invoiceList) ? invoiceList : [];
-  };
+  const fetchInvoices =
+    async () => {
+
+      const invoiceList =
+        await getInvoices();
+
+      return Array.isArray(
+        invoiceList
+      )
+        ? invoiceList
+        : [];
+
+    };
 
   useEffect(() => {
+
     let isMounted = true;
 
-    const loadInvoices = async () => {
-      try {
-        const invoiceList = await fetchInvoices();
+    const loadInvoices =
+      async () => {
 
-        if (isMounted) {
-          setInvoices(invoiceList);
-        }
-      } catch (error) {
-        console.error("Failed to load invoices:", error);
+        try {
 
-        if (isMounted) {
-          setInvoices([]);
+          const invoiceList =
+            await fetchInvoices();
+
+          if (isMounted) {
+
+            setInvoices(
+              invoiceList
+            );
+
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Failed to load invoices:",
+            error
+          );
+
+          if (isMounted) {
+
+            setInvoices([]);
+
+          }
+
+        } finally {
+
+          if (isMounted) {
+
+            setIsLoadingInvoices(
+              false
+            );
+
+          }
+
         }
-      } finally {
-        if (isMounted) {
-          setIsLoadingInvoices(false);
-        }
-      }
-    };
+
+      };
 
     loadInvoices();
 
     return () => {
+
       isMounted = false;
+
     };
+
   }, []);
 
-  useEffect(() => {
-    if (location.state?.autoDownload) {
-      setTimeout(() => {
-        const button = document.getElementById("download-pdf-btn");
+  const filteredInvoices =
+    invoices.filter(
+      (invoice) => {
 
-        if (button) {
-          button.click();
-        }
-      }, 500);
-    }
-  }, [location.state]);
+        return (
+          invoice.studentName
+            ?.toLowerCase()
+            .includes(
+              search.toLowerCase()
+            ) ||
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    return (
-      invoice.studentName?.toLowerCase().includes(search.toLowerCase()) ||
-      invoice.invoiceNumber?.toLowerCase().includes(search.toLowerCase())
+          invoice.invoiceNumber
+            ?.toLowerCase()
+            .includes(
+              search.toLowerCase()
+            )
+        );
+
+      }
     );
-  });
 
-  const handleDeleteInvoice = async (invoice) => {
-    const confirmDelete = window.confirm("Delete this invoice?");
+  const handleDeleteInvoice =
+    async (invoice) => {
 
-    if (!confirmDelete) return;
+      const confirmDelete =
+        window.confirm(
+          "Delete this invoice?"
+        );
 
-    try {
-      setIsLoadingInvoices(true);
+      if (!confirmDelete)
+        return;
 
-      await deleteInvoice(invoice._id);
+      try {
 
-      const invoiceList = await fetchInvoices();
+        setIsLoadingInvoices(
+          true
+        );
 
-      setInvoices(invoiceList);
-    } catch (error) {
-      console.error("Failed to delete invoice:", error);
+        await deleteInvoice(
+          invoice._id
+        );
 
-      alert("Unable to delete invoice.");
-    } finally {
-      setIsLoadingInvoices(false);
-    }
-  };
+        const invoiceList =
+          await fetchInvoices();
+
+        setInvoices(
+          invoiceList
+        );
+
+      } catch (error) {
+
+        console.error(
+          "Failed to delete invoice:",
+          error
+        );
+
+        alert(
+          "Unable to delete invoice."
+        );
+
+      } finally {
+
+        setIsLoadingInvoices(
+          false
+        );
+
+      }
+
+    };
 
   return (
-    <div className="min-h-screen bg-gray-100 lg:flex">
+
+    <div className="min-h-screen bg-slate-50 lg:flex">
+
       <Sidebar />
 
       <main className="flex-1 overflow-auto">
+
         <Header />
 
         <div className="p-4 lg:p-8">
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm lg:p-8">
-            {/* HEADER */}
 
-            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900">
-                  Invoice History
-                </h1>
+          {/* HEADER */}
 
-                <p className="mt-2 text-gray-500">
-                  Manage and track student invoices
-                </p>
+          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+            <div>
+
+              <div className="flex items-center gap-3">
+
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+
+                  <Receipt
+                    size={24}
+                  />
+
+                </div>
+
+                <div>
+
+                  <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                    Invoice History
+                  </h1>
+
+                  <p className="mt-1 text-sm font-medium text-slate-500">
+                    Manage and track student invoices
+                  </p>
+
+                </div>
+
               </div>
+
+            </div>
+
+            {/* SEARCH */}
+
+            <div className="relative w-full lg:w-96">
+
+              <Search
+                size={18}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
 
               <input
                 type="text"
-                placeholder="Search by student or invoice..."
+                placeholder="Search invoices..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-5 py-3 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100 lg:w-96"
+                onChange={(e) =>
+                  setSearch(
+                    e.target.value
+                  )
+                }
+                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
               />
+
+            </div>
+
+          </div>
+
+          {/* TABLE CARD */}
+
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+
+            {/* TABLE HEADER */}
+
+            <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
+
+              <div className="grid grid-cols-[1.1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr] gap-4 text-sm font-semibold text-slate-500">
+
+                <p>
+                  Invoice No
+                </p>
+
+                <p>
+                  Student
+                </p>
+
+                <p>
+                  Course
+                </p>
+
+                <p>
+                  Amount
+                </p>
+
+                <p>
+                  Status
+                </p>
+
+                <p>
+                  Date
+                </p>
+
+                <p>
+                  Actions
+                </p>
+
+              </div>
+
             </div>
 
             {/* CONTENT */}
 
             {isLoadingInvoices ? (
-              <div className="py-10 text-center text-gray-500">
+
+              <div className="py-16 text-center text-sm font-medium text-slate-500">
                 Loading invoices...
               </div>
+
             ) : filteredInvoices.length === 0 ? (
-              <div className="py-10 text-center text-gray-500">
+
+              <div className="py-16 text-center text-sm font-medium text-slate-500">
                 No invoices found.
               </div>
+
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full border-separate border-spacing-y-3">
-                  <thead>
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Invoice No
-                      </th>
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Student
-                      </th>
+              <div>
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Course
-                      </th>
+                {filteredInvoices.map(
+                  (
+                    invoice,
+                    index
+                  ) => (
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Paid
-                      </th>
+                    <div
+                      key={
+                        invoice._id ||
+                        index
+                      }
+                      className="border-b border-slate-100 last:border-none"
+                    >
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Status
-                      </th>
+                      <div className="grid gap-5 px-6 py-5 lg:grid-cols-[1.1fr_1fr_1fr_0.8fr_0.8fr_0.8fr_1.2fr] lg:items-center">
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Date
-                      </th>
+                        {/* INVOICE */}
 
-                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-500">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
+                        <div>
 
-                  <tbody>
-                    {filteredInvoices.map((invoice, index) => (
-                      <tr
-                        key={invoice._id || index}
-                        className="rounded-2xl bg-gray-50 transition hover:bg-gray-100"
-                      >
-                        <td className="rounded-l-2xl px-4 py-5 font-semibold text-gray-800">
-                          {invoice.invoiceNumber}
-                        </td>
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Invoice
+                          </p>
 
-                        <td className="px-4 py-5 text-gray-700">
-                          {invoice.studentName}
-                        </td>
+                          <p className="mt-1 font-bold text-slate-900">
+                            {
+                              invoice.invoiceNumber
+                            }
+                          </p>
 
-                        <td className="px-4 py-5 text-gray-700">
-                          {invoice.courseName}
-                        </td>
+                        </div>
 
-                        <td className="px-4 py-5 font-medium text-gray-900">
-                          Rs. {invoice.paidAmount}
-                        </td>
+                        {/* STUDENT */}
 
-                        <td className="px-4 py-5">
+                        <div>
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Student
+                          </p>
+
+                          <p className="mt-1 font-medium text-slate-700">
+                            {
+                              invoice.studentName
+                            }
+                          </p>
+
+                        </div>
+
+                        {/* COURSE */}
+
+                        <div>
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Course
+                          </p>
+
+                          <p className="mt-1 font-medium text-slate-700">
+                            {
+                              invoice.courseName
+                            }
+                          </p>
+
+                        </div>
+
+                        {/* AMOUNT */}
+
+                        <div>
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Amount
+                          </p>
+
+                          <p className="mt-1 font-semibold text-slate-900">
+                            Rs.{" "}
+                            {
+                              invoice.paidAmount
+                            }
+                          </p>
+
+                        </div>
+
+                        {/* STATUS */}
+
+                        <div>
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Status
+                          </p>
+
                           <span
-                            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                              invoice.status === "Paid"
-                                ? "bg-green-100 text-green-700"
+                            className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold
+
+                            ${
+                              invoice.status ===
+                              "Paid"
+                                ? "bg-emerald-100 text-emerald-700"
                                 : "bg-orange-100 text-orange-700"
                             }`}
                           >
-                            {invoice.status}
+
+                            {
+                              invoice.status
+                            }
+
                           </span>
-                        </td>
 
-                        <td className="px-4 py-5 text-gray-600">
-                          {new Date(invoice.invoiceDate).toLocaleDateString(
-                            "en-GB",
-                          )}
-                        </td>
+                        </div>
 
-                        <td className="rounded-r-2xl px-4 py-5">
-                          <div className="flex flex-wrap gap-2">
-                            {/* EDIT */}
+                        {/* DATE */}
 
-                            <button
-                              onClick={() => {
-                                if (invoice.status === "Paid") {
-                                  alert("Paid invoices cannot be edited.");
+                        <div>
 
-                                  return;
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Date
+                          </p>
+
+                          <p className="mt-1 text-sm font-medium text-slate-600">
+
+                            {new Date(
+                              invoice.invoiceDate
+                            ).toLocaleDateString(
+                              "en-GB"
+                            )}
+
+                          </p>
+
+                        </div>
+
+                        {/* ACTIONS */}
+
+                        <div className="flex flex-wrap gap-2">
+
+                          {/* EDIT */}
+
+                          <button
+                            onClick={() => {
+
+                              if (
+                                invoice.status ===
+                                "Paid"
+                              ) {
+
+                                alert(
+                                  "Paid invoices cannot be edited."
+                                );
+
+                                return;
+
+                              }
+
+                              navigate(
+                                "/",
+                                {
+                                  state:
+                                    invoice,
                                 }
+                              );
 
-                                navigate("/", {
-                                  state: invoice,
-                                });
-                              }}
-                              className={`rounded-xl px-4 py-2 text-sm font-medium text-white transition ${
-                                invoice.status === "Paid"
-                                  ? "cursor-not-allowed bg-gray-400"
-                                  : "bg-blue-600 hover:bg-blue-700"
-                              }`}
-                            >
-                              Edit
-                            </button>
+                            }}
+                            className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all
 
-                            {/* DOWNLOAD */}
+                            ${
+                              invoice.status ===
+                              "Paid"
+                                ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                                : "bg-blue-600 text-white hover:bg-blue-700"
+                            }`}
+                          >
 
-                            <button
-                              onClick={() =>
-                                navigate("/", {
+                            <Pencil
+                              size={15}
+                            />
+
+                            Edit
+
+                          </button>
+
+                          {/* DOWNLOAD */}
+
+                          <button
+                            onClick={() =>
+                              navigate(
+                                "/",
+                                {
                                   state: {
                                     ...invoice,
-                                    autoDownload: true,
+                                    autoDownload:
+                                      true,
                                   },
-                                })
-                              }
-                              disabled={invoice.status === "Pending"}
-                              className={`rounded-xl px-4 py-2 text-sm font-medium text-white transition ${
-                                invoice.status === "Pending"
-                                  ? "cursor-not-allowed bg-gray-400"
-                                  : "bg-green-600 hover:bg-green-700"
-                              }`}
-                            >
-                              Download
-                            </button>
+                                }
+                              )
+                            }
+                            disabled={
+                              invoice.status ===
+                              "Pending"
+                            }
+                            className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all
 
-                            {/* DELETE */}
+                            ${
+                              invoice.status ===
+                              "Pending"
+                                ? "cursor-not-allowed bg-slate-200 text-slate-400"
+                                : "bg-emerald-600 text-white hover:bg-emerald-700"
+                            }`}
+                          >
 
-                            <button
-                              onClick={() => handleDeleteInvoice(invoice)}
-                              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                            >
-                              Delete
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                            <Download
+                              size={15}
+                            />
+
+                          </button>
+
+                          {/* DELETE */}
+
+                          <button
+                            onClick={() =>
+                              handleDeleteInvoice(
+                                invoice
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-red-600"
+                          >
+
+                            <Trash2
+                              size={15}
+                            />
+
+                          </button>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
+
               </div>
+
             )}
+
           </div>
+
         </div>
+
       </main>
+
     </div>
+
   );
+
 }
 
 export default InvoiceHistory;

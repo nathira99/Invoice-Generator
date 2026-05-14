@@ -1,4 +1,19 @@
-import { useState } from "react";
+import {
+  useState,
+  useEffect,
+} from "react";
+
+import {
+  ShieldCheck,
+  UserPlus,
+  Pencil,
+  Trash2,
+  Check,
+  Mail,
+  Phone,
+  CalendarDays,
+  Search,
+} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -6,204 +21,312 @@ import Header from "../components/Header";
 function Staff() {
 
   const [staffs, setStaffs] =
-    useState(
+    useState([]);
+
+  const [search, setSearch] =
+    useState("");
+
+  const [
+    editIndex,
+    setEditIndex,
+  ] = useState(null);
+
+  const [
+    editData,
+    setEditData,
+  ] = useState({
+
+    name: "",
+
+    role: "Admin",
+
+    contact: "",
+
+    email: "",
+
+    joiningDate: "",
+
+    status: "Active",
+
+  });
+
+  const [
+    staffData,
+    setStaffData,
+  ] = useState({
+
+    name: "",
+
+    role: "Admin",
+
+    contact: "",
+
+    email: "",
+
+    joiningDate:
+      new Date()
+        .toISOString()
+        .split("T")[0],
+
+    status: "Active",
+
+  });
+
+  useEffect(() => {
+
+    const storedStaffs =
       JSON.parse(
-        localStorage.getItem("staffs")
-      ) || []
+        localStorage.getItem(
+          "staffs"
+        )
+      ) || [];
+
+    setStaffs(
+      storedStaffs
     );
 
-  const [staffData, setStaffData] =
-    useState({
-      name: "",
-      role: "Admin",
-      contact: "",
-      email: "",
-      joiningDate:
-        new Date()
-          .toISOString()
-          .split("T")[0],
-      status: "Active",
-    });
-
-  const [editIndex, setEditIndex] =
-    useState(null);
-
-  const [editData, setEditData] =
-    useState({
-      name: "",
-      role: "Admin",
-      contact: "",
-      email: "",
-      joiningDate: "",
-      status: "Active",
-    });
+  }, []);
 
   const inputStyle =
-    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
+    "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
-  const saveStaffs = (
-    updatedStaffs
-  ) => {
-
-    localStorage.setItem(
-      "staffs",
-      JSON.stringify(updatedStaffs)
-    );
-
-    setStaffs(updatedStaffs);
-
-  };
-
-  const handleChange = (e) => {
-
-    setStaffData({
-      ...staffData,
-      [e.target.name]:
-        e.target.value,
-    });
-
-  };
-
-  const handleAddStaff = () => {
-
-    if (
-      !staffData.name ||
-      !staffData.contact ||
-      !staffData.email
-    ) {
-
-      alert(
-        "Please fill all fields."
-      );
-
-      return;
-
-    }
-
-    const updatedStaffs = [
-      ...staffs,
-      staffData,
-    ];
-
-    saveStaffs(
+  const saveStaffs =
+    (
       updatedStaffs
-    );
+    ) => {
 
-    setStaffData({
-      name: "",
-      role: "Admin",
-      contact: "",
-      email: "",
-      joiningDate:
-        new Date()
-          .toISOString()
-          .split("T")[0],
-      status: "Active",
-    });
-
-  };
-
-  const handleDeleteStaff = (
-    index
-  ) => {
-
-    const confirmDelete =
-      window.confirm(
-        "Delete this staff?"
+      localStorage.setItem(
+        "staffs",
+        JSON.stringify(
+          updatedStaffs
+        )
       );
 
-    if (!confirmDelete)
-      return;
-
-    const updatedStaffs =
-      staffs.filter(
-        (_, i) => i !== index
+      setStaffs(
+        updatedStaffs
       );
 
-    saveStaffs(
-      updatedStaffs
-    );
+    };
 
-  };
+  const handleChange =
+    (e) => {
 
-  const handleEditStaff = (
-    staff,
-    index
-  ) => {
+      setStaffData({
+        ...staffData,
+        [e.target.name]:
+          e.target.value,
+      });
 
-    setEditIndex(index);
+    };
 
-    setEditData(staff);
+  const handleAddStaff =
+    () => {
 
-  };
+      if (
+        !staffData.name ||
+        !staffData.contact ||
+        !staffData.email
+      ) {
 
-  const handleSaveEdit = () => {
+        alert(
+          "Please fill all fields."
+        );
 
-    if (
-      !editData.name ||
-      !editData.contact ||
-      !editData.email
-    ) {
+        return;
 
-      alert(
-        "Please fill all fields."
+      }
+
+      const updatedStaffs =
+        [
+          ...staffs,
+          staffData,
+        ];
+
+      saveStaffs(
+        updatedStaffs
       );
 
-      return;
+      setStaffData({
 
-    }
+        name: "",
 
-    const updatedStaffs =
-      [...staffs];
+        role: "Admin",
 
-    updatedStaffs[editIndex] =
-      editData;
+        contact: "",
 
-    saveStaffs(
-      updatedStaffs
+        email: "",
+
+        joiningDate:
+          new Date()
+            .toISOString()
+            .split("T")[0],
+
+        status: "Active",
+
+      });
+
+    };
+
+  const handleDeleteStaff =
+    (index) => {
+
+      const confirmDelete =
+        window.confirm(
+          "Delete this staff?"
+        );
+
+      if (!confirmDelete)
+        return;
+
+      const updatedStaffs =
+        staffs.filter(
+          (_, i) =>
+            i !== index
+        );
+
+      saveStaffs(
+        updatedStaffs
+      );
+
+    };
+
+  const handleEditStaff =
+    (
+      staff,
+      index
+    ) => {
+
+      setEditIndex(index);
+
+      setEditData(staff);
+
+    };
+
+  const handleSaveEdit =
+    () => {
+
+      if (
+        !editData.name ||
+        !editData.contact ||
+        !editData.email
+      ) {
+
+        alert(
+          "Please fill all fields."
+        );
+
+        return;
+
+      }
+
+      const updatedStaffs =
+        [...staffs];
+
+      updatedStaffs[
+        editIndex
+      ] = editData;
+
+      saveStaffs(
+        updatedStaffs
+      );
+
+      setEditIndex(null);
+
+    };
+
+  const filteredStaffs =
+    staffs.filter(
+      (staff) =>
+
+        staff.name
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          ) ||
+
+        staff.role
+          ?.toLowerCase()
+          .includes(
+            search.toLowerCase()
+          )
     );
-
-    setEditIndex(null);
-
-  };
 
   return (
 
-    <div className="min-h-screen bg-gray-100 lg:flex">
+    <div className="min-h-screen bg-slate-50 lg:flex">
 
       <Sidebar />
 
-      <main className="min-w-0 flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto">
 
         <Header />
 
         <div className="p-4 lg:p-8">
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
+          {/* HEADER */}
 
-            {/* HEADER */}
+          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-4">
+
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+
+                <ShieldCheck
+                  size={28}
+                />
+
+              </div>
 
               <div>
 
-                <h1 className="text-3xl font-bold text-gray-900">
+                <h1 className="text-3xl font-bold tracking-tight text-slate-950">
                   Staff Management
                 </h1>
 
-                <p className="mt-2 text-gray-500">
-                  Manage institute staff and admins
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  Manage institute admins and staff
                 </p>
 
               </div>
 
-              <div className="rounded-2xl bg-blue-50 px-5 py-4">
+            </div>
 
-                <p className="text-sm text-blue-600">
+            {/* RIGHT */}
+
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+
+              {/* SEARCH */}
+
+              <div className="relative w-full lg:w-72">
+
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Search staff..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+
+              </div>
+
+              {/* TOTAL */}
+
+              <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   Total Staff
                 </p>
 
-                <h2 className="mt-1 text-2xl font-bold text-blue-900">
+                <h2 className="mt-1 text-3xl font-bold text-slate-950">
                   {staffs.length}
                 </h2>
 
@@ -211,28 +334,64 @@ function Staff() {
 
             </div>
 
-            {/* FORM */}
+          </div>
 
-            <div className="mb-10 grid grid-cols-1 gap-4 lg:grid-cols-6">
+          {/* ADD FORM */}
 
-              {/* NAME */}
+          <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
+
+            <div className="mb-4 flex items-center gap-3">
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+
+                <UserPlus
+                  size={22}
+                />
+
+              </div>
+
+              <div>
+
+                <h2 className="text-lg font-bold text-slate-900">
+                  Add Staff
+                </h2>
+
+                <p className="text-sm text-slate-500">
+                  Create staff member profile
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-6">
 
               <input
                 type="text"
                 name="name"
-                value={staffData.name}
-                onChange={handleChange}
+                value={
+                  staffData.name
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Staff Name"
-                className={inputStyle}
+                className={
+                  inputStyle
+                }
               />
-
-              {/* ROLE */}
 
               <select
                 name="role"
-                value={staffData.role}
-                onChange={handleChange}
-                className={inputStyle}
+                value={
+                  staffData.role
+                }
+                onChange={
+                  handleChange
+                }
+                className={
+                  inputStyle
+                }
               >
 
                 <option value="Admin">
@@ -253,29 +412,35 @@ function Staff() {
 
               </select>
 
-              {/* CONTACT */}
-
               <input
                 type="text"
                 name="contact"
-                value={staffData.contact}
-                onChange={handleChange}
+                value={
+                  staffData.contact
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Contact Number"
-                className={inputStyle}
+                className={
+                  inputStyle
+                }
               />
-
-              {/* EMAIL */}
 
               <input
                 type="email"
                 name="email"
-                value={staffData.email}
-                onChange={handleChange}
+                value={
+                  staffData.email
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Email Address"
-                className={inputStyle}
+                className={
+                  inputStyle
+                }
               />
-
-              {/* JOINING DATE */}
 
               <input
                 type="date"
@@ -283,132 +448,106 @@ function Staff() {
                 value={
                   staffData.joiningDate
                 }
-                onChange={handleChange}
-                className={inputStyle}
+                onChange={
+                  handleChange
+                }
+                className={
+                  inputStyle
+                }
               />
-
-              {/* BUTTON */}
 
               <button
                 onClick={
                   handleAddStaff
                 }
-                className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
+                className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
               >
                 Add Staff
               </button>
 
             </div>
 
-            {/* TABLE */}
+          </div>
 
-            {staffs.length === 0 ? (
+          {/* STAFF CARDS */}
 
-              <div className="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-500">
+          {filteredStaffs.length === 0 ? (
 
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
+
+              <p className="text-sm font-medium text-slate-500">
                 No staff found.
+              </p>
 
-              </div>
+            </div>
 
-            ) : (
+          ) : (
 
-              <div className="overflow-x-auto rounded-2xl border border-gray-100">
+            <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
 
-                <table className="w-full min-w-[1200px]">
+              {filteredStaffs.map(
+                (
+                  staff,
+                  index
+                ) => (
 
-                  {/* HEADER */}
+                  <div
+                    key={index}
+                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                  >
 
-                  <thead className="bg-gray-50">
+                    {/* TOP */}
 
-                    <tr className="text-left text-sm font-semibold text-gray-600">
+                    <div className="flex items-start justify-between gap-4">
 
-                      <th className="px-6 py-5">
-                        Name
-                      </th>
+                      <div className="flex items-center gap-4">
 
-                      <th className="px-6 py-5">
-                        Role
-                      </th>
+                        {/* AVATAR */}
 
-                      <th className="px-6 py-5">
-                        Contact
-                      </th>
+                        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-slate-900 text-lg font-bold text-white">
 
-                      <th className="px-6 py-5">
-                        Email
-                      </th>
+                          {staff.name
+                            ?.charAt(0)
+                            ?.toUpperCase()}
 
-                      <th className="px-6 py-5">
-                        Joining Date
-                      </th>
+                        </div>
 
-                      <th className="px-6 py-5">
-                        Status
-                      </th>
+                        {/* INFO */}
 
-                      <th className="px-6 py-5 text-center">
-                        Actions
-                      </th>
+                        <div>
 
-                    </tr>
+                          {editIndex ===
+                          index ? (
 
-                  </thead>
+                            <input
+                              type="text"
+                              value={
+                                editData.name
+                              }
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  name:
+                                    e.target
+                                      .value,
+                                })
+                              }
+                              className={
+                                inputStyle
+                              }
+                            />
 
-                  {/* BODY */}
+                          ) : (
 
-                  <tbody>
+                            <h2 className="text-lg font-bold text-slate-900">
+                              {
+                                staff.name
+                              }
+                            </h2>
 
-                    {staffs.map(
-                      (
-                        staff,
-                        index
-                      ) => (
+                          )}
 
-                        <tr
-                          key={index}
-                          className="border-t border-gray-100 transition hover:bg-gray-50"
-                        >
-
-                          {/* NAME */}
-
-                          <td className="px-6 py-5">
-
-                            {editIndex ===
-                            index ? (
-
-                              <input
-                                type="text"
-                                value={
-                                  editData.name
-                                }
-                                onChange={(e) =>
-                                  setEditData({
-                                    ...editData,
-                                    name:
-                                      e.target
-                                        .value,
-                                  })
-                                }
-                                className={
-                                  inputStyle
-                                }
-                              />
-
-                            ) : (
-
-                              <p className="font-medium text-gray-900">
-                                {
-                                  staff.name
-                                }
-                              </p>
-
-                            )}
-
-                          </td>
-
-                          {/* ROLE */}
-
-                          <td className="px-6 py-5">
+                          <div className="mt-2">
 
                             {editIndex ===
                             index ? (
@@ -451,234 +590,314 @@ function Staff() {
                             ) : (
 
                               <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+
                                 {
                                   staff.role
                                 }
+
                               </span>
 
                             )}
 
-                          </td>
+                          </div>
 
-                          {/* CONTACT */}
+                        </div>
 
-                          <td className="px-6 py-5 text-gray-700">
+                      </div>
 
-                            {editIndex ===
-                            index ? (
+                      {/* STATUS */}
 
-                              <input
-                                type="text"
-                                value={
-                                  editData.contact
-                                }
-                                onChange={(e) =>
-                                  setEditData({
-                                    ...editData,
-                                    contact:
-                                      e.target
-                                        .value,
-                                  })
-                                }
-                                className={
-                                  inputStyle
-                                }
-                              />
+                      <div>
 
-                            ) : (
+                        {editIndex ===
+                        index ? (
 
-                              staff.contact
+                          <select
+                            value={
+                              editData.status
+                            }
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                status:
+                                  e.target
+                                    .value,
+                              })
+                            }
+                            className={
+                              inputStyle
+                            }
+                          >
 
-                            )}
+                            <option value="Active">
+                              Active
+                            </option>
 
-                          </td>
+                            <option value="Inactive">
+                              Inactive
+                            </option>
 
-                          {/* EMAIL */}
+                          </select>
 
-                          <td className="px-6 py-5 text-gray-700">
+                        ) : (
 
-                            {editIndex ===
-                            index ? (
+                          <span
+                            className={`rounded-full px-3 py-1 text-xs font-semibold
 
-                              <input
-                                type="email"
-                                value={
-                                  editData.email
-                                }
-                                onChange={(e) =>
-                                  setEditData({
-                                    ...editData,
-                                    email:
-                                      e.target
-                                        .value,
-                                  })
-                                }
-                                className={
-                                  inputStyle
-                                }
-                              />
+                            ${
+                              staff.status ===
+                              "Active"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-rose-100 text-rose-700"
+                            }`}
+                          >
 
-                            ) : (
+                            {
+                              staff.status
+                            }
 
-                              staff.email
+                          </span>
 
-                            )}
+                        )}
 
-                          </td>
+                      </div>
 
-                          {/* DATE */}
+                    </div>
 
-                          <td className="px-6 py-5 text-gray-700">
+                    {/* DETAILS */}
 
-                            {editIndex ===
-                            index ? (
+                    <div className="mt-6 space-y-4">
 
-                              <input
-                                type="date"
-                                value={
-                                  editData.joiningDate
-                                }
-                                onChange={(e) =>
-                                  setEditData({
-                                    ...editData,
-                                    joiningDate:
-                                      e.target
-                                        .value,
-                                  })
-                                }
-                                className={
-                                  inputStyle
-                                }
-                              />
+                      {/* CONTACT */}
 
-                            ) : (
+                      <div className="flex items-center gap-3">
 
-                              new Date(
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+
+                          <Phone
+                            size={18}
+                          />
+
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Contact
+                          </p>
+
+                          {editIndex ===
+                          index ? (
+
+                            <input
+                              type="text"
+                              value={
+                                editData.contact
+                              }
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  contact:
+                                    e.target
+                                      .value,
+                                })
+                              }
+                              className={`${inputStyle} mt-2`}
+                            />
+
+                          ) : (
+
+                            <p className="mt-1 text-sm font-medium text-slate-700">
+                              {
+                                staff.contact
+                              }
+                            </p>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
+                      {/* EMAIL */}
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+
+                          <Mail
+                            size={18}
+                          />
+
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Email
+                          </p>
+
+                          {editIndex ===
+                          index ? (
+
+                            <input
+                              type="email"
+                              value={
+                                editData.email
+                              }
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  email:
+                                    e.target
+                                      .value,
+                                })
+                              }
+                              className={`${inputStyle} mt-2`}
+                            />
+
+                          ) : (
+
+                            <p className="mt-1 truncate text-sm font-medium text-slate-700">
+                              {
+                                staff.email
+                              }
+                            </p>
+
+                          )}
+
+                        </div>
+
+                      </div>
+
+                      {/* DATE */}
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+
+                          <CalendarDays
+                            size={18}
+                          />
+
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                            Joining Date
+                          </p>
+
+                          {editIndex ===
+                          index ? (
+
+                            <input
+                              type="date"
+                              value={
+                                editData.joiningDate
+                              }
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  joiningDate:
+                                    e.target
+                                      .value,
+                                })
+                              }
+                              className={`${inputStyle} mt-2`}
+                            />
+
+                          ) : (
+
+                            <p className="mt-1 text-sm font-medium text-slate-700">
+
+                              {new Date(
                                 staff.joiningDate
                               ).toLocaleDateString(
                                 "en-GB"
-                              )
-
-                            )}
-
-                          </td>
-
-                          {/* STATUS */}
-
-                          <td className="px-6 py-5">
-
-                            {editIndex ===
-                            index ? (
-
-                              <select
-                                value={
-                                  editData.status
-                                }
-                                onChange={(e) =>
-                                  setEditData({
-                                    ...editData,
-                                    status:
-                                      e.target
-                                        .value,
-                                  })
-                                }
-                                className={
-                                  inputStyle
-                                }
-                              >
-
-                                <option value="Active">
-                                  Active
-                                </option>
-
-                                <option value="Inactive">
-                                  Inactive
-                                </option>
-
-                              </select>
-
-                            ) : (
-
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                  staff.status ===
-                                  "Active"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-red-100 text-red-700"
-                                }`}
-                              >
-                                {
-                                  staff.status
-                                }
-                              </span>
-
-                            )}
-
-                          </td>
-
-                          {/* ACTIONS */}
-
-                          <td className="px-6 py-5">
-
-                            <div className="flex items-center justify-center gap-3">
-
-                              {editIndex ===
-                              index ? (
-
-                                <button
-                                  onClick={
-                                    handleSaveEdit
-                                  }
-                                  className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
-                                >
-                                  Save
-                                </button>
-
-                              ) : (
-
-                                <button
-                                  onClick={() =>
-                                    handleEditStaff(
-                                      staff,
-                                      index
-                                    )
-                                  }
-                                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-                                >
-                                  Edit
-                                </button>
-
                               )}
 
-                              <button
-                                onClick={() =>
-                                  handleDeleteStaff(
-                                    staff._id
-                                  )
-                                }
-                                className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
+                            </p>
 
-                            </div>
+                          )}
 
-                          </td>
+                        </div>
 
-                        </tr>
+                      </div>
 
-                      )
-                    )}
+                    </div>
 
-                  </tbody>
+                    {/* ACTIONS */}
 
-                </table>
+                    <div className="mt-6 flex flex-wrap gap-3">
 
-              </div>
+                      {editIndex ===
+                      index ? (
 
-            )}
+                        <button
+                          onClick={
+                            handleSaveEdit
+                          }
+                          className="flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
+                        >
 
-          </div>
+                          <Check
+                            size={15}
+                          />
+
+                          Save
+
+                        </button>
+
+                      ) : (
+
+                        <button
+                          onClick={() =>
+                            handleEditStaff(
+                              staff,
+                              index
+                            )
+                          }
+                          className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-slate-800"
+                        >
+
+                          <Pencil
+                            size={15}
+                          />
+
+                          Edit
+
+                        </button>
+
+                      )}
+
+                      <button
+                        onClick={() =>
+                          handleDeleteStaff(
+                            index
+                          )
+                        }
+                        className="flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+                      >
+
+                        <Trash2
+                          size={15}
+                        />
+
+                        Delete
+
+                      </button>
+
+                    </div>
+
+                  </div>
+
+                )
+              )}
+
+            </div>
+
+          )}
 
         </div>
 

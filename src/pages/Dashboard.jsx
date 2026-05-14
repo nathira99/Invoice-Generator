@@ -1,5 +1,19 @@
-import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useLocation,
+} from "react-router-dom";
+
+import {
+  Users,
+  BookOpen,
+  Receipt,
+  Wallet,
+  AlertCircle,
+} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -78,7 +92,7 @@ function Dashboard() {
     }
   );
 
-  /* LOAD STUDENTS + COURSES */
+  /* LOAD DATA */
 
   const loadData =
     async () => {
@@ -109,7 +123,9 @@ function Dashboard() {
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
 
       }
 
@@ -166,7 +182,7 @@ function Dashboard() {
 
   }, []);
 
-  /* GENERATE INVOICE NUMBER */
+  /* GENERATE NUMBER */
 
   useEffect(() => {
 
@@ -223,7 +239,7 @@ function Dashboard() {
 
   }, [location.state]);
 
-  /* TOTAL REVENUE */
+  /* TOTALS */
 
   const totalRevenue =
     invoices
@@ -245,8 +261,6 @@ function Dashboard() {
         0
       );
 
-  /* PENDING AMOUNT */
-
   const pendingAmount =
     invoices
       .filter(
@@ -267,9 +281,86 @@ function Dashboard() {
         0
       );
 
+  /* STATS */
+
+  const stats = [
+
+    {
+      title:
+        "Students",
+      value:
+        students.length,
+      icon:
+        Users,
+      bg:
+        "bg-blue-100",
+      color:
+        "text-blue-700",
+    },
+
+    {
+      title:
+        "Courses",
+      value:
+        courses.length,
+      icon:
+        BookOpen,
+      bg:
+        "bg-violet-100",
+      color:
+        "text-violet-700",
+    },
+
+    {
+      title:
+        "Invoices",
+      value:
+        isLoadingInvoices
+          ? "..."
+          : invoices.length,
+      icon:
+        Receipt,
+      bg:
+        "bg-slate-200",
+      color:
+        "text-slate-700",
+    },
+
+    {
+      title:
+        "Revenue",
+      value:
+        isLoadingInvoices
+          ? "..."
+          : `Rs. ${totalRevenue}`,
+      icon:
+        Wallet,
+      bg:
+        "bg-emerald-100",
+      color:
+        "text-emerald-700",
+    },
+
+    {
+      title:
+        "Pending",
+      value:
+        isLoadingInvoices
+          ? "..."
+          : `Rs. ${pendingAmount}`,
+      icon:
+        AlertCircle,
+      bg:
+        "bg-orange-100",
+      color:
+        "text-orange-700",
+    },
+
+  ];
+
   return (
 
-    <div className="min-h-screen bg-gray-100 lg:flex">
+    <div className="min-h-screen bg-slate-50 lg:flex">
 
       <Sidebar />
 
@@ -277,119 +368,120 @@ function Dashboard() {
 
         <Header />
 
-        {/* TITLE */}
+        <div className="p-4 lg:p-8">
 
-        <div className="mb-6 px-4 pt-6 lg:px-8">
+          {/* PAGE HEADER */}
 
-          <h1 className="text-3xl font-bold text-gray-900">
-            Dashboard
-          </h1>
+          <div className="mb-8">
 
-          <p className="mt-1 text-gray-500">
-            Manage invoices,
-            students and
-            payments
-          </p>
+            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+              Dashboard
+            </h1>
 
-        </div>
-
-        {/* CARDS */}
-
-        <div className="m-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 lg:m-8">
-
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-
-            <p className="text-sm font-medium text-gray-500">
-              Total Students
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              Manage invoices, students and institute operations
             </p>
-
-            <h2 className="mt-4 text-4xl font-bold text-gray-900">
-              {students.length}
-            </h2>
 
           </div>
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+          {/* STATS */}
 
-            <p className="text-sm font-medium text-gray-500">
-              Total Courses
-            </p>
+          <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
 
-            <h2 className="mt-4 text-4xl font-bold text-gray-900">
-              {courses.length}
-            </h2>
+            {stats.map(
+              (
+                stat,
+                index
+              ) => {
 
-          </div>
+                const Icon =
+                  stat.icon;
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
+                return (
 
-            <p className="text-sm font-medium text-gray-500">
-              Total Invoices
-            </p>
+                  <div
+                    key={index}
+                    className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                  >
 
-            <h2 className="mt-4 text-4xl font-bold text-gray-900">
-              {isLoadingInvoices
-                ? "..."
-                : invoices.length}
-            </h2>
+                    <div className="flex items-start justify-between">
 
-          </div>
+                      <div>
 
-          <div className="rounded-3xl border border-green-100 bg-green-50 p-6 shadow-sm">
+                        <p className="text-sm font-semibold text-slate-500">
+                          {
+                            stat.title
+                          }
+                        </p>
 
-            <p className="text-sm font-medium text-green-700">
-              Total Revenue
-            </p>
+                        <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                          {
+                            stat.value
+                          }
+                        </h2>
 
-            <h2 className="mt-4 text-4xl font-bold text-green-800">
-              {isLoadingInvoices
-                ? "..."
-                : `Rs. ${totalRevenue}`}
-            </h2>
+                      </div>
 
-          </div>
+                      <div
+                        className={`flex h-12 w-12 items-center justify-center rounded-2xl ${stat.bg} ${stat.color}`}
+                      >
 
-          <div className="rounded-3xl border border-orange-100 bg-orange-50 p-6 shadow-sm">
+                        <Icon
+                          size={22}
+                        />
 
-            <p className="text-sm font-medium text-orange-700">
-              Pending Amount
-            </p>
+                      </div>
 
-            <h2 className="mt-4 text-4xl font-bold text-orange-700">
-              {isLoadingInvoices
-                ? "..."
-                : `Rs. ${pendingAmount}`}
-            </h2>
+                    </div>
 
-          </div>
+                  </div>
 
-        </div>
+                );
 
-        {/* CONTENT */}
-
-        <div className="m-4 grid grid-cols-1 items-start gap-6 lg:m-8 lg:grid-cols-2 lg:gap-8">
-
-          <InvoiceForm
-            invoiceData={
-              invoiceData
-            }
-            setInvoiceData={
-              setInvoiceData
-            }
-            loadInvoices={
-              loadInvoices
-            }
-            students={students}
-            courses={courses}
-          />
-
-          <div className="min-w-0 lg:sticky lg:top-8">
-
-            <InvoicePreview
-              invoiceData={
-                invoiceData
               }
-            />
+            )}
+
+          </div>
+
+          {/* MAIN GRID */}
+
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+
+            {/* FORM */}
+
+            <div className="min-w-0">
+
+              <InvoiceForm
+                invoiceData={
+                  invoiceData
+                }
+                setInvoiceData={
+                  setInvoiceData
+                }
+                loadInvoices={
+                  loadInvoices
+                }
+                students={
+                  students
+                }
+                courses={
+                  courses
+                }
+              />
+
+            </div>
+
+            {/* PREVIEW */}
+
+            <div className="min-w-0 xl:sticky xl:top-6">
+
+              <InvoicePreview
+                invoiceData={
+                  invoiceData
+                }
+              />
+
+            </div>
 
           </div>
 

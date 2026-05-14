@@ -1,5 +1,12 @@
 import { useState } from "react";
 
+import {
+  Building2,
+  Receipt,
+  BadgeDollarSign,
+  Save,
+} from "lucide-react";
+
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -46,40 +53,45 @@ function Admin() {
 
     });
 
-  const inputStyle =
-    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
+  const handleChange =
+    (e) => {
 
-  const handleChange = (e) => {
-
-    setAdminData({
-      ...adminData,
-      [e.target.name]:
-        e.target.value,
-    });
-
-  };
-
-  const handleSaveSettings = () => {
-
-    Object.entries(adminData)
-      .forEach(([key, value]) => {
-
-        localStorage.setItem(
-          key,
-          value
-        );
-
+      setAdminData({
+        ...adminData,
+        [e.target.name]:
+          e.target.value,
       });
 
-    alert(
-      "Settings saved successfully."
-    );
+    };
 
-  };
+  const handleSaveSettings =
+    () => {
+
+      Object.entries(
+        adminData
+      ).forEach(
+        ([key, value]) => {
+
+          localStorage.setItem(
+            key,
+            value
+          );
+
+        }
+      );
+
+      alert(
+        "Settings saved successfully."
+      );
+
+    };
+
+  const inputStyle =
+    "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
   return (
 
-    <div className="min-h-screen bg-gray-100 lg:flex">
+    <div className="min-h-screen bg-slate-50 lg:flex">
 
       <Sidebar />
 
@@ -89,141 +101,217 @@ function Admin() {
 
         <div className="p-4 lg:p-8">
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
+          {/* PAGE HEADER */}
 
-            {/* HEADER */}
+          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-            <div className="mb-10 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
 
-              <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                Admin Settings
+              </h1>
 
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Admin Settings
-                </h1>
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                Manage institute preferences and invoice configuration
+              </p>
 
-                <p className="mt-2 text-gray-500">
-                  Manage institute and invoice settings
-                </p>
+            </div>
+
+            {/* STATUS CARD */}
+
+            <div className="flex items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+
+                <BadgeDollarSign
+                  size={24}
+                />
 
               </div>
 
-              <div className="rounded-2xl bg-blue-50 px-5 py-4">
+              <div>
 
-                <p className="text-sm text-blue-600">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                   System Status
                 </p>
 
-                <h2 className="mt-1 text-2xl font-bold text-blue-900">
-                  Active
+                <h2 className="mt-1 text-lg font-bold text-slate-900">
+                  Active & Running
                 </h2>
 
               </div>
 
             </div>
 
-            {/* INSTITUTE SETTINGS */}
+          </div>
 
-            <div className="mb-10">
+          {/* GRID */}
 
-              <h2 className="mb-6 text-xl font-semibold text-gray-900">
-                Institute Information
-              </h2>
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
 
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+            {/* LEFT SIDE */}
 
-                {/* INSTITUTE NAME */}
+            <div className="space-y-6 xl:col-span-2">
 
-                <div>
+              {/* INSTITUTE */}
 
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Institute Name
-                  </label>
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                  <input
-                    type="text"
-                    name="instituteName"
-                    value={
-                      adminData.instituteName
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
+                <div className="mb-6 flex items-center gap-3">
 
-                </div>
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
 
-                {/* PHONE */}
+                    <Building2
+                      size={22}
+                    />
 
-                <div>
+                  </div>
 
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Phone Number
-                  </label>
+                  <div>
 
-                  <input
-                    type="text"
-                    name="institutePhone"
-                    value={
-                      adminData.institutePhone
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Institute Information
+                    </h2>
+
+                    <p className="text-sm text-slate-500">
+                      Basic institute details and contact information
+                    </p>
+
+                  </div>
 
                 </div>
 
-                {/* EMAIL */}
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
 
-                <div>
+                  <div>
 
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Email Address
-                  </label>
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Institute Name
+                    </label>
 
-                  <input
-                    type="email"
-                    name="instituteEmail"
-                    value={
-                      adminData.instituteEmail
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
+                    <input
+                      type="text"
+                      name="instituteName"
+                      value={adminData.instituteName}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Phone Number
+                    </label>
+
+                    <input
+                      type="text"
+                      name="institutePhone"
+                      value={adminData.institutePhone}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Email Address
+                    </label>
+
+                    <input
+                      type="email"
+                      name="instituteEmail"
+                      value={adminData.instituteEmail}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Address
+                    </label>
+
+                    <input
+                      type="text"
+                      name="instituteAddress"
+                      value={adminData.instituteAddress}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
 
                 </div>
 
-                {/* ADDRESS */}
+              </div>
 
-                <div>
+              {/* INVOICE SETTINGS */}
 
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Address
-                  </label>
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                  <input
-                    type="text"
-                    name="instituteAddress"
-                    value={
-                      adminData.instituteAddress
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
+                <div className="mb-6 flex items-center gap-3">
+
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+
+                    <Receipt
+                      size={22}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <h2 className="text-lg font-bold text-slate-900">
+                      Invoice Settings
+                    </h2>
+
+                    <p className="text-sm text-slate-500">
+                      Configure invoice appearance and defaults
+                    </p>
+
+                  </div>
+
+                </div>
+
+                <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Invoice Prefix
+                    </label>
+
+                    <input
+                      type="text"
+                      name="invoicePrefix"
+                      value={adminData.invoicePrefix}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
+
+                  <div>
+
+                    <label className="mb-2 block text-sm font-semibold text-slate-700">
+                      Currency
+                    </label>
+
+                    <input
+                      type="text"
+                      name="currency"
+                      value={adminData.currency}
+                      onChange={handleChange}
+                      className={inputStyle}
+                    />
+
+                  </div>
 
                 </div>
 
@@ -231,102 +319,56 @@ function Admin() {
 
             </div>
 
-            {/* INVOICE SETTINGS */}
+            {/* RIGHT SIDE */}
 
-            <div className="mb-10">
+            <div className="space-y-6">
 
-              <h2 className="mb-6 text-xl font-semibold text-gray-900">
-                Invoice Settings
-              </h2>
+              {/* FOOTER */}
 
-              <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-                {/* PREFIX */}
+                <h2 className="text-lg font-bold text-slate-900">
+                  Invoice Footer
+                </h2>
 
-                <div>
+                <p className="mt-1 text-sm text-slate-500">
+                  Footer message shown on invoices
+                </p>
 
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Invoice Prefix
-                  </label>
-
-                  <input
-                    type="text"
-                    name="invoicePrefix"
-                    value={
-                      adminData.invoicePrefix
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
-
-                </div>
-
-                {/* CURRENCY */}
-
-                <div>
-
-                  <label className="mb-2 block text-sm font-semibold text-gray-700">
-                    Currency
-                  </label>
-
-                  <input
-                    type="text"
-                    name="currency"
-                    value={
-                      adminData.currency
-                    }
-                    onChange={
-                      handleChange
-                    }
-                    className={
-                      inputStyle
-                    }
-                  />
-
-                </div>
+                <textarea
+                  rows="8"
+                  name="footerText"
+                  value={adminData.footerText}
+                  onChange={handleChange}
+                  className={`${inputStyle} mt-5 resize-none`}
+                />
 
               </div>
 
-            </div>
+              {/* SAVE */}
 
-            {/* FOOTER */}
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
 
-            <div className="mb-10">
+                <button
+                  onClick={
+                    handleSaveSettings
+                  }
+                  className="flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
+                >
 
-              <h2 className="mb-6 text-xl font-semibold text-gray-900">
-                Invoice Footer
-              </h2>
+                  <Save
+                    size={18}
+                  />
 
-              <textarea
-                rows="4"
-                name="footerText"
-                value={
-                  adminData.footerText
-                }
-                onChange={
-                  handleChange
-                }
-                className={`${inputStyle} resize-none`}
-              />
+                  Save Settings
 
-            </div>
+                </button>
 
-            {/* SAVE BUTTON */}
+                <p className="mt-4 text-center text-xs font-medium text-slate-400">
+                  Changes are stored locally in browser storage
+                </p>
 
-            <div className="flex justify-end">
-
-              <button
-                onClick={
-                  handleSaveSettings
-                }
-                className="rounded-2xl bg-blue-700 px-8 py-3 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
-              >
-                Save Settings
-              </button>
+              </div>
 
             </div>
 

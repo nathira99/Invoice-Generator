@@ -1,4 +1,17 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+} from "react";
+
+import {
+  BookOpen,
+  PlusCircle,
+  Pencil,
+  Trash2,
+  Check,
+  IndianRupee,
+  CalendarDays,
+} from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
@@ -13,190 +26,222 @@ import {
 function Courses() {
 
   const [courses, setCourses] =
-  useState([]);
-  
+    useState([]);
 
-  const [editIndex, setEditIndex] =
-    useState(null);
+  const [
+    editIndex,
+    setEditIndex,
+  ] = useState(null);
 
-  const [editData, setEditData] =
-    useState({
-      courseName: "",
-      fee: "",
-      daysPerWeek: "",
-    });
+  const [
+    editData,
+    setEditData,
+  ] = useState({
 
-  const [courseData, setCourseData] =
-    useState({
-      courseName: "",
-      fee: "",
-      daysPerWeek: "",
-    });
-    
-    useEffect(() => {
+    courseName: "",
 
-  loadCourses();
+    fee: "",
 
-}, []);
+    daysPerWeek: "",
 
-const loadCourses =
-  async () => {
+  });
 
-    try {
+  const [
+    courseData,
+    setCourseData,
+  ] = useState({
 
-      const data =
-        await getCourses();
+    courseName: "",
 
-      setCourses(data);
+    fee: "",
 
-    } catch (error) {
+    daysPerWeek: "",
 
-      console.error(error);
+  });
 
-    }
+  useEffect(() => {
 
-  };
+    loadCourses();
+
+  }, []);
+
+  const loadCourses =
+    async () => {
+
+      try {
+
+        const data =
+          await getCourses();
+
+        setCourses(
+          Array.isArray(data)
+            ? data
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+      }
+
+    };
 
   const inputStyle =
-    "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
+    "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
-    
-  const handleChange = (e) => {
-
-    setCourseData({
-      ...courseData,
-      [e.target.name]: e.target.value,
-    });
-
-  };
-
-  const handleAddCourse =
-  async () => {
-
-    if (
-      !courseData.courseName ||
-      !courseData.fee ||
-      !courseData.daysPerWeek
-    ) {
-
-      alert(
-        "Please fill all fields."
-      );
-
-      return;
-
-    }
-
-    try {
-
-      await saveCourse(
-        courseData
-      );
-
-      await loadCourses();
+  const handleChange =
+    (e) => {
 
       setCourseData({
-        courseName: "",
-        fee: "",
-        daysPerWeek: "",
+        ...courseData,
+        [e.target.name]:
+          e.target.value,
       });
 
-    } catch (error) {
+    };
 
-      console.error(error);
+  const handleAddCourse =
+    async () => {
 
-      alert(
-        "Failed to add course"
-      );
+      if (
+        !courseData.courseName ||
+        !courseData.fee ||
+        !courseData.daysPerWeek
+      ) {
 
-    }
+        alert(
+          "Please fill all fields."
+        );
 
-  };
+        return;
+
+      }
+
+      try {
+
+        await saveCourse(
+          courseData
+        );
+
+        await loadCourses();
+
+        setCourseData({
+
+          courseName: "",
+
+          fee: "",
+
+          daysPerWeek: "",
+
+        });
+
+      } catch (error) {
+
+        console.error(
+          error
+        );
+
+        alert(
+          "Failed to add course"
+        );
+
+      }
+
+    };
 
   const handleDeleteCourse =
-  async (id) => {
+    async (id) => {
 
-    const confirmDelete =
-      window.confirm(
-        "Delete this course?"
-      );
+      const confirmDelete =
+        window.confirm(
+          "Delete this course?"
+        );
 
-    if (!confirmDelete)
-      return;
+      if (!confirmDelete)
+        return;
 
-    try {
+      try {
 
-      await deleteCourse(id);
+        await deleteCourse(
+          id
+        );
 
-      await loadCourses();
+        await loadCourses();
 
-    } catch (error) {
+      } catch (error) {
 
-      console.error(error);
+        console.error(
+          error
+        );
 
-      alert(
-        "Failed to delete course"
-      );
+        alert(
+          "Failed to delete course"
+        );
 
-    }
+      }
 
-  };
+    };
 
-  const handleEditCourse = (
-    course,
-    index
-  ) => {
+  const handleEditCourse =
+    (
+      course,
+      index
+    ) => {
 
-    setEditIndex(index);
+      setEditIndex(index);
 
-    setEditData(course);
+      setEditData(course);
 
-  };
+    };
 
   const handleSaveEdit =
-  async () => {
+    async () => {
 
-    if (
-      !editData.courseName ||
-      !editData.fee ||
-      !editData.daysPerWeek
-    ) {
+      if (
+        !editData.courseName ||
+        !editData.fee ||
+        !editData.daysPerWeek
+      ) {
 
-      alert(
-        "Please fill all fields."
-      );
+        alert(
+          "Please fill all fields."
+        );
 
-      return;
+        return;
 
-    }
+      }
 
-    try {
+      try {
 
-      await updateCourse(
-        editData._id,
-        editData
-      );
+        await updateCourse(
+          editData._id,
+          editData
+        );
 
-      await loadCourses();
+        await loadCourses();
 
-      setEditIndex(null);
+        setEditIndex(null);
 
-    } catch (error) {
+      } catch (error) {
 
-      console.error(error);
+        console.error(
+          error
+        );
 
-      alert(
-        "Failed to update course"
-      );
+        alert(
+          "Failed to update course"
+        );
 
-    }
+      }
 
-  };
-
+    };
 
   return (
 
-    <div className="min-h-screen bg-gray-100 lg:flex">
+    <div className="min-h-screen bg-slate-50 lg:flex">
 
       <Sidebar />
 
@@ -206,281 +251,414 @@ const loadCourses =
 
         <div className="p-4 lg:p-8">
 
-          <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
+          {/* HEADER */}
 
-            {/* HEADER */}
+          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
 
-            <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-4">
 
-              <div>
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
 
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Courses
-                </h1>
-
-                <p className="mt-2 text-gray-500">
-                  Manage all course details
-                </p>
+                <BookOpen
+                  size={28}
+                />
 
               </div>
 
-              <div className="rounded-2xl bg-blue-50 px-5 py-4">
+              <div>
 
-                <p className="text-sm text-blue-600">
-                  Total Courses
+                <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                  Courses
+                </h1>
+
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  Manage all institute courses
                 </p>
-
-                <h2 className="mt-1 text-2xl font-bold text-blue-900">
-                  {courses.length}
-                </h2>
 
               </div>
 
             </div>
 
-            {/* FORM */}
+            {/* TOTAL */}
 
-            <div className="mb-10 grid grid-cols-1 gap-4 lg:grid-cols-4">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                Total Courses
+              </p>
+
+              <h2 className="mt-1 text-3xl font-bold text-slate-950">
+                {courses.length}
+              </h2>
+
+            </div>
+
+          </div>
+
+          {/* ADD FORM */}
+
+          <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+
+            <div className="mb-5 flex items-center gap-3">
+
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+
+                <PlusCircle
+                  size={22}
+                />
+
+              </div>
+
+              <div>
+
+                <h2 className="text-lg font-bold text-slate-900">
+                  Add Course
+                </h2>
+
+                <p className="text-sm text-slate-500">
+                  Create a new course profile
+                </p>
+
+              </div>
+
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
 
               <input
                 type="text"
                 name="courseName"
-                value={courseData.courseName}
-                onChange={handleChange}
+                value={
+                  courseData.courseName
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Course Name"
-                className={inputStyle}
+                className={
+                  inputStyle
+                }
               />
 
               <input
                 type="number"
                 name="fee"
-                value={courseData.fee}
-                onChange={handleChange}
+                value={
+                  courseData.fee
+                }
+                onChange={
+                  handleChange
+                }
                 placeholder="Course Fee"
-                className={inputStyle}
+                className={
+                  inputStyle
+                }
               />
 
               <input
                 type="number"
                 name="daysPerWeek"
-                value={courseData.daysPerWeek}
-                onChange={handleChange}
-                placeholder="Days / Week"
-                className={inputStyle}
+                value={
+                  courseData.daysPerWeek
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder="Days Per Week"
+                className={
+                  inputStyle
+                }
               />
 
               <button
-                onClick={handleAddCourse}
-                className="rounded-2xl bg-blue-700 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
+                onClick={
+                  handleAddCourse
+                }
+                className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
               >
                 Add Course
               </button>
 
             </div>
 
-            {/* TABLE */}
+          </div>
 
-            {courses.length === 0 ? (
+          {/* TABLE */}
 
-              <div className="rounded-2xl border border-dashed border-gray-300 py-14 text-center text-gray-500">
+          {courses.length === 0 ? (
+
+            <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
+
+              <p className="text-sm font-medium text-slate-500">
                 No courses found.
+              </p>
+
+            </div>
+
+          ) : (
+
+            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+
+              {/* TABLE HEADER */}
+
+              <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
+
+                <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-4 text-sm font-semibold text-slate-500">
+
+                  <p>
+                    Course
+                  </p>
+
+                  <p>
+                    Fee
+                  </p>
+
+                  <p>
+                    Schedule
+                  </p>
+
+                  <p className="text-center">
+                    Actions
+                  </p>
+
+                </div>
+
               </div>
 
-            ) : (
+              {/* ROWS */}
 
-              <div className="overflow-x-auto rounded-2xl border border-gray-100">
+              <div>
 
-                <table className="w-full min-w-[850px]">
+                {courses.map(
+                  (
+                    course,
+                    index
+                  ) => (
 
-                  {/* HEADER */}
+                    <div
+                      key={
+                        course._id ||
+                        index
+                      }
+                      className="border-b border-slate-100 last:border-none"
+                    >
 
-                  <thead className="bg-gray-50">
-
-                    <tr className="text-left text-sm font-semibold text-gray-600">
-
-                      <th className="px-6 py-5">
-                        Course Name
-                      </th>
-
-                      <th className="px-6 py-5">
-                        Fee
-                      </th>
-
-                      <th className="px-6 py-5">
-                        Days / Week
-                      </th>
-
-                      <th className="px-6 py-5 text-center">
-                        Actions
-                      </th>
-
-                    </tr>
-
-                  </thead>
-
-                  {/* BODY */}
-
-                  <tbody>
-
-                    {courses.map((course, index) => (
-
-                      <tr
-                        key={index}
-                        className="border-t border-gray-100 transition hover:bg-gray-50"
-                      >
+                      <div className="grid gap-5 px-6 py-5 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:items-center">
 
                         {/* COURSE */}
 
-                        <td className="px-6 py-5">
+                        <div>
 
-                          {editIndex === index ? (
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Course
+                          </p>
+
+                          {editIndex ===
+                          index ? (
 
                             <input
                               type="text"
-                              value={editData.courseName}
-                              onChange={(e) =>
+                              value={
+                                editData.courseName
+                              }
+                              onChange={(
+                                e
+                              ) =>
                                 setEditData({
                                   ...editData,
                                   courseName:
-                                    e.target.value,
+                                    e
+                                      .target
+                                      .value,
                                 })
                               }
-                              className={inputStyle}
+                              className={`${inputStyle} mt-2`}
                             />
 
                           ) : (
 
-                            <div>
+                            <p className="mt-1 font-semibold text-slate-900">
+                              {
+                                course.courseName
+                              }
+                            </p>
 
-                              <p className="font-medium text-gray-900">
-                                {course.courseName}
-                              </p>
+                          )}
+
+                        </div>
+
+                        {/* FEE */}
+
+                        <div>
+
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Fee
+                          </p>
+
+                          {editIndex ===
+                          index ? (
+
+                            <input
+                              type="number"
+                              value={
+                                editData.fee
+                              }
+                              onChange={(
+                                e
+                              ) =>
+                                setEditData({
+                                  ...editData,
+                                  fee:
+                                    e
+                                      .target
+                                      .value,
+                                })
+                              }
+                              className={`${inputStyle} mt-2`}
+                            />
+
+                          ) : (
+
+                            <div className="mt-1 flex items-center gap-2 font-semibold text-emerald-700">
+
+                              <IndianRupee
+                                size={16}
+                              />
+
+                              Rs. {
+                                course.fee
+                              }
 
                             </div>
 
                           )}
 
-                        </td>
-
-                        {/* FEE */}
-
-                        <td className="px-6 py-5 text-gray-700">
-
-                          {editIndex === index ? (
-
-                            <input
-                              type="number"
-                              value={editData.fee}
-                              onChange={(e) =>
-                                setEditData({
-                                  ...editData,
-                                  fee:
-                                    e.target.value,
-                                })
-                              }
-                              className={inputStyle}
-                            />
-
-                          ) : (
-
-                            <span className="font-medium text-gray-900">
-                              Rs. {course.fee}
-                            </span>
-
-                          )}
-
-                        </td>
+                        </div>
 
                         {/* DAYS */}
 
-                        <td className="px-6 py-5 text-gray-700">
+                        <div>
 
-                          {editIndex === index ? (
+                          <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
+                            Schedule
+                          </p>
+
+                          {editIndex ===
+                          index ? (
 
                             <input
                               type="number"
                               value={
                                 editData.daysPerWeek
                               }
-                              onChange={(e) =>
+                              onChange={(
+                                e
+                              ) =>
                                 setEditData({
                                   ...editData,
                                   daysPerWeek:
-                                    e.target.value,
+                                    e
+                                      .target
+                                      .value,
                                 })
                               }
-                              className={inputStyle}
+                              className={`${inputStyle} mt-2`}
                             />
 
                           ) : (
 
-                            `${course.daysPerWeek} Days`
+                            <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-600">
+
+                              <CalendarDays
+                                size={16}
+                              />
+
+                              {
+                                course.daysPerWeek
+                              }{" "}
+                              Days / Week
+
+                            </div>
 
                           )}
 
-                        </td>
+                        </div>
 
                         {/* ACTIONS */}
 
-                        <td className="px-6 py-5">
+                        <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-center">
 
-                          <div className="flex items-center justify-center gap-3">
+                          {editIndex ===
+                          index ? (
 
-                            {editIndex === index ? (
+                            <button
+                              onClick={
+                                handleSaveEdit
+                              }
+                              className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                            >
 
-                              <button
-                                onClick={
-                                  handleSaveEdit
-                                }
-                                className="rounded-xl bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
-                              >
-                                Save
-                              </button>
+                              <Check
+                                size={15}
+                              />
 
-                            ) : (
+                              Save
 
-                              <button
-                                onClick={() =>
-                                  handleEditCourse(
-                                    course,
-                                    index
-                                  )
-                                }
-                                className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
-                              >
-                                Edit
-                              </button>
+                            </button>
 
-                            )}
+                          ) : (
 
                             <button
                               onClick={() =>
-                                handleDeleteCourse(
-                                  course._id
+                                handleEditCourse(
+                                  course,
+                                  index
                                 )
                               }
-                              className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
+                              className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                             >
-                              Delete
+
+                              <Pencil
+                                size={15}
+                              />
+
+                              Edit
+
                             </button>
 
-                          </div>
+                          )}
 
-                        </td>
+                          <button
+                            onClick={() =>
+                              handleDeleteCourse(
+                                course._id
+                              )
+                            }
+                            className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
+                          >
 
-                      </tr>
+                            <Trash2
+                              size={15}
+                            />
 
-                    ))}
+                            Delete
 
-                  </tbody>
+                          </button>
 
-                </table>
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  )
+                )}
 
               </div>
 
-            )}
+            </div>
 
-          </div>
+          )}
 
         </div>
 
