@@ -39,7 +39,8 @@ const studentSchema =
 const Student =
   mongoose.model(
     "Student",
-    studentSchema
+    studentSchema,
+    "students"
   );
 
 export default Student;

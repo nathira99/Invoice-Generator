@@ -13,7 +13,8 @@ import {
 function Courses() {
 
   const [courses, setCourses] =
-    useState(getCourses());
+  useState([]);
+  
 
   const [editIndex, setEditIndex] =
     useState(null);
@@ -31,10 +32,35 @@ function Courses() {
       fee: "",
       daysPerWeek: "",
     });
+    
+    useEffect(() => {
+
+  loadCourses();
+
+}, []);
+
+const loadCourses =
+  async () => {
+
+    try {
+
+      const data =
+        await getCourses();
+
+      setCourses(data);
+
+    } catch (error) {
+
+      console.error(error);
+
+    }
+
+  };
 
   const inputStyle =
     "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
+    
   const handleChange = (e) => {
 
     setCourseData({
@@ -44,7 +70,8 @@ function Courses() {
 
   };
 
-  const handleAddCourse = () => {
+  const handleAddCourse =
+  async () => {
 
     if (
       !courseData.courseName ||
@@ -52,36 +79,66 @@ function Courses() {
       !courseData.daysPerWeek
     ) {
 
-      alert("Please fill all fields.");
+      alert(
+        "Please fill all fields."
+      );
 
       return;
 
     }
 
-    saveCourse(courseData);
+    try {
 
-    setCourses(getCourses());
+      await saveCourse(
+        courseData
+      );
 
-    setCourseData({
-      courseName: "",
-      fee: "",
-      daysPerWeek: "",
-    });
+      await loadCourses();
+
+      setCourseData({
+        courseName: "",
+        fee: "",
+        daysPerWeek: "",
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to add course"
+      );
+
+    }
 
   };
 
-  const handleDeleteCourse = (index) => {
+  const handleDeleteCourse =
+  async (id) => {
 
     const confirmDelete =
       window.confirm(
         "Delete this course?"
       );
 
-    if (!confirmDelete) return;
+    if (!confirmDelete)
+      return;
 
-    deleteCourse(index);
+    try {
 
-    setCourses(getCourses());
+      await deleteCourse(id);
+
+      await loadCourses();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to delete course"
+      );
+
+    }
 
   };
 
@@ -96,7 +153,8 @@ function Courses() {
 
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit =
+  async () => {
 
     if (
       !editData.courseName ||
@@ -104,22 +162,37 @@ function Courses() {
       !editData.daysPerWeek
     ) {
 
-      alert("Please fill all fields.");
+      alert(
+        "Please fill all fields."
+      );
 
       return;
 
     }
 
-    updateCourse(
-      editIndex,
-      editData
-    );
+    try {
 
-    setCourses(getCourses());
+      await updateCourse(
+        editData._id,
+        editData
+      );
 
-    setEditIndex(null);
+      await loadCourses();
+
+      setEditIndex(null);
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to update course"
+      );
+
+    }
 
   };
+
 
   return (
 
@@ -383,7 +456,7 @@ function Courses() {
                             <button
                               onClick={() =>
                                 handleDeleteCourse(
-                                  index
+                                  course._id
                                 )
                               }
                               className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"

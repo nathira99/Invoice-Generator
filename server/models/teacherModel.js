@@ -40,7 +40,8 @@ const teacherSchema =
 const Teacher =
   mongoose.model(
     "Teacher",
-    teacherSchema
+    teacherSchema,
+    "teachers"
   );
 
 export default Teacher;
