@@ -15,10 +15,14 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin:
+    origin: [
+      "http://localhost:5173",
       "https://invoice-generator-pi-sandy.vercel.app",
+    ],
+    credentials: true,
   })
 );
+
 app.use(express.json());
 
 app.use('/api/invoices', invoiceRoutes);

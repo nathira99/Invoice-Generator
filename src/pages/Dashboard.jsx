@@ -16,18 +16,31 @@ import InvoicePreview from "../components/InvoicePreview";
 
 function Dashboard() {
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
-  const students = getStudents();
+  /* STATES */
 
-  const courses = getCourses();
+  const [students, setStudents] =
+    useState([]);
 
-  const [invoices, setInvoices] = useState([]);
+  const [courses, setCourses] =
+    useState([]);
 
-  const [isLoadingInvoices, setIsLoadingInvoices] =
-    useState(true);
+  const [invoices, setInvoices] =
+    useState([]);
 
-  const [invoiceData, setInvoiceData] = useState(
+  const [
+    isLoadingInvoices,
+    setIsLoadingInvoices,
+  ] = useState(true);
+
+  /* INVOICE DATA */
+
+  const [
+    invoiceData,
+    setInvoiceData,
+  ] = useState(
     location.state || {
 
       invoiceNumber: "",
@@ -65,43 +78,89 @@ function Dashboard() {
     }
   );
 
+  /* LOAD STUDENTS + COURSES */
+
+  const loadData =
+    async () => {
+
+      try {
+
+        const studentsData =
+          await getStudents();
+
+        const coursesData =
+          await getCourses();
+
+        setStudents(
+          Array.isArray(
+            studentsData
+          )
+            ? studentsData
+            : []
+        );
+
+        setCourses(
+          Array.isArray(
+            coursesData
+          )
+            ? coursesData
+            : []
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+      }
+
+    };
+
   /* LOAD INVOICES */
 
-  const loadInvoices = async () => {
+  const loadInvoices =
+    async () => {
 
-    try {
+      try {
 
-      setIsLoadingInvoices(true);
+        setIsLoadingInvoices(
+          true
+        );
 
-      const invoiceList =
-        await getInvoices();
+        const invoiceList =
+          await getInvoices();
 
-      setInvoices(
-        Array.isArray(invoiceList)
-          ? invoiceList
-          : []
-      );
+        setInvoices(
+          Array.isArray(
+            invoiceList
+          )
+            ? invoiceList
+            : []
+        );
 
-    } catch (error) {
+      } catch (error) {
 
-      console.error(
-        "Failed to load invoices:",
-        error
-      );
+        console.error(
+          "Failed to load invoices:",
+          error
+        );
 
-      setInvoices([]);
+        setInvoices([]);
 
-    } finally {
+      } finally {
 
-      setIsLoadingInvoices(false);
+        setIsLoadingInvoices(
+          false
+        );
 
-    }
+      }
 
-  };
+    };
 
   /* INITIAL LOAD */
 
   useEffect(() => {
+
+    loadData();
 
     loadInvoices();
 
@@ -111,7 +170,10 @@ function Dashboard() {
 
   useEffect(() => {
 
-    if (location.state?.invoiceNumber) {
+    if (
+      location.state
+        ?.invoiceNumber
+    ) {
 
       return;
 
@@ -119,32 +181,37 @@ function Dashboard() {
 
     let isMounted = true;
 
-    const loadInvoiceNumber = async () => {
+    const loadInvoiceNumber =
+      async () => {
 
-      try {
+        try {
 
-        const invoiceNumber =
-          await generateInvoiceNumber();
+          const invoiceNumber =
+            await generateInvoiceNumber();
 
-        if (isMounted) {
+          if (isMounted) {
 
-          setInvoiceData((currentData) => ({
-            ...currentData,
-            invoiceNumber,
-          }));
+            setInvoiceData(
+              (
+                currentData
+              ) => ({
+                ...currentData,
+                invoiceNumber,
+              })
+            );
+
+          }
+
+        } catch (error) {
+
+          console.error(
+            "Failed to generate invoice number:",
+            error
+          );
 
         }
 
-      } catch (error) {
-
-        console.error(
-          "Failed to generate invoice number:",
-          error
-        );
-
-      }
-
-    };
+      };
 
     loadInvoiceNumber();
 
@@ -162,12 +229,19 @@ function Dashboard() {
     invoices
       .filter(
         (invoice) =>
-          invoice.status === "Paid"
+          invoice.status ===
+          "Paid"
       )
       .reduce(
-        (total, invoice) =>
+        (
+          total,
+          invoice
+        ) =>
           total +
-          Number(invoice.paidAmount || 0),
+          Number(
+            invoice.paidAmount ||
+              0
+          ),
         0
       );
 
@@ -177,12 +251,19 @@ function Dashboard() {
     invoices
       .filter(
         (invoice) =>
-          invoice.status === "Pending"
+          invoice.status ===
+          "Pending"
       )
       .reduce(
-        (total, invoice) =>
+        (
+          total,
+          invoice
+        ) =>
           total +
-          Number(invoice.paidAmount || 0),
+          Number(
+            invoice.paidAmount ||
+              0
+          ),
         0
       );
 
@@ -190,17 +271,13 @@ function Dashboard() {
 
     <div className="min-h-screen bg-gray-100 lg:flex">
 
-      {/* SIDEBAR */}
-
       <Sidebar />
-
-      {/* MAIN */}
 
       <main className="flex-1 overflow-auto">
 
         <Header />
 
-        {/* PAGE TITLE */}
+        {/* TITLE */}
 
         <div className="mb-6 px-4 pt-6 lg:px-8">
 
@@ -209,16 +286,16 @@ function Dashboard() {
           </h1>
 
           <p className="mt-1 text-gray-500">
-            Manage invoices, students and payments
+            Manage invoices,
+            students and
+            payments
           </p>
 
         </div>
 
-        {/* DASHBOARD CARDS */}
+        {/* CARDS */}
 
         <div className="m-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5 lg:m-8">
-
-          {/* STUDENTS */}
 
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
@@ -232,8 +309,6 @@ function Dashboard() {
 
           </div>
 
-          {/* COURSES */}
-
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
             <p className="text-sm font-medium text-gray-500">
@@ -245,8 +320,6 @@ function Dashboard() {
             </h2>
 
           </div>
-
-          {/* INVOICES */}
 
           <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
 
@@ -262,8 +335,6 @@ function Dashboard() {
 
           </div>
 
-          {/* REVENUE */}
-
           <div className="rounded-3xl border border-green-100 bg-green-50 p-6 shadow-sm">
 
             <p className="text-sm font-medium text-green-700">
@@ -277,8 +348,6 @@ function Dashboard() {
             </h2>
 
           </div>
-
-          {/* PENDING */}
 
           <div className="rounded-3xl border border-orange-100 bg-orange-50 p-6 shadow-sm">
 
@@ -296,24 +365,30 @@ function Dashboard() {
 
         </div>
 
-        {/* MAIN CONTENT */}
+        {/* CONTENT */}
 
         <div className="m-4 grid grid-cols-1 items-start gap-6 lg:m-8 lg:grid-cols-2 lg:gap-8">
 
-          {/* FORM */}
-
           <InvoiceForm
-            invoiceData={invoiceData}
-            setInvoiceData={setInvoiceData}
-            loadInvoices={loadInvoices}
+            invoiceData={
+              invoiceData
+            }
+            setInvoiceData={
+              setInvoiceData
+            }
+            loadInvoices={
+              loadInvoices
+            }
+            students={students}
+            courses={courses}
           />
-
-          {/* PREVIEW */}
 
           <div className="min-w-0 lg:sticky lg:top-8">
 
             <InvoicePreview
-              invoiceData={invoiceData}
+              invoiceData={
+                invoiceData
+              }
             />
 
           </div>
