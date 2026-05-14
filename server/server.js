@@ -6,6 +6,7 @@ import invoiceRoutes from './routes/invoiceRoutes.js';
 import studentRoutes from "./routes/studentRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
+import staffRoutes from "./routes/staffRoutes.js";
 
 dotenv.config();
 
@@ -27,6 +28,8 @@ app.use("/api/students", studentRoutes);
 app.use("/api/courses", courseRoutes);
 
 app.use("/api/teachers", teacherRoutes);
+
+app.use("/api/staffs", staffRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Invoice Generator API is running' });

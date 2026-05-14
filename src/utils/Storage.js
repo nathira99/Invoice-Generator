@@ -168,50 +168,82 @@ export const deleteStudent = (index) => {
   );
 };
 
-export const saveCourse = (course) => {
-  const existingCourses =
-    JSON.parse(localStorage.getItem("courses")) || [];
+export const getCourses =
+  async () => {
 
-  existingCourses.push(course);
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/courses"
+      );
 
-  localStorage.setItem(
-    "courses",
-    JSON.stringify(existingCourses)
-  );
-};
+    return response.json();
 
-export const getCourses = () => {
-  return (
-    JSON.parse(localStorage.getItem("courses")) || []
-  );
-};
+  };
 
-export const updateCourse = (
-  index,
-  updatedCourse
-) => {
-  const courses =
-    JSON.parse(localStorage.getItem("courses")) || [];
+export const saveCourse =
+  async (course) => {
 
-  courses[index] = updatedCourse;
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/courses",
+        {
+          method: "POST",
 
-  localStorage.setItem(
-    "courses",
-    JSON.stringify(courses)
-  );
-};
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-export const deleteCourse = (index) => {
-  const courses =
-    JSON.parse(localStorage.getItem("courses")) || [];
+          body: JSON.stringify(
+            course
+          ),
+        }
+      );
 
-  courses.splice(index, 1);
+    return response.json();
 
-  localStorage.setItem(
-    "courses",
-    JSON.stringify(courses)
-  );
-};
+  };
+
+export const updateCourse =
+  async (
+    id,
+    updatedCourse
+  ) => {
+
+    const response =
+      await fetch(
+        `https://invoice-generator-qg7s.onrender.com/api/courses/${id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            updatedCourse
+          ),
+        }
+      );
+
+    return response.json();
+
+  };
+
+export const deleteCourse =
+  async (id) => {
+
+    await fetch(
+      `https://invoice-generator-qg7s.onrender.com/api/courses/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+  };
+
+  
 export const getStaffs =
   async () => {
 
