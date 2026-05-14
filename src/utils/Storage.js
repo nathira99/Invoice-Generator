@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/invoices";
+const API_URL = "https://invoice-generator-qg7s.onrender.com/api/invoices";
 
 const normalizeInvoice = (invoice) => ({
   invoiceNumber: invoice.invoiceNumber || "",
@@ -217,7 +217,7 @@ export const getStaffs =
 
     const response =
       await fetch(
-        "http://localhost:5000/api/staffs"
+        "https://invoice-generator-qg7s.onrender.com/api/staffs"
       );
 
     return response.json();
@@ -229,7 +229,7 @@ export const saveStaff =
 
     const response =
       await fetch(
-        "http://localhost:5000/api/staffs",
+        "https://invoice-generator-qg7s.onrender.com/api/staffs",
         {
           method: "POST",
 
@@ -256,7 +256,7 @@ export const updateStaff =
 
     const response =
       await fetch(
-        `http://localhost:5000/api/staffs/${id}`,
+        `https://invoice-generator-qg7s.onrender.com/api/staffs/${id}`,
         {
           method: "PUT",
 
@@ -279,7 +279,7 @@ export const deleteStaff =
   async (id) => {
 
     await fetch(
-      `http://localhost:5000/api/staffs/${id}`,
+      `https://invoice-generator-qg7s.onrender.com/api/staffs/${id}`,
       {
         method: "DELETE",
       }
