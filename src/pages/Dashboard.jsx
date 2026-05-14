@@ -364,11 +364,11 @@ function Dashboard() {
 
       <Sidebar />
 
-      <main className="flex-1 overflow-auto">
+      <main className="min-w-0 flex-1 overflow-auto lg:ml-64">
 
         <Header />
 
-        <div className="p-4 lg:p-8">
+        <div className="pt-28 p-4 lg:p-8 lg:pt-8">
 
           {/* PAGE HEADER */}
 

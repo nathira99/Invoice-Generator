@@ -58,7 +58,7 @@ function Sidebar() {
     <>
       {/* MOBILE NAVBAR */}
 
-      <aside className="sticky top-0 z-50 py-4 border-b border-slate-200/70 bg-white/95 backdrop-blur lg:hidden">
+      <aside className="fixed left-0 right-0 top-0 z-50 border-b border-slate-200/70 bg-white/95 backdrop-blur lg:hidden">
         {/* TOP */}
 
         <div className="flex items-center justify-between px-4 py-2">
@@ -76,7 +76,7 @@ function Sidebar() {
             {/* TITLE */}
 
             <div className="min-w-0">
-              <h1 className="truncate text-sm font-bold tracking-tight max-lg:text-lg text-slate-950">
+              <h1 className="truncate text-base font-bold tracking-tight text-slate-950 text-slate-950">
                 Ilmul Jannah
               </h1>
 
@@ -124,7 +124,7 @@ function Sidebar() {
 
       {/* DESKTOP SIDEBAR */}
 
-      <aside className="sticky top-0 hidden h-screen w-56 shrink-0 border-r border-slate-200/70 bg-white lg:flex lg:flex-col">
+      <aside className="fixed left-0 top-0 hidden h-screen w-64 border-r border-slate-200/70 bg-white lg:flex lg:flex-col">
         {/* HEADER */}
 
         <div className="border-b border-slate-100 px-5 py-5">

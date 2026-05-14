@@ -13,7 +13,7 @@ function MainLayout({ invoiceData, setInvoiceData }) {
 
   {/* MAIN CONTENT */}
 
-  <main className="min-w-0 flex-1 overflow-auto">
+  <main className=" min-w-0 flex-1 overflow-auto">
 
     {/* CONTENT */}
 
