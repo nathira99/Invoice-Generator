@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import Invoice from '../models/Invoice.js';
+import Invoice from '../models/InvoiceModel.js';
 
 const handleInvoiceError = (error, res) => {
   if (error.name === 'ValidationError') {

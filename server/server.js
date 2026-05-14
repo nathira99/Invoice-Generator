@@ -3,6 +3,9 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import invoiceRoutes from './routes/invoiceRoutes.js';
+import studentRoutes from "./routes/studentRoutes.js";
+import courseRoutes from "./routes/courseRoutes.js";
+import teacherRoutes from "./routes/teacherRoutes.js";
 
 dotenv.config();
 
@@ -18,6 +21,12 @@ app.use(
 app.use(express.json());
 
 app.use('/api/invoices', invoiceRoutes);
+
+app.use("/api/students", studentRoutes);
+
+app.use("/api/courses", courseRoutes);
+
+app.use("/api/teachers", teacherRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Invoice Generator API is running' });
