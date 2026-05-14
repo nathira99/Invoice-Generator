@@ -1,5 +1,4 @@
-import { useState } from "react";
-
+import { useState, useEffect } from "react";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -11,8 +10,21 @@ import {
 } from "../utils/Storage";
 
 function Students() {
-  const [students, setStudents] = useState(getStudents());
+  const [students, setStudents] = useState([]);
 
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
+  const loadStudents = async () => {
+    try {
+      const data = await getStudents();
+
+      setStudents(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const [editIndex, setEditIndex] = useState(null);
 
   const [editData, setEditData] = useState({
@@ -35,39 +47,100 @@ function Students() {
     });
   };
 
-  const handleAddStudent = () => {
-    if (!studentData.name || !studentData.contact) {
-      alert("Please fill all fields.");
+  const handleAddStudent =
+  async () => {
+
+    if (
+      !studentData.name ||
+      !studentData.contact
+    ) {
+
+      alert(
+        "Please fill all fields."
+      );
 
       return;
+
     }
 
-    saveStudent(studentData);
+    try {
 
-    setStudents(getStudents());
+      await saveStudent(
+        studentData
+      );
 
-    setStudentData({
-      name: "",
-      contact: "",
-    });
+      await loadStudents();
+
+      setStudentData({
+        name: "",
+        contact: "",
+        email: "",
+      });
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to add student"
+      );
+
+    }
+
+  };
+  const handleDeleteStudent =
+  async (id) => {
+
+    const confirmDelete =
+      window.confirm(
+        "Delete this student?"
+      );
+
+    if (!confirmDelete)
+      return;
+
+    try {
+
+      await deleteStudent(id);
+
+      await loadStudents();
+
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to delete student"
+      );
+
+    }
+
   };
 
-  const handleDeleteStudent = (index) => {
-    const confirmDelete = window.confirm(
-      "Delete this student?"
-    );
+  const handleSaveEdit =
+  async () => {
 
-    if (!confirmDelete) return;
+    try {
 
-    deleteStudent(index);
+      await updateStudent(
+        editData._id,
+        editData
+      );
 
-    setStudents(getStudents());
-  };
+      await loadStudents();
 
-  const handleEditStudent = (student, index) => {
-    setEditIndex(index);
+      setEditIndex(null);
 
-    setEditData(student);
+    } catch (error) {
+
+      console.error(error);
+
+      alert(
+        "Failed to update student"
+      );
+
+    }
+
   };
 
   const handleSaveEdit = () => {
@@ -97,19 +170,13 @@ function Students() {
 
             <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Students
-                </h1>
+                <h1 className="text-3xl font-bold text-gray-900">Students</h1>
 
-                <p className="mt-2 text-gray-500">
-                  Manage all student details
-                </p>
+                <p className="mt-2 text-gray-500">Manage all student details</p>
               </div>
 
               <div className="rounded-2xl bg-blue-50 px-5 py-4">
-                <p className="text-sm text-blue-600">
-                  Total Students
-                </p>
+                <p className="text-sm text-blue-600">Total Students</p>
 
                 <h2 className="mt-1 text-2xl font-bold text-blue-900">
                   {students.length}
@@ -159,17 +226,11 @@ function Students() {
 
                   <thead className="bg-gray-50">
                     <tr className="text-left text-sm font-semibold text-gray-600">
-                      <th className="px-6 py-5">
-                        Student Name
-                      </th>
+                      <th className="px-6 py-5">Student Name</th>
 
-                      <th className="px-6 py-5">
-                        Contact Number
-                      </th>
+                      <th className="px-6 py-5">Contact Number</th>
 
-                      <th className="px-6 py-5 text-center">
-                        Actions
-                      </th>
+                      <th className="px-6 py-5 text-center">Actions</th>
                     </tr>
                   </thead>
 
@@ -239,10 +300,7 @@ function Students() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  handleEditStudent(
-                                    student,
-                                    index
-                                  )
+                                  handleSaveEdit(student, index)
                                 }
                                 className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700"
                               >
@@ -251,9 +309,7 @@ function Students() {
                             )}
 
                             <button
-                              onClick={() =>
-                                handleDeleteStudent(index)
-                              }
+                              onClick={() => handleDeleteStudent(student._id)}
                               className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"
                             >
                               Delete

@@ -653,7 +653,7 @@ function Staff() {
                               <button
                                 onClick={() =>
                                   handleDeleteStaff(
-                                    index
+                                    staff._id
                                   )
                                 }
                                 className="rounded-xl bg-red-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-600"

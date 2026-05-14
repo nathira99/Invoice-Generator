@@ -123,50 +123,80 @@ export const generateInvoiceNumber = async () => {
   return `INV-${String(nextNumber).padStart(3, "0")}`;
 };
 
-export const saveStudent = (student) => {
-  const existingStudents =
-    JSON.parse(localStorage.getItem("students")) || [];
+export const getStudents =
+  async () => {
 
-  existingStudents.push(student);
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/students"
+      );
 
-  localStorage.setItem(
-    "students",
-    JSON.stringify(existingStudents)
-  );
-};
+    return response.json();
 
-export const getStudents = () => {
-  return (
-    JSON.parse(localStorage.getItem("students")) || []
-  );
-};
+  };
 
-export const updateStudent = (
-  index,
-  updatedStudent
-) => {
-  const students =
-    JSON.parse(localStorage.getItem("students")) || [];
+export const saveStudent =
+  async (student) => {
 
-  students[index] = updatedStudent;
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/students",
+        {
+          method: "POST",
 
-  localStorage.setItem(
-    "students",
-    JSON.stringify(students)
-  );
-};
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
 
-export const deleteStudent = (index) => {
-  const students =
-    JSON.parse(localStorage.getItem("students")) || [];
+          body: JSON.stringify(
+            student
+          ),
+        }
+      );
 
-  students.splice(index, 1);
+    return response.json();
 
-  localStorage.setItem(
-    "students",
-    JSON.stringify(students)
-  );
-};
+  };
+
+export const updateStudent =
+  async (
+    id,
+    updatedStudent
+  ) => {
+
+    const response =
+      await fetch(
+        `https://invoice-generator-qg7s.onrender.com/api/students/${id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            updatedStudent
+          ),
+        }
+      );
+
+    return response.json();
+
+  };
+
+export const deleteStudent =
+  async (id) => {
+
+    await fetch(
+      `https://invoice-generator-qg7s.onrender.com/api/students/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+  };
 
 export const getCourses =
   async () => {
@@ -243,7 +273,7 @@ export const deleteCourse =
 
   };
 
-  
+
 export const getStaffs =
   async () => {
 
@@ -312,6 +342,81 @@ export const deleteStaff =
 
     await fetch(
       `https://invoice-generator-qg7s.onrender.com/api/staffs/${id}`,
+      {
+        method: "DELETE",
+      }
+    );
+
+  };
+
+  export const getTeachers =
+  async () => {
+
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/teachers"
+      );
+
+    return response.json();
+
+  };
+
+export const saveTeacher =
+  async (teacher) => {
+
+    const response =
+      await fetch(
+        "https://invoice-generator-qg7s.onrender.com/api/teachers",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            teacher
+          ),
+        }
+      );
+
+    return response.json();
+
+  };
+
+export const updateTeacher =
+  async (
+    id,
+    updatedTeacher
+  ) => {
+
+    const response =
+      await fetch(
+        `https://invoice-generator-qg7s.onrender.com/api/teachers/${id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type":
+              "application/json",
+          },
+
+          body: JSON.stringify(
+            updatedTeacher
+          ),
+        }
+      );
+
+    return response.json();
+
+  };
+
+export const deleteTeacher =
+  async (id) => {
+
+    await fetch(
+      `https://invoice-generator-qg7s.onrender.com/api/teachers/${id}`,
       {
         method: "DELETE",
       }
