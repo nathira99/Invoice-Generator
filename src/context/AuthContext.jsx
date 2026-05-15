@@ -19,10 +19,8 @@ export const AuthProvider =
     const [loading, setLoading] =
       useState(true);
 
-      const API = [ 'https://invoice-generator-qg7s.onrender.com/api','http://localhost:5000/api'][0]
+      const API = import.meta.env.VITE_API_URL || 'https://invoice-generator-qg7s.onrender.com/api'
       
-      // 'http://localhost:5000/api'||'https://invoice-generator-qg7s.onrender.com/api'
-
     const login =
       async (
         email,
