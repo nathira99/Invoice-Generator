@@ -106,6 +106,8 @@ function Teachers() {
 
       try {
 
+        setLoading(true);
+
         const data =
           await getCourses();
 
@@ -119,8 +121,11 @@ function Teachers() {
 
         console.error(error);
 
-      }
+      } finally {
 
+      setLoading(false);
+
+      }
     };
 
   const filteredTeachers =
@@ -241,6 +246,19 @@ function Teachers() {
 
   const handleDeleteTeacher =
     async (id) => {
+      const result = await Swal.fire({
+            title: "Delete teacher?",
+            text: "This action cannot be undone.",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#ef4444",
+            cancelButtonColor: "#64748b",
+            confirmButtonText: "Delete",
+            cancelButtonText: "Cancel",
+            borderRadius: "20px",
+          });
+      
+          if (!result.isConfirmed) return;
 
       try {
 
@@ -319,13 +337,27 @@ function Teachers() {
 
     };
 
+    if (loading) {
+
   return (
+
+    <div className="flex min-h-screen items-center justify-center bg-slate-50">
+
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900" />
+
+    </div>
+
+  );
+
+}
+  return (
+    
 
     <div className="min-h-screen bg-slate-50 lg:flex">
 
       <Sidebar />
 
-      <main className="min-w-0 flex-1 overflow-auto">
+      <main className="min-w-0 flex-1 overflow-auto lg:ml-64">
 
         <Header />
 

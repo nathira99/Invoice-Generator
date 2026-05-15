@@ -1,6 +1,6 @@
 import Student from "../models/studentModel.js";
 
-/* GET */
+/* GET STUDENTS */
 
 export const getStudents =
   async (req, res) => {
@@ -8,10 +8,9 @@ export const getStudents =
     try {
 
       const students =
-        await Student.find()
-          .sort({
-            createdAt: -1,
-          });
+        await Student.find().sort({
+          createdAt: -1,
+        });
 
       res.json(students);
 
@@ -19,14 +18,14 @@ export const getStudents =
 
       res.status(500).json({
         message:
-          error.message,
+          "Failed to fetch students",
       });
 
     }
 
   };
 
-/* CREATE */
+/* CREATE STUDENT */
 
 export const createStudent =
   async (req, res) => {
@@ -44,67 +43,109 @@ export const createStudent =
 
     } catch (error) {
 
-      res.status(400).json({
+      /* DUPLICATE KEY */
+
+      if (
+        error.code === 11000
+      ) {
+
+        return res.status(400).json({
+          message:
+            "Student ID already exists",
+        });
+
+      }
+
+      res.status(500).json({
         message:
-          error.message,
+          "Failed to create student",
       });
 
     }
 
   };
 
-/* UPDATE */
+/* UPDATE STUDENT */
 
 export const updateStudent =
   async (req, res) => {
 
     try {
 
-      const updatedStudent =
+      const student =
         await Student.findByIdAndUpdate(
           req.params.id,
           req.body,
           {
             new: true,
+            runValidators: true,
           }
         );
 
-      res.json(
-        updatedStudent
-      );
+      if (!student) {
+
+        return res.status(404).json({
+          message:
+            "Student not found",
+        });
+
+      }
+
+      res.json(student);
 
     } catch (error) {
 
-      res.status(400).json({
+      if (
+        error.code === 11000
+      ) {
+
+        return res.status(400).json({
+          message:
+            "Student ID already exists",
+        });
+
+      }
+
+      res.status(500).json({
         message:
-          error.message,
+          "Failed to update student",
       });
 
     }
 
   };
 
-/* DELETE */
+/* DELETE STUDENT */
 
 export const deleteStudent =
   async (req, res) => {
 
     try {
 
-      await Student.findByIdAndDelete(
-        req.params.id
-      );
+      const student =
+        await Student.findByIdAndDelete(
+          req.params.id
+        );
+
+      if (!student) {
+
+        return res.status(404).json({
+          message:
+            "Student not found",
+        });
+
+      }
 
       res.json({
         message:
-          "Student deleted",
+          "Student deleted successfully",
       });
 
     } catch (error) {
 
       res.status(500).json({
         message:
-          error.message,
+          "Failed to delete student",
       });
 
     }

@@ -1,8 +1,13 @@
 import { useState, useEffect } from "react";
 
 import { Users, UserPlus, Pencil, Trash2, Check } from "lucide-react";
+
+import Select from "react-select";
+
 import toast from "react-hot-toast";
+
 import Swal from "sweetalert2";
+
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -11,10 +16,15 @@ import {
   getStudents,
   deleteStudent,
   updateStudent,
+  getCourses,
 } from "../utils/Storage";
 
 function Students() {
   const [students, setStudents] = useState([]);
+
+  const [courses, setCourses] = useState([]);
+
+  const [saving, setSaving] = useState(false);
 
   const [editIndex, setEditIndex] = useState(null);
 
@@ -22,16 +32,24 @@ function Students() {
     studentId: "",
     name: "",
     contact: "",
+    enrolledCourses: [],
+    notes: "",
+    status: "Active",
   });
 
   const [studentData, setStudentData] = useState({
     studentId: "",
     name: "",
     contact: "",
+    enrolledCourses: [],
+    notes: "",
+    status: "Active",
   });
 
   useEffect(() => {
     loadStudents();
+
+    loadCourses();
   }, []);
 
   const loadStudents = async () => {
@@ -39,6 +57,16 @@ function Students() {
       const data = await getStudents();
 
       setStudents(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const loadCourses = async () => {
+    try {
+      const data = await getCourses();
+
+      setCourses(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
     }
@@ -56,13 +84,17 @@ function Students() {
 
   const handleAddStudent = async () => {
     if (!studentData.studentId || !studentData.name || !studentData.contact) {
-      toast.error("Please fill all fields.");
+      toast.error("Please fill all fields");
 
       return;
     }
 
     try {
+      setSaving(true);
+
       await saveStudent(studentData);
+
+      toast.success("Student added");
 
       await loadStudents();
 
@@ -70,33 +102,38 @@ function Students() {
         studentId: "",
         name: "",
         contact: "",
+        enrolledCourses: [],
+        notes: "",
+        status: "Active",
       });
     } catch (error) {
       console.error(error);
 
-      toast.error("Failed to add student");
+      toast.error(error.response?.data?.message || "Failed to add student");
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleDeleteStudent = async (id) => {
-    const result =
-  await Swal.fire({
-    title: "Delete student?",
-    text: "This action cannot be undone.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#64748b",
-    confirmButtonText: "Delete",
-    cancelButtonText: "Cancel",
-    borderRadius: "20px",
-  });
+    const result = await Swal.fire({
+      title: "Delete student?",
+      text: "This action cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      borderRadius: "20px",
+    });
 
-if (!result.isConfirmed)
-  return;
+    if (!result.isConfirmed) return;
 
     try {
       await deleteStudent(id);
+
+      toast.success("Student deleted");
 
       await loadStudents();
     } catch (error) {
@@ -109,12 +146,17 @@ if (!result.isConfirmed)
   const handleEditStudent = (student, index) => {
     setEditIndex(index);
 
-    setEditData(student);
+    setEditData({
+      ...student,
+      enrolledCourses: student.enrolledCourses || [],
+    });
   };
 
   const handleSaveEdit = async () => {
     try {
       await updateStudent(editData._id, editData);
+
+      toast.success("Student updated");
 
       await loadStudents();
 
@@ -122,7 +164,7 @@ if (!result.isConfirmed)
     } catch (error) {
       console.error(error);
 
-      toast.error("Failed to update student");
+      toast.error(error.response?.data?.message || "Failed to update student");
     }
   };
 
@@ -153,8 +195,6 @@ if (!result.isConfirmed)
               </div>
             </div>
 
-            {/* TOTAL */}
-
             <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Total Students
@@ -166,7 +206,7 @@ if (!result.isConfirmed)
             </div>
           </div>
 
-          {/* ADD FORM */}
+          {/* FORM */}
 
           <div className="mb-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="mb-5 flex items-center gap-3">
@@ -185,7 +225,7 @@ if (!result.isConfirmed)
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_1fr_1fr_auto]">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               <input
                 type="text"
                 name="studentId"
@@ -213,11 +253,105 @@ if (!result.isConfirmed)
                 className={inputStyle}
               />
 
+              {/* COURSES */}
+
+              <Select
+                isMulti
+                options={courses.map((course) => ({
+                  value: course.courseName,
+                  label: course.courseName,
+                }))}
+                value={studentData.enrolledCourses.map((course) => ({
+                  value: course,
+                  label: course,
+                }))}
+                onChange={(selectedOptions) => {
+                  setStudentData({
+                    ...studentData,
+                    enrolledCourses: selectedOptions
+                      ? selectedOptions.map((option) => option.value)
+                      : [],
+                  });
+                }}
+                placeholder="Select Courses"
+                className="text-sm"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: "48px",
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    boxShadow: "none",
+                    paddingLeft: "4px",
+                  }),
+
+                  multiValue: (base) => ({
+                    ...base,
+                    borderRadius: "8px",
+                    backgroundColor: "#dbeafe",
+                  }),
+
+                  multiValueLabel: (base) => ({
+                    ...base,
+                    color: "#1e40af",
+                    fontWeight: 800,
+                    fontSize: "14px",
+                  }),
+
+                  multiValueRemove: (base) => ({
+                    ...base,
+                    color: "#1e40af",
+                    fontWeight: 800,
+                    fontSize: "14px",
+                  }),
+
+                  placeholder: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                  }),
+
+                  input: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#0f172a",
+                  }),
+
+                  singleValue: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#0f172a",
+                  }),
+                }}
+              />
+
+              {/* NOTES */}
+
+              <textarea
+                name="notes"
+                value={studentData.notes}
+                onChange={handleChange}
+                placeholder="Notes"
+                rows={1}
+                className={inputStyle}
+              />
+
               <button
                 onClick={handleAddStudent}
-                className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
+                disabled={saving}
+                className={`rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all
+
+                ${
+                  saving
+                    ? "cursor-not-allowed bg-slate-400"
+                    : "bg-slate-900 hover:bg-slate-800 hover:shadow-lg"
+                }`}
               >
-                Add Student
+                {saving ? "Adding..." : "Add Student"}
               </button>
             </div>
           </div>
@@ -232,15 +366,19 @@ if (!result.isConfirmed)
             </div>
           ) : (
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              {/* TABLE HEADER */}
+              {/* HEADER */}
 
               <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
-                <div className="grid grid-cols-[1fr_1.2fr_1fr_0.8fr] gap-4 text-sm font-semibold text-slate-500">
+                <div className="grid grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] gap-4 text-sm font-semibold text-slate-500">
                   <p>Student ID</p>
 
                   <p>Student Name</p>
 
-                  <p>Contact Number</p>
+                  <p>Contact</p>
+
+                  <p>Courses</p>
+
+                  <p>Notes</p>
 
                   <p className="text-center">Actions</p>
                 </div>
@@ -254,95 +392,109 @@ if (!result.isConfirmed)
                     key={student._id || index}
                     className="border-b border-slate-100 last:border-none"
                   >
-                    <div className="grid gap-5 px-6 py-5 lg:grid-cols-[1fr_1.2fr_1fr_0.8fr] lg:items-center">
-                      {/* STUDENT ID */}
+                    <div className="grid gap-4 px-6 py-5 lg:grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] lg:items-center">
+                      {/* ID */}
 
-<div>
+                      <p className="font-semibold text-slate-700">
+                        {student.studentId}
+                      </p>
 
-  <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-    Student ID
-  </p>
-
-  {editIndex === index ? (
-
-    <input
-      type="text"
-      value={editData.studentId}
-      onChange={(e) =>
-        setEditData({
-          ...editData,
-          studentId:
-            e.target.value,
-        })
-      }
-      className={`${inputStyle} mt-2`}
-    />
-
-  ) : (
-
-    <p className="mt-1 font-semibold text-slate-700">
-      {student.studentId}
-    </p>
-
-  )}
-
-</div>
-                      
                       {/* NAME */}
 
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Student
+                      {editIndex === index ? (
+                        <input
+                          type="text"
+                          value={editData.name}
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              name: e.target.value,
+                            })
+                          }
+                          className={inputStyle}
+                        />
+                      ) : (
+                        <p className="font-semibold text-slate-900">
+                          {student.name}
                         </p>
-
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.name}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                name: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 font-semibold text-slate-900">
-                            {student.name}
-                          </p>
-                        )}
-                      </div>
+                      )}
 
                       {/* CONTACT */}
 
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Contact
+                      {editIndex === index ? (
+                        <input
+                          type="text"
+                          value={editData.contact}
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              contact: e.target.value,
+                            })
+                          }
+                          className={inputStyle}
+                        />
+                      ) : (
+                        <p className="text-sm font-medium text-slate-600">
+                          {student.contact}
                         </p>
+                      )}
 
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.contact}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                contact: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 text-sm font-medium text-slate-600">
-                            {student.contact}
-                          </p>
-                        )}
-                      </div>
+                      {/* COURSES */}
+
+                      {editIndex === index ? (
+                        <select
+                          multiple
+                          value={editData.enrolledCourses}
+                          onChange={(e) => {
+                            const selectedCourses = Array.from(
+                              e.target.selectedOptions,
+                              (option) => option.value,
+                            );
+
+                            setEditData({
+                              ...editData,
+                              enrolledCourses: selectedCourses,
+                            });
+                          }}
+                          className={inputStyle}
+                        >
+                          {courses.map((course) => (
+                            <option key={course._id} value={course.courseName}>
+                              {course.courseName}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <p className="text-sm text-slate-700">
+                          {student.enrolledCourses?.length > 0
+                            ? student.enrolledCourses.join(", ")
+                            : "No Courses"}
+                        </p>
+                      )}
+
+                      {/* NOTES */}
+
+                      {editIndex === index ? (
+                        <textarea
+                          rows={3}
+                          value={editData.notes}
+                          onChange={(e) =>
+                            setEditData({
+                              ...editData,
+                              notes: e.target.value,
+                            })
+                          }
+                          className={inputStyle}
+                        />
+                      ) : (
+                        <p className="text-sm text-slate-600">
+                          {student.notes || "-"}
+                        </p>
+                      )}
 
                       {/* ACTIONS */}
 
-                      <div className="flex shrink-0 items-center justify-start gap-1 lg:justify-center">
+                      <div className="flex flex-wrap items-center justify-center gap-2">
                         {editIndex === index ? (
                           <button
                             onClick={handleSaveEdit}
