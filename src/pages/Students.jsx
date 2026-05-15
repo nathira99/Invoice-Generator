@@ -369,7 +369,7 @@ function Students() {
               {/* HEADER */}
 
               <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
-                <div className="grid grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] gap-4 text-sm font-semibold text-slate-500">
+                <div className="grid grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] lg:grid-cols-[0.8fr_1fr_1fr_1.8fr_1.5fr_0.8fr] gap-4 text-sm font-semibold text-slate-500">
                   <p>Student ID</p>
 
                   <p>Student Name</p>
@@ -392,7 +392,7 @@ function Students() {
                     key={student._id || index}
                     className="border-b border-slate-100 last:border-none"
                   >
-                    <div className="grid gap-4 px-6 py-5 lg:grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] lg:items-center">
+                    <div className="grid gap-4 px-6 py-5 lg:grid-cols-[0.8fr_1fr_1fr_1.8fr_1.5fr_0.8fr] lg:items-center">
                       {/* ID */}
 
                       <p className="font-semibold text-slate-700">
@@ -442,28 +442,73 @@ function Students() {
                       {/* COURSES */}
 
                       {editIndex === index ? (
-                        <select
-                          multiple
-                          value={editData.enrolledCourses}
-                          onChange={(e) => {
-                            const selectedCourses = Array.from(
-                              e.target.selectedOptions,
-                              (option) => option.value,
-                            );
-
+                        <Select
+                          isMulti
+                          menuPortalTarget={document.body}
+                          menuPosition="fixed"
+                          options={courses.map((course) => ({
+                            value: course.courseName,
+                            label: course.courseName,
+                          }))}
+                          value={(editData.enrolledCourses || []).map(
+                            (course) => ({
+                              value: course,
+                              label: course,
+                            }),
+                          )}
+                          onChange={(selectedOptions) => {
                             setEditData({
                               ...editData,
-                              enrolledCourses: selectedCourses,
+
+                              enrolledCourses: selectedOptions
+                                ? selectedOptions.map((option) => option.value)
+                                : [],
                             });
                           }}
-                          className={inputStyle}
-                        >
-                          {courses.map((course) => (
-                            <option key={course._id} value={course.courseName}>
-                              {course.courseName}
-                            </option>
-                          ))}
-                        </select>
+                          className="text-sm"
+                          styles={{
+                            control: (base) => ({
+                              ...base,
+                              minHeight: "48px",
+                              borderRadius: "12px",
+                              borderColor: "#e2e8f0",
+                              backgroundColor: "#f8fafc",
+                              boxShadow: "none",
+                            }),
+
+                            multiValue: (base) => ({
+                              ...base,
+                              borderRadius: "8px",
+                              backgroundColor: "#dbeafe",
+                            }),
+
+                            multiValueLabel: (base) => ({
+                              ...base,
+                              color: "#1e40af",
+                              fontWeight: 500,
+                              fontSize: "14px",
+                            }),
+
+                            placeholder: (base) => ({
+                              ...base,
+                              fontSize: "14px",
+                              fontWeight: 500,
+                              color: "#94a3b8",
+                            }),
+
+                            input: (base) => ({
+                              ...base,
+                              fontSize: "14px",
+                              fontWeight: 500,
+                              color: "#0f172a",
+                            }),
+
+                            menuPortal: (base) => ({
+                              ...base,
+                              zIndex: 9999,
+                            }),
+                          }}
+                        />
                       ) : (
                         <p className="text-sm text-slate-700">
                           {student.enrolledCourses?.length > 0
@@ -476,7 +521,7 @@ function Students() {
 
                       {editIndex === index ? (
                         <textarea
-                          rows={3}
+                          rows={1}
                           value={editData.notes}
                           onChange={(e) =>
                             setEditData({
