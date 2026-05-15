@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Students from "./pages/Students";
 import Courses from "./pages/Courses";
@@ -8,26 +9,95 @@ import Settings from "./pages/Settings";
 import Teachers from "./pages/Teachers";
 import Staff from "./pages/Staff";
 
+
+import ProtectedRoute from "./components/ProtectedRoute";
+
 function App() {
+
   return (
+
     <BrowserRouter>
+
       <Routes>
-        <Route path="/" element={<Dashboard />} />
 
-        <Route path="/students" element={<Students />} />
+        {/* LOGIN */}
 
-        <Route path="/courses" element={<Courses />} />
+        <Route
+          path="/login"
+          element={<Login />}
+        />
 
-        <Route path="/invoice-history" element={<InvoiceHistory />} />
+        {/* PROTECTED ROUTES */}
 
-        <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/teachers" element={<Teachers />} />
+        <Route
+          path="/students"
+          element={
+            <ProtectedRoute>
+              <Students />
+            </ProtectedRoute>
+          }
+        />
 
-        <Route path="/staff" element={<Staff />} />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <Courses />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/teachers"
+          element={
+            <ProtectedRoute>
+              <Teachers />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute>
+              <Staff />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/invoice-history"
+          element={
+            <ProtectedRoute>
+              <InvoiceHistory />
+            </ProtectedRoute>
+          }
+        />
+
       </Routes>
+
     </BrowserRouter>
+
   );
+
 }
 
 export default App;

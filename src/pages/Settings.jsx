@@ -95,8 +95,7 @@ function Admin() {
 
       <Sidebar />
 
-      <main className=" min-w-0 flex-1 overflow-auto">
-
+<main className="min-w-0 flex-1 overflow-auto lg:ml-64">
         <Header />
 
         <div className="pt-28 p-4 lg:p-8 lg:pt-8">

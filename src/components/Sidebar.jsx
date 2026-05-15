@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import {
   LayoutDashboard,
@@ -9,6 +10,7 @@ import {
   GraduationCap,
   Briefcase,
   Sparkles,
+  LogOut,
 } from "lucide-react";
 
 function Sidebar() {
@@ -51,6 +53,8 @@ function Sidebar() {
       icon: Settings,
     },
   ];
+
+  const { logout } = useAuth();
 
   const isActivePath = (path) => location.pathname === path;
 
@@ -128,41 +132,30 @@ function Sidebar() {
         {/* HEADER */}
 
         <div className="border-b border-slate-100 px-5 py-5">
+          <Link to="/" className="flex items-center gap-4">
+            {/* LOGO */}
 
-  <Link
-    to="/"
-    className="flex items-center gap-4"
-  >
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center">
+              <img
+                src="/logo.png"
+                alt="Logo"
+                className="h-[52px] w-[52px] object-contain drop-shadow-sm"
+              />
+            </div>
 
-    {/* LOGO */}
+            {/* TITLE */}
 
-    <div className="flex h-14 w-14 shrink-0 items-center justify-center">
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-bold tracking-tight text-slate-950">
+                Ilmul Jannah
+              </h1>
 
-      <img
-        src="/logo.png"
-        alt="Logo"
-        className="h-[52px] w-[52px] object-contain drop-shadow-sm"
-      />
-
-    </div>
-
-    {/* TITLE */}
-
-    <div className="min-w-0">
-
-      <h1 className="truncate text-lg font-bold tracking-tight text-slate-950">
-        Ilmul Jannah
-      </h1>
-
-      <p className="mt-0.5 text-sm font-medium text-slate-500">
-        Institute Admin
-      </p>
-
-    </div>
-
-  </Link>
-
-</div>
+              <p className="mt-0.5 text-sm font-medium text-slate-500">
+                Institute Admin
+              </p>
+            </div>
+          </Link>
+        </div>
 
         {/* NAVIGATION */}
 
@@ -222,16 +215,16 @@ function Sidebar() {
 
         {/* FOOTER */}
 
+        {/* FOOTER */}
+
         <div className="border-t border-slate-100 p-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-            <div className="flex items-center gap-3">
-              {/* AVATAR */}
+            {/* USER */}
 
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm">
                 A
               </div>
-
-              {/* INFO */}
 
               <div className="min-w-0">
                 <p className="truncate text-sm font-bold text-slate-900">
@@ -247,6 +240,16 @@ function Sidebar() {
                 </div>
               </div>
             </div>
+
+            {/* LOGOUT */}
+
+            <button
+              onClick={logout}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition-all hover:bg-red-100"
+            >
+              <LogOut size={16} />
+              Logout
+            </button>
           </div>
         </div>
       </aside>
