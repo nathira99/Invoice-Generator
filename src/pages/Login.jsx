@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   LockKeyhole,
 } from "lucide-react";
-
+import toast from "react-hot-toast";
 import {
   useAuth,
 } from "../context/AuthContext";
@@ -55,7 +55,7 @@ function Login() {
 
         console.log(error);
 
-        alert(
+        toast.error(
           error.response?.data
             ?.message ||
             "Login failed"

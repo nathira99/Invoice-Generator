@@ -43,7 +43,7 @@ function InvoiceForm({
         !invoiceData.courseName
       ) {
 
-        alert(
+        toast.error(
           "Please fill required fields."
         );
 
@@ -155,7 +155,7 @@ function InvoiceForm({
 
         await saveOrUpdateInvoice();
 
-        alert(
+        toast.error(
           "Invoice saved."
         );
 
@@ -167,7 +167,7 @@ function InvoiceForm({
           error
         );
 
-        alert(
+        toast.error(
           error.message ||
             "Failed to save invoice"
         );
@@ -186,7 +186,7 @@ function InvoiceForm({
         "Pending"
       ) {
 
-        alert(
+        toast.error(
           "Pending invoices cannot be downloaded."
         );
 
@@ -214,7 +214,7 @@ function InvoiceForm({
           error
         );
 
-        alert(
+        toast.error(
           error.message ||
             "Failed to save invoice"
         );

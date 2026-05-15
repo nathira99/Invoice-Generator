@@ -1,7 +1,7 @@
-import {
-  useState,
-  useEffect,
-} from "react";
+import { useState, useEffect } from "react";
+
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 
 import {
   GraduationCap,
@@ -9,6 +9,7 @@ import {
   Pencil,
   Trash2,
   Check,
+  Search,
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
@@ -30,47 +31,35 @@ function Teachers() {
   const [courses, setCourses] =
     useState([]);
 
-  const [
-    teacherData,
-    setTeacherData,
-  ] = useState({
+  const [loading, setLoading] =
+    useState(true);
 
-    teacherName: "",
+  const [search, setSearch] =
+    useState("");
 
-    contact: "",
+  const [editId, setEditId] =
+    useState(null);
 
-    course: "",
+  const [teacherData, setTeacherData] =
+    useState({
+      teacherName: "",
+      contact: "",
+      course: "",
+      joiningDate:
+        new Date()
+          .toISOString()
+          .split("T")[0],
+      status: "Active",
+    });
 
-    joiningDate:
-      new Date()
-        .toISOString()
-        .split("T")[0],
-
-    status: "Active",
-
-  });
-
-  const [
-    editIndex,
-    setEditIndex,
-  ] = useState(null);
-
-  const [
-    editData,
-    setEditData,
-  ] = useState({
-
-    teacherName: "",
-
-    contact: "",
-
-    course: "",
-
-    joiningDate: "",
-
-    status: "Active",
-
-  });
+  const [editData, setEditData] =
+    useState({
+      teacherName: "",
+      contact: "",
+      course: "",
+      joiningDate: "",
+      status: "Active",
+    });
 
   useEffect(() => {
 
@@ -85,6 +74,8 @@ function Teachers() {
 
       try {
 
+        setLoading(true);
+
         const data =
           await getTeachers();
 
@@ -96,9 +87,15 @@ function Teachers() {
 
       } catch (error) {
 
-        console.error(
-          error
+        console.error(error);
+
+        toast.error(
+          "Failed to load teachers"
         );
+
+      } finally {
+
+        setLoading(false);
 
       }
 
@@ -120,16 +117,23 @@ function Teachers() {
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
       }
 
     };
 
+  const filteredTeachers =
+    teachers.filter((teacher) =>
+      teacher.teacherName
+        ?.toLowerCase()
+        .includes(
+          search.toLowerCase()
+        )
+    );
+
   const inputStyle =
-    "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
+    "w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
   const handleChange =
     (e) => {
@@ -142,6 +146,15 @@ function Teachers() {
 
     };
 
+  const validatePhone =
+    (phone) => {
+
+      return /^[0-9]{10}$/.test(
+        phone
+      );
+
+    };
+
   const handleAddTeacher =
     async () => {
 
@@ -151,8 +164,40 @@ function Teachers() {
         !teacherData.course
       ) {
 
-        alert(
-          "Please fill all fields."
+        toast.error(
+          "Please fill all fields"
+        );
+
+        return;
+
+      }
+
+      if (
+        !validatePhone(
+          teacherData.contact
+        )
+      ) {
+
+        toast.error(
+          "Enter valid 10 digit phone number"
+        );
+
+        return;
+
+      }
+
+      const alreadyExists =
+        teachers.some(
+          (teacher) =>
+            teacher.teacherName
+              .toLowerCase() ===
+            teacherData.teacherName.toLowerCase()
+        );
+
+      if (alreadyExists) {
+
+        toast.error(
+          "Teacher already exists"
         );
 
         return;
@@ -168,29 +213,25 @@ function Teachers() {
         await loadTeachers();
 
         setTeacherData({
-
           teacherName: "",
-
           contact: "",
-
           course: "",
-
           joiningDate:
             new Date()
               .toISOString()
               .split("T")[0],
-
           status: "Active",
-
         });
+
+        toast.success(
+          "Teacher added successfully"
+        );
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
-        alert(
+        toast.error(
           "Failed to add teacher"
         );
 
@@ -201,29 +242,21 @@ function Teachers() {
   const handleDeleteTeacher =
     async (id) => {
 
-      const confirmDelete =
-        window.confirm(
-          "Delete this teacher?"
-        );
-
-      if (!confirmDelete)
-        return;
-
       try {
 
-        await deleteTeacher(
-          id
-        );
+        await deleteTeacher(id);
 
         await loadTeachers();
 
-      } catch (error) {
-
-        console.error(
-          error
+        toast.success(
+          "Teacher deleted"
         );
 
-        alert(
+      } catch (error) {
+
+        console.error(error);
+
+        toast.error(
           "Failed to delete teacher"
         );
 
@@ -232,12 +265,11 @@ function Teachers() {
     };
 
   const handleEditTeacher =
-    (
-      teacher,
-      index
-    ) => {
+    (teacher) => {
 
-      setEditIndex(index);
+      setEditId(
+        teacher._id
+      );
 
       setEditData(teacher);
 
@@ -245,6 +277,20 @@ function Teachers() {
 
   const handleSaveEdit =
     async () => {
+
+      if (
+        !editData.teacherName ||
+        !editData.contact ||
+        !editData.course
+      ) {
+
+        toast.error(
+          "Please fill all fields"
+        );
+
+        return;
+
+      }
 
       try {
 
@@ -255,15 +301,17 @@ function Teachers() {
 
         await loadTeachers();
 
-        setEditIndex(null);
+        setEditId(null);
+
+        toast.success(
+          "Teacher updated"
+        );
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
-        alert(
+        toast.error(
           "Failed to update teacher"
         );
 
@@ -277,22 +325,23 @@ function Teachers() {
 
       <Sidebar />
 
-<main className="min-w-0 flex-1 overflow-auto lg:ml-64">
+      <main className="min-w-0 flex-1 overflow-auto">
+
         <Header />
 
-        <div className="pt-28 p-4 lg:p-8 lg:pt-8">
+        <div className="p-4 pt-28 lg:p-8 lg:pt-8">
 
           {/* HEADER */}
 
-          <div className="mb-8 flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="mb-8 flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+
+            {/* LEFT */}
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-100 text-violet-700">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
 
-                <GraduationCap
-                  size={28}
-                />
+                <GraduationCap size={28} />
 
               </div>
 
@@ -310,17 +359,46 @@ function Teachers() {
 
             </div>
 
-            {/* TOTAL */}
+            {/* RIGHT */}
 
-            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Total Teachers
-              </p>
+              {/* SEARCH */}
 
-              <h2 className="mt-1 text-3xl font-bold text-slate-950">
-                {teachers.length}
-              </h2>
+              <div className="relative w-full sm:w-72">
+
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Search teacher..."
+                  value={search}
+                  onChange={(e) =>
+                    setSearch(
+                      e.target.value
+                    )
+                  }
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+
+              </div>
+
+              {/* TOTAL */}
+
+              <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Total Teachers
+                </p>
+
+                <h2 className="mt-1 text-3xl font-bold text-slate-950">
+                  {teachers.length}
+                </h2>
+
+              </div>
 
             </div>
 
@@ -334,9 +412,7 @@ function Teachers() {
 
               <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
 
-                <UserPlus
-                  size={22}
-                />
+                <UserPlus size={22} />
 
               </div>
 
@@ -415,11 +491,9 @@ function Teachers() {
                         course.courseName
                       }
                     >
-
                       {
                         course.courseName
                       }
-
                     </option>
 
                   )
@@ -445,7 +519,7 @@ function Teachers() {
                 onClick={
                   handleAddTeacher
                 }
-                className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
+                className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
               >
                 Add Teacher
               </button>
@@ -456,12 +530,32 @@ function Teachers() {
 
           {/* TABLE */}
 
-          {teachers.length === 0 ? (
+          {loading ? (
 
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
+            <div className="rounded-3xl border border-slate-200 bg-white py-20 text-center shadow-sm">
 
               <p className="text-sm font-medium text-slate-500">
-                No teachers found.
+                Loading teachers...
+              </p>
+
+            </div>
+
+          ) : filteredTeachers.length === 0 ? (
+
+            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
+
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+
+                <GraduationCap size={30} />
+
+              </div>
+
+              <h3 className="mt-5 text-lg font-bold text-slate-900">
+                No teachers found
+              </h3>
+
+              <p className="mt-2 text-sm text-slate-500">
+                Add your first teacher to get started.
               </p>
 
             </div>
@@ -470,7 +564,7 @@ function Teachers() {
 
             <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
 
-              {/* TABLE HEADER */}
+              {/* HEADER */}
 
               <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
 
@@ -508,16 +602,12 @@ function Teachers() {
 
               <div>
 
-                {teachers.map(
-                  (
-                    teacher,
-                    index
-                  ) => (
+                {filteredTeachers.map(
+                  (teacher) => (
 
                     <div
                       key={
-                        teacher._id ||
-                        index
+                        teacher._id
                       }
                       className="border-b border-slate-100 last:border-none"
                     >
@@ -532,22 +622,19 @@ function Teachers() {
                             Teacher
                           </p>
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <input
                               type="text"
                               value={
                                 editData.teacherName
                               }
-                              onChange={(
-                                e
-                              ) =>
+                              onChange={(e) =>
                                 setEditData({
                                   ...editData,
                                   teacherName:
-                                    e
-                                      .target
+                                    e.target
                                       .value,
                                 })
                               }
@@ -574,22 +661,19 @@ function Teachers() {
                             Contact
                           </p>
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <input
                               type="text"
                               value={
                                 editData.contact
                               }
-                              onChange={(
-                                e
-                              ) =>
+                              onChange={(e) =>
                                 setEditData({
                                   ...editData,
                                   contact:
-                                    e
-                                      .target
+                                    e.target
                                       .value,
                                 })
                               }
@@ -616,21 +700,18 @@ function Teachers() {
                             Course
                           </p>
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <select
                               value={
                                 editData.course
                               }
-                              onChange={(
-                                e
-                              ) =>
+                              onChange={(e) =>
                                 setEditData({
                                   ...editData,
                                   course:
-                                    e
-                                      .target
+                                    e.target
                                       .value,
                                 })
                               }
@@ -640,20 +721,20 @@ function Teachers() {
                               {courses.map(
                                 (
                                   course,
-                                  i
+                                  index
                                 ) => (
 
                                   <option
-                                    key={i}
+                                    key={
+                                      index
+                                    }
                                     value={
                                       course.courseName
                                     }
                                   >
-
                                     {
                                       course.courseName
                                     }
-
                                   </option>
 
                                 )
@@ -681,22 +762,19 @@ function Teachers() {
                             Joining Date
                           </p>
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <input
                               type="date"
                               value={
                                 editData.joiningDate
                               }
-                              onChange={(
-                                e
-                              ) =>
+                              onChange={(e) =>
                                 setEditData({
                                   ...editData,
                                   joiningDate:
-                                    e
-                                      .target
+                                    e.target
                                       .value,
                                 })
                               }
@@ -706,13 +784,11 @@ function Teachers() {
                           ) : (
 
                             <p className="mt-1 text-sm font-medium text-slate-600">
-
                               {new Date(
                                 teacher.joiningDate
                               ).toLocaleDateString(
                                 "en-GB"
                               )}
-
                             </p>
 
                           )}
@@ -727,21 +803,18 @@ function Teachers() {
                             Status
                           </p>
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <select
                               value={
                                 editData.status
                               }
-                              onChange={(
-                                e
-                              ) =>
+                              onChange={(e) =>
                                 setEditData({
                                   ...editData,
                                   status:
-                                    e
-                                      .target
+                                    e.target
                                       .value,
                                 })
                               }
@@ -761,20 +834,16 @@ function Teachers() {
                           ) : (
 
                             <span
-                              className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold
-
-                              ${
+                              className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
                                 teacher.status ===
                                 "Active"
                                   ? "bg-emerald-100 text-emerald-700"
                                   : "bg-red-100 text-red-700"
                               }`}
                             >
-
                               {
                                 teacher.status
                               }
-
                             </span>
 
                           )}
@@ -785,8 +854,8 @@ function Teachers() {
 
                         <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-center">
 
-                          {editIndex ===
-                          index ? (
+                          {editId ===
+                          teacher._id ? (
 
                             <button
                               onClick={
@@ -808,8 +877,7 @@ function Teachers() {
                             <button
                               onClick={() =>
                                 handleEditTeacher(
-                                  teacher,
-                                  index
+                                  teacher
                                 )
                               }
                               className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"

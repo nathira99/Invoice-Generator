@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 
 import { Users, UserPlus, Pencil, Trash2, Check } from "lucide-react";
-
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -55,7 +56,7 @@ function Students() {
 
   const handleAddStudent = async () => {
     if (!studentData.studentId || !studentData.name || !studentData.contact) {
-      alert("Please fill all fields.");
+      toast.error("Please fill all fields.");
 
       return;
     }
@@ -73,14 +74,26 @@ function Students() {
     } catch (error) {
       console.error(error);
 
-      alert("Failed to add student");
+      toast.error("Failed to add student");
     }
   };
 
   const handleDeleteStudent = async (id) => {
-    const confirmDelete = window.confirm("Delete this student?");
+    const result =
+  await Swal.fire({
+    title: "Delete student?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    borderRadius: "20px",
+  });
 
-    if (!confirmDelete) return;
+if (!result.isConfirmed)
+  return;
 
     try {
       await deleteStudent(id);
@@ -89,7 +102,7 @@ function Students() {
     } catch (error) {
       console.error(error);
 
-      alert("Failed to delete student");
+      toast.error("Failed to delete student");
     }
   };
 
@@ -109,7 +122,7 @@ function Students() {
     } catch (error) {
       console.error(error);
 
-      alert("Failed to update student");
+      toast.error("Failed to update student");
     }
   };
 

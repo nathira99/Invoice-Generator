@@ -12,7 +12,8 @@ import {
   IndianRupee,
   CalendarDays,
 } from "lucide-react";
-
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -112,7 +113,7 @@ function Courses() {
         !courseData.daysPerWeek
       ) {
 
-        alert(
+        toast.error(
           "Please fill all fields."
         );
 
@@ -144,7 +145,7 @@ function Courses() {
           error
         );
 
-        alert(
+        toast.error(
           "Failed to add course"
         );
 
@@ -155,13 +156,21 @@ function Courses() {
   const handleDeleteCourse =
     async (id) => {
 
-      const confirmDelete =
-        window.confirm(
-          "Delete this course?"
-        );
+      const result =
+  await Swal.fire({
+    title: "Delete this course?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    borderRadius: "20px",
+  });
 
-      if (!confirmDelete)
-        return;
+if (!result.isConfirmed)
+  return;
 
       try {
 
@@ -177,7 +186,7 @@ function Courses() {
           error
         );
 
-        alert(
+        toast.error(
           "Failed to delete course"
         );
 
@@ -206,7 +215,7 @@ function Courses() {
         !editData.daysPerWeek
       ) {
 
-        alert(
+        toast.error(
           "Please fill all fields."
         );
 
@@ -231,7 +240,7 @@ function Courses() {
           error
         );
 
-        alert(
+        toast.error(
           "Failed to update course"
         );
 

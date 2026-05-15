@@ -8,7 +8,9 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
+import Swal from "sweetalert2";
 import {
   useState,
   useEffect,
@@ -138,13 +140,21 @@ function InvoiceHistory() {
   const handleDeleteInvoice =
     async (invoice) => {
 
-      const confirmDelete =
-        window.confirm(
-          "Delete this invoice?"
-        );
+      const result =
+  await Swal.fire({
+    title: "Delete Invoice?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    borderRadius: "20px",
+  });
 
-      if (!confirmDelete)
-        return;
+if (!result.isConfirmed)
+  return;
 
       try {
 
@@ -170,7 +180,7 @@ function InvoiceHistory() {
           error
         );
 
-        alert(
+        toast.error(
           "Unable to delete invoice."
         );
 
@@ -455,7 +465,7 @@ function InvoiceHistory() {
                                 "Paid"
                               ) {
 
-                                alert(
+                                toast.error(
                                   "Paid invoices cannot be edited."
                                 );
 

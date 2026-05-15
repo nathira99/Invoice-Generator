@@ -14,7 +14,8 @@ import {
   CalendarDays,
   Search,
 } from "lucide-react";
-
+import toast from "react-hot-toast";
+import Swal from "sweetalert2";
 import Sidebar from "../components/Sidebar";
 import Header from "../components/Header";
 
@@ -128,7 +129,7 @@ function Staff() {
         !staffData.email
       ) {
 
-        alert(
+        toast.error(
           "Please fill all fields."
         );
 
@@ -168,15 +169,23 @@ function Staff() {
     };
 
   const handleDeleteStaff =
-    (index) => {
+    async(index) => {
 
-      const confirmDelete =
-        window.confirm(
-          "Delete this staff?"
-        );
+      const result =
+  await Swal.fire({
+    title: "Delete staff?",
+    text: "This action cannot be undone.",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#ef4444",
+    cancelButtonColor: "#64748b",
+    confirmButtonText: "Delete",
+    cancelButtonText: "Cancel",
+    borderRadius: "20px",
+  });
 
-      if (!confirmDelete)
-        return;
+if (!result.isConfirmed)
+  return;
 
       const updatedStaffs =
         staffs.filter(
@@ -211,7 +220,7 @@ function Staff() {
         !editData.email
       ) {
 
-        alert(
+        toast.error(
           "Please fill all fields."
         );
 
