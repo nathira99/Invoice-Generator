@@ -9,6 +9,10 @@ import {
 
 import toast from "react-hot-toast";
 
+import Select from "react-select";
+
+import { useState } from "react";
+
 function InvoiceForm({
   invoiceData,
   setInvoiceData,
@@ -17,15 +21,21 @@ function InvoiceForm({
   courses,
 }) {
 
-  const handleChange = (e) => {
+  const [
+    studentCourses,
+    setStudentCourses,
+  ] = useState([]);
 
-    setInvoiceData({
-      ...invoiceData,
-      [e.target.name]:
-        e.target.value,
-    });
+  const handleChange =
+    (e) => {
 
-  };
+      setInvoiceData({
+        ...invoiceData,
+        [e.target.name]:
+          e.target.value,
+      });
+
+    };
 
   const inputStyle =
     "w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-gray-800 outline-none transition-all focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100";
@@ -57,7 +67,7 @@ function InvoiceForm({
 
     };
 
-  /* RESET FORM */
+  /* RESET */
 
   const resetInvoiceForm =
     async () => {
@@ -99,8 +109,9 @@ function InvoiceForm({
         paidAmount: "",
 
         status: "Paid",
-
       });
+
+      setStudentCourses([]);
 
     };
 
@@ -157,17 +168,15 @@ function InvoiceForm({
 
         await saveOrUpdateInvoice();
 
-        toast.error(
-          "Invoice saved."
+        toast.success(
+          "Invoice saved"
         );
 
         await resetInvoiceForm();
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
         toast.error(
           error.message ||
@@ -212,9 +221,7 @@ function InvoiceForm({
 
       } catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
         toast.error(
           error.message ||
@@ -225,11 +232,8 @@ function InvoiceForm({
 
     };
 
-    
-
   return (
 
-    
     <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
 
       {/* TITLE */}
@@ -294,51 +298,100 @@ function InvoiceForm({
             Student Name
           </label>
 
-          <select
-            value={invoiceData.studentName}
-            onChange={(e) => {
+          <Select
+            options={students.map((student) => ({
+              value: student.name,
+              label: `${student.name} (${student.studentId})`,
+            }))}
 
-              const selectedStudent =
+            value={
+              invoiceData.studentName
+                ? {
+                    value:
+                      invoiceData.studentName,
+                    label:
+                      invoiceData.studentName,
+                  }
+                : null
+            }
+
+            onChange={(selectedStudent) => {
+
+              const student =
                 students.find(
-                  (student) =>
-                    student.name ===
-                    e.target.value
+                  (s) =>
+                    s.name ===
+                    selectedStudent.value
                 );
 
               setInvoiceData({
                 ...invoiceData,
 
                 studentName:
-                  selectedStudent?.name ||
-                  "",
+                  student?.name || "",
 
                 contactNumber:
-                  selectedStudent?.contact ||
-                  "",
+                  student?.contact || "",
+
+                courseName: "",
+
+                courseFee: "",
+
+                paidAmount: "",
+
+                daysPerWeek: "",
               });
 
+              setStudentCourses(
+                student?.enrolledCourses ||
+                  []
+              );
+
             }}
-            className={inputStyle}
-          >
 
-            <option value="">
-              Select Student
-            </option>
+            placeholder="Search Student"
 
-            {students.map(
-              (student) => (
+            isSearchable
 
-                <option
-                  key={student._id}
-                  value={student.name}
-                >
-                  {student.name}
-                </option>
+            className="text-sm"
 
-              )
-            )}
+            menuPortalTarget={document.body}
 
-          </select>
+            menuPosition="fixed"
+
+            styles={{
+
+              control: (base) => ({
+                ...base,
+                minHeight: "52px",
+                borderRadius: "16px",
+                borderColor: "#e5e7eb",
+                backgroundColor: "#f9fafb",
+                boxShadow: "none",
+                paddingLeft: "4px",
+              }),
+
+              placeholder: (base) => ({
+                ...base,
+                color: "#6b7280",
+                fontWeight: 500,
+                fontSize: "14px",
+              }),
+
+              singleValue: (base) => ({
+                ...base,
+                color: "#111827",
+                fontWeight: 500,
+                fontSize: "14px",
+              }),
+
+              menuPortal: (base) => ({
+                ...base,
+                zIndex: 9999,
+              }),
+
+            }}
+          />
 
         </div>
 
@@ -367,59 +420,95 @@ function InvoiceForm({
             Course Name
           </label>
 
-          <select
-            value={invoiceData.courseName}
-            onChange={(e) => {
+          <Select
+            options={studentCourses.map(
+              (courseName) => ({
+                value: courseName,
+                label: courseName,
+              })
+            )}
 
-              const selectedCourse =
+            value={
+              invoiceData.courseName
+                ? {
+                    value:
+                      invoiceData.courseName,
+                    label:
+                      invoiceData.courseName,
+                  }
+                : null
+            }
+
+            onChange={(selectedCourse) => {
+
+              const course =
                 courses.find(
-                  (course) =>
-                    course.courseName ===
-                    e.target.value
+                  (c) =>
+                    c.courseName ===
+                    selectedCourse.value
                 );
 
               setInvoiceData({
                 ...invoiceData,
 
                 courseName:
-                  selectedCourse?.courseName ||
-                  "",
+                  course?.courseName || "",
 
                 courseFee:
-                  selectedCourse?.fee ||
-                  "",
+                  course?.fee || "",
 
                 paidAmount:
-                  selectedCourse?.fee ||
-                  "",
+                  course?.fee || "",
 
                 daysPerWeek:
-                  selectedCourse?.daysPerWeek ||
-                  "",
+                  course?.daysPerWeek || "",
               });
 
             }}
-            className={inputStyle}
-          >
 
-            <option value="">
-              Select Course
-            </option>
+            placeholder="Select Course"
 
-            {courses.map(
-              (course) => (
+            isSearchable
 
-                <option
-                  key={course._id}
-                  value={course.courseName}
-                >
-                  {course.courseName}
-                </option>
+            className="text-sm"
 
-              )
-            )}
+            menuPortalTarget={document.body}
 
-          </select>
+            menuPosition="fixed"
+
+            styles={{
+
+              control: (base) => ({
+                ...base,
+                minHeight: "52px",
+                borderRadius: "16px",
+                borderColor: "#e5e7eb",
+                backgroundColor: "#f9fafb",
+                boxShadow: "none",
+                paddingLeft: "4px",
+              }),
+
+              placeholder: (base) => ({
+                ...base,
+                fontSize: "14px",
+                fontWeight: 500,
+                color: "#9ca3af",
+              }),
+
+              singleValue: (base) => ({
+                ...base,
+                fontSize: "14px",
+                fontWeight: 500,
+                color: "#111827",
+              }),
+
+              menuPortal: (base) => ({
+                ...base,
+                zIndex: 9999,
+              }),
+
+            }}
+          />
 
         </div>
 
