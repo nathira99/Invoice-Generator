@@ -4,52 +4,77 @@ import jsPDF from "jspdf";
 const generatePDF = async () => {
 
   const invoice =
-    document.getElementById("invoice-preview");
+    document.getElementById(
+      "invoice-preview"
+    );
 
   if (!invoice) return;
 
-  // HIGH QUALITY CANVAS
-  const canvas = await html2canvas(invoice, {
-    scale: 4,
-    useCORS: true,
-    backgroundColor: "#ffffff",
-  });
+  const canvas =
+    await html2canvas(invoice, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
 
   const imgData =
     canvas.toDataURL("image/png");
 
-  // CREATE PDF
   const pdf =
-    new jsPDF("p", "mm", "a4");
+    new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
-  // A4 SIZE
   const pdfWidth = 210;
-  const pdfHeight = 297;
 
-  // IMAGE SIZE
+  const pageHeight = 297;
+
   const imgWidth = pdfWidth;
 
   const imgHeight =
-    (canvas.height * imgWidth) / canvas.width;
+    (canvas.height * imgWidth) /
+    canvas.width;
 
-  // CENTER PDF CONTENT
-  const yPosition =
-    (pdfHeight - imgHeight) / 2;
+  let heightLeft =
+    imgHeight;
 
-  // ADD IMAGE
+  let position = 0;
+
   pdf.addImage(
     imgData,
     "PNG",
     0,
-    yPosition,
+    position,
     imgWidth,
-    imgHeight,
-    undefined,
-    "FAST"
+    imgHeight
   );
 
-  // DOWNLOAD
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+
+    position =
+      heightLeft - imgHeight;
+
+    pdf.addPage();
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      position,
+      imgWidth,
+      imgHeight
+    );
+
+    heightLeft -= pageHeight;
+
+  }
+
   pdf.save("invoice.pdf");
+
 };
 
 export default generatePDF;
