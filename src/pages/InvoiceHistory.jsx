@@ -444,8 +444,14 @@ if (!result.isConfirmed)
                             {new Date(
                               invoice.invoiceDate
                             ).toLocaleDateString(
-                              "en-GB"
-                            )}
+  "en-IN",
+  {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Kolkata",
+  }
+)}
 
                           </p>
 
