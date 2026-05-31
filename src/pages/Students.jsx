@@ -26,6 +26,8 @@ function Students() {
 
   const [saving, setSaving] = useState(false);
 
+  const [search, setSearch] = useState("");
+
   const [editIndex, setEditIndex] = useState(null);
 
   const [editData, setEditData] = useState({
@@ -167,6 +169,19 @@ function Students() {
       toast.error(error.response?.data?.message || "Failed to update student");
     }
   };
+
+  const searchText = search.toLowerCase();
+
+const filteredStudents = students.filter((student) => {
+  return (
+    student.studentId?.toLowerCase().includes(searchText) ||
+    student.name?.toLowerCase().includes(searchText) ||
+    student.contact?.toLowerCase().includes(searchText) ||
+    student.enrolledCourses?.some((course) =>
+      course.toLowerCase().includes(searchText)
+    )
+  );
+});
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -356,9 +371,19 @@ function Students() {
             </div>
           </div>
 
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <input
+              type="text"
+              placeholder="🔍 Search Student ID, Name, Contact or Course"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={inputStyle}
+            />
+          </div>
+
           {/* TABLE */}
 
-          {students.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
               <p className="text-sm font-medium text-slate-500">
                 No students found.
@@ -387,7 +412,7 @@ function Students() {
               {/* ROWS */}
 
               <div>
-                {students.map((student, index) => (
+                {filteredStudents.map((student, index) => (
                   <div
                     key={student._id || index}
                     className="border-b border-slate-100 last:border-none"

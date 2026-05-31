@@ -18,17 +18,14 @@ const generatePDF = async () => {
     });
 
   const imgData =
-    canvas.toDataURL(
-      "image/jpeg",
-      1.0
-    );
+    canvas.toDataURL("image/png");
 
   const pdf =
-    new jsPDF(
-      "p",
-      "mm",
-      "a4"
-    );
+    new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
 
   const pdfWidth = 210;
 
@@ -36,30 +33,45 @@ const generatePDF = async () => {
 
   const imgWidth = pdfWidth;
 
-  let imgHeight =
+  const imgHeight =
     (canvas.height * imgWidth) /
     canvas.width;
 
-  // FIT INSIDE SINGLE PAGE
+  let heightLeft =
+    imgHeight;
 
-  if (
-    imgHeight >
-    pageHeight
-  ) {
-
-    imgHeight =
-      pageHeight - 5;
-
-  }
+  let position = 0;
 
   pdf.addImage(
     imgData,
-    "JPEG",
+    "PNG",
     0,
-    0,
+    position,
     imgWidth,
     imgHeight
   );
+
+  heightLeft -= pageHeight;
+
+  while (heightLeft > 0) {
+
+    position =
+      heightLeft - imgHeight;
+
+    pdf.addPage();
+
+    pdf.addImage(
+      imgData,
+      "PNG",
+      0,
+      position,
+      imgWidth,
+      imgHeight
+    );
+
+    heightLeft -= pageHeight;
+
+  }
 
   pdf.save("invoice.pdf");
 

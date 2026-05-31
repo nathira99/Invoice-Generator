@@ -13,6 +13,12 @@ const courseSchema = new mongoose.Schema(
       required: true,
     },
 
+    category: {
+      type: String,
+      enum: ["Islamic", "Skill Development", "Academic"],
+      required: true,
+    },
+
     fee: {
       type: Number,
       required: true,

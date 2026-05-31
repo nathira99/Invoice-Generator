@@ -259,7 +259,7 @@ function Teachers() {
 
                 <input
                   type="text"
-                  placeholder="Search teacher..."
+                  placeholder="🔍 Search teacher..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"

@@ -444,7 +444,7 @@ if (!result.isConfirmed)
                             {new Date(
                               invoice.invoiceDate
                             ).toLocaleDateString(
-  "en-IN",
+  "en-US",
   {
     day: "2-digit",
     month: "2-digit",
