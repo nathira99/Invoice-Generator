@@ -76,7 +76,6 @@ function Courses() {
 
   const handleAddCourse = async () => {
     
-    console.log(courseData);
     if (
       !courseData.courseName ||
       !courseData.category ||
