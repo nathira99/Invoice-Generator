@@ -117,6 +117,12 @@ export const updateCourse = async (id, updatedCourse) => {
   return res.data;
 };
 
+export const duplicateCourse = async (id, duplicatedCourse) => {
+  const res = await api.put(`/duplicate-courses/${id}`, duplicatedCourse);
+
+  return res.data;
+};
+
 export const deleteCourse = async (id) => {
   const res = await api.delete(`/courses/${id}`);
 

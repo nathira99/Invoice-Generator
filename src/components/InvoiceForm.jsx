@@ -9,6 +9,8 @@ import {
 
 import toast from "react-hot-toast";
 
+import Swal from "sweetalert2";
+
 import Select from "react-select";
 
 import { useState } from "react";
@@ -21,6 +23,8 @@ function InvoiceForm({
   courses,
 }) {
   const [studentCourses, setStudentCourses] = useState([]);
+
+  const [editId, setEditId] = useState(null);
 
   const handleChange = (e) => {
     setInvoiceData({
@@ -55,12 +59,14 @@ function InvoiceForm({
   /* RESET FORM */
 
   const resetInvoiceForm = async () => {
+    setEditId(null);
+
     const nextInvoiceNumber = await generateInvoiceNumber();
 
     setInvoiceData({
       invoiceNumber: nextInvoiceNumber,
 
-      invoiceDate: new Date().toISOString(),
+     invoiceDate: new Date().toISOString().split("T")[0],
 
       studentName: "",
 
@@ -89,47 +95,59 @@ function InvoiceForm({
 
   /* SAVE OR UPDATE */
 
-  const saveOrUpdateInvoice = async () => {
-    try {
-      const existingInvoices = await getInvoices();
+const saveOrUpdateInvoice = async () => {
 
-      const alreadyExists = existingInvoices.find(
-        (invoice) => invoice.invoiceNumber === invoiceData.invoiceNumber,
-      );
+  const existingInvoices = await getInvoices();
 
-      if (alreadyExists) {
-        return await updateInvoice(alreadyExists._id, invoiceData);
-      }
+  const alreadyExists = existingInvoices.find(
+  (invoice) =>
+    invoice.studentName?.trim().toLowerCase() ===
+      invoiceData.studentName?.trim().toLowerCase() &&
+    invoice.courseName?.trim().toLowerCase() ===
+      invoiceData.courseName?.trim().toLowerCase() &&
+    invoice.paidMonth?.trim().toLowerCase() ===
+      invoiceData.paidMonth?.trim().toLowerCase() &&
+    invoice._id !== editId
+);
 
-      return await saveInvoice(invoiceData);
-    } catch (error) {
-      console.error(error);
+  if (alreadyExists) {
+  toast.error(
+    `${invoiceData.studentName} already has an invoice for ${invoiceData.courseName} (${invoiceData.paidMonth})`
+  );
 
-      throw error;
-    }
-  };
+  return false;
+}
+
+  if (editId) {
+    return await updateInvoice(editId, invoiceData);
+  }
+
+  return await saveInvoice(invoiceData);
+};
 
   /* SAVE */
 
   const handleSaveInvoice = async () => {
-    if (!validateInvoice()) {
-      return;
-    }
+  if (!validateInvoice()) {
+    return;
+  }
 
-    try {
-      await saveOrUpdateInvoice();
+  try {
+    const result = await saveOrUpdateInvoice();
 
-      toast.success("Invoice saved successfully");
+    if (!result) return;
 
-      await loadInvoices();
+    toast.success("Invoice saved successfully");
 
-      await resetInvoiceForm();
-    } catch (error) {
-      console.error(error);
+    await loadInvoices();
 
-      toast.error(error.message || "Failed to save invoice");
-    }
-  };
+    await resetInvoiceForm();
+  } catch (error) {
+    console.error(error);
+
+    toast.error(error.message || "Failed to save invoice");
+  }
+};
 
   /* DOWNLOAD PDF */
 
@@ -162,8 +180,7 @@ function InvoiceForm({
   };
 
   return (
-    <div className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm lg:p-8">
-      {/* TITLE */}
+<div className="mx-auto max-w-4xl rounded-3xl bg-white p-6">      {/* TITLE */}
 
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900">Invoice Details</h2>
@@ -173,8 +190,10 @@ function InvoiceForm({
 
       {/* FORM */}
 
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-        {/* INVOICE NUMBER */}
+
+<div className="mx-auto max-w-5xl">
+  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">        {/* INVOICE NUMBER */}
+
 
         <div>
           <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -200,7 +219,11 @@ function InvoiceForm({
           <input
             type="date"
             name="invoiceDate"
-            value={invoiceData.invoiceDate}
+            value={
+  invoiceData.invoiceDate
+    ? invoiceData.invoiceDate.split("T")[0]
+    : ""
+}
             onChange={handleChange}
             className={inputStyle}
           />
@@ -470,22 +493,66 @@ function InvoiceForm({
 
         {/* STATUS */}
 
-        <div className="md:col-span-2">
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Status
-          </label>
+        <Select
+          options={[
+            {
+              value: "Paid",
+              label: "Paid",
+            },
+            {
+              value: "Pending",
+              label: "Pending",
+            },
+          ]}
+          value={
+            invoiceData.status
+              ? {
+                  value: invoiceData.status,
+                  label: invoiceData.status === "Paid" ? "Paid" : "Pending",
+                }
+              : null
+          }
+          onChange={(selectedOption) =>
+            setInvoiceData({
+              ...invoiceData,
+              status: selectedOption?.value || "",
+            })
+          }
+          placeholder="Select Status"
+          className="text-sm"
+          menuPortalTarget={document.body}
+          menuPosition="fixed"
+          styles={{
+            control: (base) => ({
+              ...base,
+              minHeight: "52px",
+              borderRadius: "16px",
+              borderColor: "#e5e7eb",
+              backgroundColor: "#f9fafb",
+              boxShadow: "none",
+              paddingLeft: "4px",
+            }),
 
-          <select
-            name="status"
-            value={invoiceData.status}
-            onChange={handleChange}
-            className={inputStyle}
-          >
-            <option value="Paid">Paid</option>
+            placeholder: (base) => ({
+              ...base,
+              color: "#6b7280",
+              fontWeight: 500,
+              fontSize: "14px",
+            }),
 
-            <option value="Pending">Pending</option>
-          </select>
-        </div>
+            singleValue: (base) => ({
+              ...base,
+              color: "#111827",
+              fontWeight: 600,
+              fontSize: "14px",
+            }),
+
+            menuPortal: (base) => ({
+              ...base,
+              zIndex: 9999,
+            }),
+          }}
+        />
       </div>
 
       {/* BUTTONS */}
@@ -511,6 +578,7 @@ function InvoiceForm({
           Download PDF
         </button>
       </div>
+    </div>
     </div>
   );
 }

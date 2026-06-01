@@ -4,6 +4,7 @@ import {
   getCourses,
   createCourse,
   updateCourse,
+  duplicateCourse,
   deleteCourse,
 } from "../controllers/courseController.js";
 
@@ -22,6 +23,7 @@ router
 router
   .route("/:id")
   .put(updateCourse)
+  .post(duplicateCourse)
   .delete(deleteCourse);
 
 export default router;

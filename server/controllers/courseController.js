@@ -84,6 +84,36 @@ export const updateCourse =
 
   };
 
+  // DUPLICATE COURSE
+
+  export const duplicateCourse =
+    async (req, res) => {
+      try {
+
+      const duplicatedCourse =
+        await Course.findByIdAndUpdate(
+          req.params.id,
+          req.body,
+          {
+            new: true,
+          }
+        );
+
+      res.json(
+        duplicatedCourse
+      );
+
+    } catch (error) {
+
+      res.status(400).json({
+        message:
+          error.message,
+      });
+
+    }
+
+    }
+
 /* DELETE COURSE */
 
 export const deleteCourse =

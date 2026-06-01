@@ -446,45 +446,31 @@ function Dashboard() {
 
           {/* MAIN GRID */}
 
-          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+<div className="flex flex-col gap-8">
 
-            {/* FORM */}
+  {/* FORM */}
+  <div className="mx-auto w-full max-w-5xl">
 
-            <div className="min-w-0">
+    <InvoiceForm
+      invoiceData={invoiceData}
+      setInvoiceData={setInvoiceData}
+      loadInvoices={loadInvoices}
+      students={students}
+      courses={courses}
+    />
 
-              <InvoiceForm
-                invoiceData={
-                  invoiceData
-                }
-                setInvoiceData={
-                  setInvoiceData
-                }
-                loadInvoices={
-                  loadInvoices
-                }
-                students={
-                  students
-                }
-                courses={
-                  courses
-                }
-              />
+  </div>
 
-            </div>
+  {/* PREVIEW */}
+  <div className="flex justify-center">
 
-            {/* PREVIEW */}
+    <InvoicePreview
+      invoiceData={invoiceData}
+    />
 
-            <div className="min-w-0 xl:sticky xl:top-6">
+  </div>
 
-              <InvoicePreview
-                invoiceData={
-                  invoiceData
-                }
-              />
-
-            </div>
-
-          </div>
+</div>
 
         </div>
 

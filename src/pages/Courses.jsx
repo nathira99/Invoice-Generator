@@ -6,8 +6,11 @@ import {
   BookOpen,
   PlusCircle,
   Pencil,
-  Trash2,
+  Users,
+  Search,
+  Trash,
   Check,
+  Copy,
   IndianRupee,
   CalendarDays,
 } from "lucide-react";
@@ -28,7 +31,13 @@ function Courses() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
+
+  const [expandedSections, setExpandedSections] = useState({
+    Islamic: false,
+    Skills: false,
+    Academic: false,
+  });
 
   const [editData, setEditData] = useState({
     courseName: "",
@@ -67,6 +76,13 @@ function Courses() {
   const inputStyle =
     "text-slate-800 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
   const handleChange = (e) => {
     setCourseData({
       ...courseData,
@@ -75,7 +91,6 @@ function Courses() {
   };
 
   const handleAddCourse = async () => {
-    
     if (
       !courseData.courseName ||
       !courseData.category ||
@@ -86,7 +101,6 @@ function Courses() {
 
       return;
     }
-
 
     try {
       await saveCourse(courseData);
@@ -135,11 +149,58 @@ function Courses() {
     }
   };
 
-  const handleEditCourse = (course, index) => {
-    setEditIndex(index);
+  const handleEditCourse = (course) => {
+    setEditId(course._id);
 
-    setEditData(course);
+    setEditData({
+      ...course,
+      courseName: course.courseName || "",
+      category: course.category || "",
+      fee: course.fee || "",
+      daysPerWeek: course.daysPerWeek || "",
+    });
   };
+
+  const handleDuplicateCourse = async (course) => {
+  const duplicateData = {
+    courseName: `${course.courseName} Copy`,
+    category: course.category,
+    fee: course.fee,
+    daysPerWeek: course.daysPerWeek,
+  };
+
+  await saveCourse(duplicateData);
+
+  await loadCourses();
+
+  toast.success("Course duplicated");
+};
+
+  const handleUpdateCourse = async () => {
+  try {
+    await updateCourse(
+      editId,
+      courseData
+    );
+
+    toast.success("Course updated");
+
+    await loadCourses();
+
+    setEditId(null);
+
+    setCourseData({
+      courseName: "",
+      category: "",
+      fee: "",
+      daysPerWeek: "",
+    });
+  } catch (error) {
+    console.error(error);
+
+    toast.error("Failed to update course");
+  }
+};
 
   const handleSaveEdit = async () => {
     if (
@@ -150,7 +211,13 @@ function Courses() {
     ) {
       toast.error("Please fill all fields.");
 
-      return;
+      if (
+        !editData.courseName ||
+        !editData.category ||
+        !editData.fee ||
+        !editData.daysPerWeek
+      )
+        return toast.error("Please fill all fields.");
     }
 
     try {
@@ -158,7 +225,7 @@ function Courses() {
 
       await loadCourses();
 
-      setEditIndex(null);
+      setEditId(null);
     } catch (error) {
       console.error(error);
 
@@ -169,6 +236,117 @@ function Courses() {
   const filteredCourses = courses.filter((course) =>
     course.courseName.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const islamicCourses = filteredCourses.filter(
+    (course) => course.category === "Islamic",
+  );
+
+  const skillCourses = filteredCourses.filter(
+    (course) => course.category === "Skill Development",
+  );
+
+  const academicCourses = filteredCourses.filter(
+    (course) => course.category === "Academic",
+  );
+
+  const CourseSection = ({ title, icon, sectionKey, data }) => {
+    const visibleCourses = expandedSections[sectionKey]
+      ? data
+      : data.slice(0, 3);
+
+    if (data.length === 0) return null;
+
+    return (
+      <div className="mb-8 rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between border-b px-6 py-4">
+          <h2 className="text-xl font-bold">{title}</h2>
+
+          {data.length > 2 && (
+            <button
+              onClick={() => setExpandedSections({ ...expandedSections, [sectionKey]: !expandedSections[sectionKey] })} 
+              className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
+            >
+              {expandedSections[sectionKey] ? "Show Less" : `View All (${data.length})`}
+            </button>
+          )}
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full table-fixed">
+            <thead>
+              <tr className="border-b bg-slate-50">
+                <th className="px-4 py-3 text-left">Course</th>
+                <th className="px-4 py-3 text-left">Fee</th>
+                <th className="px-4 py-3 text-left">Duration</th>
+                <th className="px-4 py-3 text-left">Actions</th>
+              </tr>
+            </thead>
+
+        <tbody>
+  {visibleCourses.map((course) => (
+    <tr
+      key={course._id}
+      className="border-b border-slate-100 last:border-none hover:bg-slate-50"
+    >
+      <td className="px-4 py-3 font-semibold text-slate-900">
+        {course.courseName}
+      </td>
+
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2 font-semibold text-emerald-700">
+          <IndianRupee size={16} />
+          Rs. {course.fee}
+        </div>
+      </td>
+
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <CalendarDays size={16} />
+          {course.daysPerWeek} Days / Week
+        </div>
+      </td>
+
+      <td className="px-4 py-3">
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={() => {
+              setEditId(course._id);
+
+              setCourseData({
+                courseName: course.courseName || "",
+                category: course.category || "",
+                fee: course.fee || "",
+                daysPerWeek: course.daysPerWeek || "",
+              });
+
+              window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+              });
+            }}
+            className="w-min flex items-center gap-2 rounded-xl bg-blue-500 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+          >
+            <Pencil size={16} />
+            Edit
+          </button>
+
+          <button
+            onClick={() => handleDeleteCourse(course._id)}
+            className="w-min flex items-center rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-600"
+          >
+            <Trash size={16} />
+            
+          </button>
+        </div>
+      </td>
+    </tr>
+  ))}
+</tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -239,19 +417,19 @@ function Courses() {
                 className={inputStyle}
               />
 
-              {/* <Select
+              <Select
                 options={[
                   {
                     value: "Islamic",
-                    label: "🕌 Islamic Courses",
+                    label: "Islamic Courses",
                   },
                   {
                     value: "Skill Development",
-                    label: "💻 Skill Development",
+                    label: "Skill Development",
                   },
                   {
                     value: "Academic",
-                    label: "📚 Academic Classes",
+                    label: "Academic Classes",
                   },
                 ]}
                 value={
@@ -260,10 +438,10 @@ function Courses() {
                         value: courseData.category,
                         label:
                           courseData.category === "Islamic"
-                            ? "🕌 Islamic Courses"
+                            ? "Islamic Courses"
                             : courseData.category === "Skill Development"
-                              ? "💻 Skill Development"
-                              : "📚 Academic Classes",
+                              ? "Skill Development"
+                              : "Academic Classes",
                       }
                     : null
                 }
@@ -300,62 +478,60 @@ function Courses() {
                     color: "#0f172a",
                   }),
                 }}
-              /> */}
+              />
 
-              <div className="grid grid-cols-3 gap-3">
+              {/* <div className="grid grid-cols-3 gap-3">
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCourseData({
+                      ...courseData,
+                      category: "Islamic",
+                    })
+                  }
+                  className={`rounded-xl p-3 border text-sm font-semibold ${
+                    courseData.category === "Islamic"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white"
+                  }`}
+                >
+                  Islamic
+                </button>
 
-  <button
-    type="button"
-    onClick={() =>
-      setCourseData({
-        ...courseData,
-        category: "Islamic",
-      })
-    }
-    className={`rounded-xl p-3 border text-sm font-semibold ${
-      courseData.category === "Islamic"
-        ? "bg-blue-600 text-white"
-        : "bg-white"
-    }`}
-  >
-    Islamic
-  </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCourseData({
+                      ...courseData,
+                      category: "Skill Development",
+                    })
+                  }
+                  className={`rounded-xl p-3 border text-sm font-semibold ${
+                    courseData.category === "Skill Development"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white"
+                  }`}
+                >
+                  Skills
+                </button>
 
-  <button
-    type="button"
-    onClick={() =>
-      setCourseData({
-        ...courseData,
-        category: "Skill Development",
-      })
-    }
-    className={`rounded-xl p-3 border text-sm font-semibold ${
-      courseData.category === "Skill Development"
-        ? "bg-blue-600 text-white"
-        : "bg-white"
-    }`}
-  >
-    Skills
-  </button>
-
-  <button
-    type="button"
-    onClick={() =>
-      setCourseData({
-        ...courseData,
-        category: "Academic",
-      })
-    }
-    className={`rounded-xl p-3 border text-sm font-semibold ${
-      courseData.category === "Academic"
-        ? "bg-blue-600 text-white"
-        : "bg-white"
-    }`}
-  >
-    Academic
-  </button>
-
-</div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setCourseData({
+                      ...courseData,
+                      category: "Academic",
+                    })
+                  }
+                  className={`rounded-xl p-3 border text-sm font-semibold ${
+                    courseData.category === "Academic"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white"
+                  }`}
+                >
+                  Academic
+                </button>
+              </div> */}
 
               <input
                 type="number"
@@ -376,11 +552,30 @@ function Courses() {
               />
 
               <button
-                onClick={handleAddCourse}
+                onClick={editId ? handleUpdateCourse : handleAddCourse}
                 className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
               >
-                Add Course
+                {editId ? "Update Course" : "Add Course"}
               </button>
+
+
+  {editId && (
+    <button
+      onClick={() => {
+        setEditId(null);
+
+        setCourseData({
+          courseName: "",
+          category: "",
+          fee: "",
+          daysPerWeek: "",
+        });
+      }}
+      className="rounded-xl bg-red-500 px-6 py-3 text-sm font-semibold text-white"
+    >
+      Cancel
+    </button>
+  )}
             </div>
           </div>
 
@@ -396,178 +591,26 @@ function Courses() {
 
           {/* TABLE */}
 
-          {filteredCourses.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-slate-300 bg-white py-20 text-center shadow-sm">
-              <p className="text-sm font-medium text-slate-500">
-                No courses found.
-              </p>
-            </div>
-          ) : (
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              {/* TABLE HEADER */}
+          <CourseSection
+            title="Islamic Courses"
+            icon="🕌"
+            data={islamicCourses}
+            sectionKey="Islamic"
+          />
 
-              <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
-                <div className="grid grid-cols-[1.5fr_1fr_1fr_1fr] gap-4 text-sm font-semibold text-slate-500">
-                  <p>Course</p>
+          <CourseSection
+            title="Skill Development"
+            icon="💻"
+            data={skillCourses}
+            sectionKey="Skills"
+          />
 
-                  <p>Fee</p>
-
-                  <p>Schedule</p>
-
-                  <p className="text-center">Actions</p>
-                </div>
-              </div>
-
-              {/* ROWS */}
-
-              <div>
-                {filteredCourses.map((course, index) => (
-                  <div
-                    key={course._id || index}
-                    className="border-b border-slate-100 last:border-none"
-                  >
-                    <div className="grid gap-5 px-6 py-5 lg:grid-cols-[1.5fr_1fr_1fr_1fr] lg:items-center">
-                      {/* COURSE */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Course
-                        </p>
-
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.courseName}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                courseName: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 font-semibold text-slate-900">
-                            {course.courseName}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* CATEGORY */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Category
-                        </p>
-
-                        {editIndex === index ? (
-                          <input
-                            type="text"
-                            value={editData.category}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                category: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 font-semibold text-slate-900">
-                            {course.category}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* FEE */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Fee
-                        </p>
-
-                        {editIndex === index ? (
-                          <input
-                            type="number"
-                            value={editData.fee}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                fee: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <div className="mt-1 flex items-center gap-2 font-semibold text-emerald-700">
-                            <IndianRupee size={16} />
-                            Rs. {course.fee}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* DAYS */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Schedule
-                        </p>
-
-                        {editIndex === index ? (
-                          <input
-                            type="number"
-                            value={editData.daysPerWeek}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                daysPerWeek: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <div className="mt-1 flex items-center gap-2 text-sm font-medium text-slate-600">
-                            <CalendarDays size={16} />
-                            {course.daysPerWeek} Days / Week
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ACTIONS */}
-
-                      <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-center">
-                        {editIndex === index ? (
-                          <button
-                            onClick={handleSaveEdit}
-                            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                          >
-                            <Check size={15} />
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditCourse(course, index)}
-                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                          >
-                            <Pencil size={15} />
-                            Edit
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleDeleteCourse(course._id)}
-                          className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
-                        >
-                          <Trash2 size={15} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          <CourseSection
+            title="Academic Classes"
+            icon="📚"
+            data={academicCourses}
+            sectionKey="Academic"
+          />
         </div>
       </main>
     </div>

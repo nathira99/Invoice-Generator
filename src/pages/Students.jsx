@@ -344,17 +344,6 @@ const filteredStudents = students.filter((student) => {
                 }}
               />
 
-              {/* NOTES */}
-
-              <textarea
-                name="notes"
-                value={studentData.notes}
-                onChange={handleChange}
-                placeholder="Notes"
-                rows={1}
-                className={inputStyle}
-              />
-
               <button
                 onClick={handleAddStudent}
                 disabled={saving}
@@ -402,8 +391,6 @@ const filteredStudents = students.filter((student) => {
                   <p>Contact</p>
 
                   <p>Courses</p>
-
-                  <p>Notes</p>
 
                   <p className="text-center">Actions</p>
                 </div>
@@ -539,26 +526,6 @@ const filteredStudents = students.filter((student) => {
                           {student.enrolledCourses?.length > 0
                             ? student.enrolledCourses.join(", ")
                             : "No Courses"}
-                        </p>
-                      )}
-
-                      {/* NOTES */}
-
-                      {editIndex === index ? (
-                        <textarea
-                          rows={1}
-                          value={editData.notes}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              notes: e.target.value,
-                            })
-                          }
-                          className={inputStyle}
-                        />
-                      ) : (
-                        <p className="text-sm text-slate-600">
-                          {student.notes || "-"}
                         </p>
                       )}
 
