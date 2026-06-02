@@ -51,6 +51,31 @@ export const deleteInvoice = async (id) => {
   return res.data;
 };
 
+export const getTrashedInvoices = async () => {
+  const res = await api.get("/invoices/trash");
+
+  return res.data;
+};
+
+export const restoreInvoice = async (
+  id
+) => {
+  const res = await api.put(
+    `/invoices/restore/${id}`
+  );
+
+  return res.data;
+};
+
+export const permanentlyDeleteInvoice =
+  async (id) => {
+    const res = await api.delete(
+      `/invoices/permanent/${id}`
+    );
+
+    return res.data;
+  };
+
 export const generateInvoiceNumber = async () => {
   const invoices = await getInvoices();
 

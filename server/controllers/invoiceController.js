@@ -38,7 +38,12 @@ export const createInvoice = async (req, res) => {
 
 export const getInvoices = async (req, res) => {
   try {
-    const invoices = await Invoice.find().sort({ createdAt: -1 });
+    const invoices = await Invoice.find({
+      isDeleted: false,
+    }).sort({
+      createdAt: -1,
+    });
+
     return res.status(200).json(invoices);
   } catch (error) {
     return handleInvoiceError(error, res);
@@ -87,16 +92,79 @@ export const updateInvoice = async (req, res) => {
 export const deleteInvoice = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid invoice id' });
+      return res.status(400).json({
+        message: "Invalid invoice id",
+      });
     }
 
-    const invoice = await Invoice.findByIdAndDelete(req.params.id);
+    const invoice = await Invoice.findByIdAndUpdate(
+      req.params.id,
+      {
+        isDeleted: true,
+        deletedAt: new Date(),
+      },
+      { new: true }
+    );
 
     if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
+      return res.status(404).json({
+        message: "Invoice not found",
+      });
     }
 
-    return res.status(200).json({ message: 'Invoice deleted successfully' });
+    return res.status(200).json({
+      message: "Invoice moved to trash",
+    });
+  } catch (error) {
+    return handleInvoiceError(error, res);
+  }
+};
+
+export const getTrashedInvoices = async (req, res) => {
+  try {
+    const invoices = await Invoice.find({
+      isDeleted: true,
+    }).sort({
+      deletedAt: -1,
+    });
+
+    return res.status(200).json(invoices);
+  } catch (error) {
+    return handleInvoiceError(error, res);
+  }
+};
+
+export const restoreInvoice = async (req, res) => {
+  try {
+    const invoice = await Invoice.findByIdAndUpdate(
+      req.params.id,
+      {
+        isDeleted: false,
+        deletedAt: null,
+      },
+      { new: true }
+    );
+
+    return res.status(200).json(invoice);
+  } catch (error) {
+    return handleInvoiceError(error, res);
+  }
+};
+
+export const permanentlyDeleteInvoice = async (
+  req,
+  res
+) => {
+  try {
+    const invoice =
+      await Invoice.findByIdAndDelete(
+        req.params.id
+      );
+
+    return res.status(200).json({
+      message:
+        "Invoice permanently deleted",
+    });
   } catch (error) {
     return handleInvoiceError(error, res);
   }

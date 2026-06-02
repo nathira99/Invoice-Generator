@@ -6,6 +6,7 @@ import Students from "./pages/Students";
 import Courses from "./pages/Courses";
 import InvoiceHistory from "./pages/InvoiceHistory";
 import Settings from "./pages/Settings";
+import Trash from "./pages/Trash";
 import Teachers from "./pages/Teachers";
 import Staff from "./pages/Staff";
 
@@ -91,6 +92,15 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+  path="/trash"
+  element={
+  <ProtectedRoute>
+  <Trash />
+  </ProtectedRoute>
+  }
+/>
 
       </Routes>
 

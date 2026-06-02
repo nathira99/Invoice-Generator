@@ -11,6 +11,7 @@ import {
   Briefcase,
   Sparkles,
   LogOut,
+  Trash2,
 } from "lucide-react";
 
 function Sidebar() {
@@ -52,6 +53,11 @@ function Sidebar() {
       path: "/settings",
       icon: Settings,
     },
+    {
+  name: "Trash",
+  path: "/trash",
+  icon: Trash2,
+},
   ];
 
   const { logout } = useAuth();

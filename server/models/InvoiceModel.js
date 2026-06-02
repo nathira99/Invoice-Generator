@@ -82,6 +82,15 @@ const invoiceSchema = new mongoose.Schema(
       },
       default: "Paid",
     },
+    isDeleted: {
+  type: Boolean,
+  default: false,
+},
+
+deletedAt: {
+  type: Date,
+  default: null,
+},
   },
   {
     timestamps: true,

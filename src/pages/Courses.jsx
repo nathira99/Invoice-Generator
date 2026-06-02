@@ -13,6 +13,7 @@ import {
   Copy,
   IndianRupee,
   CalendarDays,
+  Clock,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
@@ -57,6 +58,8 @@ function Courses() {
     fee: "",
 
     daysPerWeek: "",
+
+    status: "Active",
   });
 
   useEffect(() => {
@@ -162,45 +165,42 @@ function Courses() {
   };
 
   const handleDuplicateCourse = async (course) => {
-  const duplicateData = {
-    courseName: `${course.courseName} Copy`,
-    category: course.category,
-    fee: course.fee,
-    daysPerWeek: course.daysPerWeek,
-  };
+    const duplicateData = {
+      courseName: `${course.courseName} Copy`,
+      category: course.category,
+      fee: course.fee,
+      daysPerWeek: course.daysPerWeek,
+    };
 
-  await saveCourse(duplicateData);
-
-  await loadCourses();
-
-  toast.success("Course duplicated");
-};
-
-  const handleUpdateCourse = async () => {
-  try {
-    await updateCourse(
-      editId,
-      courseData
-    );
-
-    toast.success("Course updated");
+    await saveCourse(duplicateData);
 
     await loadCourses();
 
-    setEditId(null);
+    toast.success("Course duplicated");
+  };
 
-    setCourseData({
-      courseName: "",
-      category: "",
-      fee: "",
-      daysPerWeek: "",
-    });
-  } catch (error) {
-    console.error(error);
+  const handleUpdateCourse = async () => {
+    try {
+      await updateCourse(editId, courseData);
 
-    toast.error("Failed to update course");
-  }
-};
+      toast.success("Course updated");
+
+      await loadCourses();
+
+      setEditId(null);
+
+      setCourseData({
+        courseName: "",
+        category: "",
+        fee: "",
+        daysPerWeek: "",
+      });
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to update course");
+    }
+  };
 
   const handleSaveEdit = async () => {
     if (
@@ -263,85 +263,114 @@ function Courses() {
 
           {data.length > 2 && (
             <button
-              onClick={() => setExpandedSections({ ...expandedSections, [sectionKey]: !expandedSections[sectionKey] })} 
+              onClick={() =>
+                setExpandedSections({
+                  ...expandedSections,
+                  [sectionKey]: !expandedSections[sectionKey],
+                })
+              }
               className="rounded-full bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
             >
-              {expandedSections[sectionKey] ? "Show Less" : `View All (${data.length})`}
+              {expandedSections[sectionKey]
+                ? "Show Less"
+                : `View All (${data.length})`}
             </button>
           )}
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full table-fixed">
+          <table className="min-w-[900px] w-full table-fixed">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="px-4 py-3 text-left">Course</th>
-                <th className="px-4 py-3 text-left">Fee</th>
-                <th className="px-4 py-3 text-left">Duration</th>
-                <th className="px-4 py-3 text-left">Actions</th>
+                <th className="px-4 py-3 text-center">Fee</th>
+                <th className="px-4 py-3 text-center">Schedule</th>
+                <th className="px-4 py-3 text-center">Duration</th>
+                <th className="px-4 py-3 text-center">Status</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
             </thead>
 
-        <tbody>
-  {visibleCourses.map((course) => (
-    <tr
-      key={course._id}
-      className="border-b border-slate-100 last:border-none hover:bg-slate-50"
-    >
-      <td className="px-4 py-3 font-semibold text-slate-900">
-        {course.courseName}
-      </td>
+            <tbody>
+              {visibleCourses.map((course) => (
+                <tr
+                  key={course._id}
+                  className="border-b border-slate-100 last:border-none hover:bg-slate-50"
+                >
+                  <td className="px-4 py-3 font-semibold text-slate-900">
+                    {course.courseName}
+                  </td>
 
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2 font-semibold text-emerald-700">
-          <IndianRupee size={16} />
-          Rs. {course.fee}
-        </div>
-      </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-center gap-2 font-semibold text-emerald-700">
+                      <IndianRupee size={16} />
+                      Rs. {course.fee}
+                    </div>
+                  </td>
 
-      <td className="px-4 py-3">
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <CalendarDays size={16} />
-          {course.daysPerWeek} Days / Week
-        </div>
-      </td>
+                  <td className="px-4 py-3 text-center ">
+                    <div className="flex items-center justify-center gap-2 whitespace-nowrap text-sm text-slate-600">
+                      <CalendarDays size={16} />
+                      {course.daysPerWeek} days/week
+                    </div>
+                  </td>
 
-      <td className="px-4 py-3">
-        <div className="flex justify-center gap-2">
-          <button
-            onClick={() => {
-              setEditId(course._id);
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2 whitespace-nowrap text-sm text-slate-600">
+                      <Clock size={16} />
+                      {course.duration}
+                    </div>
+                  </td>
 
-              setCourseData({
-                courseName: course.courseName || "",
-                category: course.category || "",
-                fee: course.fee || "",
-                daysPerWeek: course.daysPerWeek || "",
-              });
+                  <td className="px-4 py-3  text-center ">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        course.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : course.status === "Upcoming"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {course.status}
+                    </span>
+                  </td>
 
-              window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-              });
-            }}
-            className="w-min flex items-center gap-2 rounded-xl bg-blue-500 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
-          >
-            <Pencil size={16} />
-            Edit
-          </button>
+                  <td className="px-4 py-3">
+                    <div className="flex justify-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditId(course._id);
 
-          <button
-            onClick={() => handleDeleteCourse(course._id)}
-            className="w-min flex items-center rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-600"
-          >
-            <Trash size={16} />
-            
-          </button>
-        </div>
-      </td>
-    </tr>
-  ))}
-</tbody>
+                          setCourseData({
+                            courseName: course.courseName || "",
+                            category: course.category || "",
+                            fee: course.fee || "",
+                            daysPerWeek: course.daysPerWeek || "",
+                          });
+
+                          window.scrollTo({
+                            top: 0,
+                            behavior: "smooth",
+                          });
+                        }}
+                        className="w-min flex items-center gap-2 rounded-xl bg-blue-500 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-600"
+                      >
+                        <Pencil size={16} />
+                        Edit
+                      </button>
+
+                      <button
+                        onClick={() => handleDeleteCourse(course._id)}
+                        className="w-min flex items-center rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                      >
+                        <Trash size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
           </table>
         </div>
       </div>
@@ -480,6 +509,69 @@ function Courses() {
                 }}
               />
 
+              <Select
+                options={[
+                  {
+                    value: "Active",
+                    label: "Active",
+                  },
+                  {
+                    value: "Upcoming",
+                    label: "Upcoming",
+                  },
+                  {
+                    value: "Closed",
+                    label: "Closed",
+                  },
+                ]}
+                value={
+                  courseData.status
+                    ? {
+                        value: courseData.status,
+                        label:
+                          courseData.status === "Active"
+                            ? "Active"
+                            : courseData.status === "Upcoming"
+                              ? "Upcoming"
+                              : "Closed",
+                      }
+                    : null
+                }
+                onChange={(selectedOption) => {
+                  setCourseData({
+                    ...courseData,
+                    status: selectedOption?.value || "",
+                  });
+                }}
+                placeholder="Select Status"
+                className="text-sm"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: "48px",
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    boxShadow: "none",
+                    paddingLeft: "4px",
+                  }),
+
+                  placeholder: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                  }),
+
+                  singleValue: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#0f172a",
+                  }),
+                }}
+              />
+
               {/* <div className="grid grid-cols-3 gap-3">
                 <button
                   type="button"
@@ -547,7 +639,16 @@ function Courses() {
                 name="daysPerWeek"
                 value={courseData.daysPerWeek}
                 onChange={handleChange}
-                placeholder="Days Per Week"
+                placeholder="Duration in Days per Week"
+                className={inputStyle}
+              />
+
+              <input
+                type="text"
+                name="duration"
+                value={courseData.duration}
+                onChange={handleChange}
+                placeholder="Ex: 3 Months, 1 Year, Flexible"
                 className={inputStyle}
               />
 
@@ -558,24 +659,23 @@ function Courses() {
                 {editId ? "Update Course" : "Add Course"}
               </button>
 
+              {editId && (
+                <button
+                  onClick={() => {
+                    setEditId(null);
 
-  {editId && (
-    <button
-      onClick={() => {
-        setEditId(null);
-
-        setCourseData({
-          courseName: "",
-          category: "",
-          fee: "",
-          daysPerWeek: "",
-        });
-      }}
-      className="rounded-xl bg-red-500 px-6 py-3 text-sm font-semibold text-white"
-    >
-      Cancel
-    </button>
-  )}
+                    setCourseData({
+                      courseName: "",
+                      category: "",
+                      fee: "",
+                      daysPerWeek: "",
+                    });
+                  }}
+                  className="rounded-xl bg-red-500 px-6 py-3 text-sm font-semibold text-white"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </div>
 
