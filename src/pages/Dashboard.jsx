@@ -64,11 +64,11 @@ function Dashboard() {
     },
   );
   useEffect(() => {
-  if (location.state) {
-    setInvoiceData(location.state);
-    setEditId(location.state._id);
-  }
-}, [location.state]);
+    if (location.state) {
+      setInvoiceData(location.state);
+      setEditId(location.state._id);
+    }
+  }, [location.state]);
 
   /* LOAD DATA */
 
@@ -153,6 +153,17 @@ function Dashboard() {
     .filter((invoice) => invoice.status === "Pending")
     .reduce((total, invoice) => total + Number(invoice.paidAmount || 0), 0);
 
+  const collectionRate =
+    totalRevenue + pendingAmount === 0
+      ? 0
+      : Math.round((totalRevenue / (totalRevenue + pendingAmount)) * 100);
+
+  const activeCourses = courses.filter((c) => c.status === "Active").length;
+
+  const upcomingCourses = courses.filter((c) => c.status === "Upcoming").length;
+
+  const closedCourses = courses.filter((c) => c.status === "Closed").length;
+
   /* STATS */
 
   const stats = [
@@ -173,16 +184,16 @@ function Dashboard() {
     },
 
     {
-      title: "Invoices",
-      value: isLoadingInvoices ? "..." : invoices.length,
+      title: "Collection",
+      value: `${collectionRate}%`,
       icon: Receipt,
-      bg: "bg-slate-200",
-      color: "text-slate-700",
+      bg: "bg-indigo-100",
+      color: "text-indigo-700",
     },
 
     {
       title: "Revenue",
-      value: isLoadingInvoices ? "..." : `Rs. ${totalRevenue}`,
+      value: isLoadingInvoices ? "..." : `Rs. ${totalRevenue.toLocaleString()}`,
       icon: Wallet,
       bg: "bg-emerald-100",
       color: "text-emerald-700",
@@ -190,7 +201,7 @@ function Dashboard() {
 
     {
       title: "Pending",
-      value: isLoadingInvoices ? "..." : `Rs. ${pendingAmount}`,
+      value: isLoadingInvoices ? "..." : `Rs. ${pendingAmount.toLocaleString()}`,
       icon: AlertCircle,
       bg: "bg-orange-100",
       color: "text-orange-700",
@@ -211,10 +222,6 @@ function Dashboard() {
             <h1 className="text-3xl font-bold tracking-tight text-slate-950">
               Dashboard
             </h1>
-
-            <p className="mt-1 text-sm font-medium text-slate-500">
-              Manage invoices, students and institute operations
-            </p>
           </div>
 
           {/* STATS */}
@@ -253,8 +260,78 @@ function Dashboard() {
           {/* MAIN GRID */}
 
           <div className="flex flex-col gap-8">
+            <div className="mb-8 grid gap-5 lg:grid-cols-2">
+              {/* Collection Status */}
+
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-bold">Collection Status</h3>
+
+                <div className="mt-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span>Paid Revenue</span>
+                    <span className="font-semibold">
+                      ₹{totalRevenue.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>Pending Revenue</span>
+                    <span className="font-semibold">
+                      ₹{pendingAmount.toLocaleString()}
+                    </span>
+                  </div>
+
+                  <div className="mt-4">
+                    <div className="h-2 overflow-hidden rounded-full bg-slate-200">
+                      <div
+                        className="h-full rounded-full bg-emerald-500"
+                        style={{
+                          width: `${collectionRate}%`,
+                        }}
+                      />
+                    </div>
+
+                    <p className="mt-2 text-sm text-slate-500">
+                      {collectionRate}% collected
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Course Status */}
+
+              <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 className="text-lg font-bold">Course Status</h3>
+
+                <div className="mt-4 space-y-3">
+                  <div className="flex justify-between">
+                    <span>🟢 Active</span>
+                    <span>{activeCourses}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>🟡 Upcoming</span>
+                    <span>{upcomingCourses}</span>
+                  </div>
+
+                  <div className="flex justify-between">
+                    <span>🔴 Closed</span>
+                    <span>{closedCourses}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
             {/* FORM */}
             <div className="mx-auto w-full max-w-5xl">
+              <div className="mb-2">
+              <h2 className="text-3xl font-bold text-slate-900">
+                Create Invoice
+              </h2>
+
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                Generate and manage student invoices
+              </p>
+              </div>
               <InvoiceForm
                 invoiceData={invoiceData}
                 setInvoiceData={setInvoiceData}
@@ -267,7 +344,16 @@ function Dashboard() {
             </div>
 
             {/* PREVIEW */}
-            <div className="flex justify-center">
+            <div className="flex flex-col justify-center">
+              <div className="mx-auto mb-2 w-full max-w-5xl">
+                <h2 className="text-3xl font-bold text-slate-900">
+                Invoice Preview
+              </h2>
+
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                Review before download or save
+              </p>
+              </div>
               <InvoicePreview invoiceData={invoiceData} />
             </div>
           </div>
