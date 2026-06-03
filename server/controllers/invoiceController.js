@@ -103,7 +103,7 @@ export const deleteInvoice = async (req, res) => {
         isDeleted: true,
         deletedAt: new Date(),
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     if (!invoice) {
@@ -142,7 +142,7 @@ export const restoreInvoice = async (req, res) => {
         isDeleted: false,
         deletedAt: null,
       },
-      { new: true }
+      { returnDocument: "after" }
     );
 
     return res.status(200).json(invoice);

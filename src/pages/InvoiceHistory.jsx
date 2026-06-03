@@ -1,10 +1,15 @@
 import Sidebar from "../components/Sidebar";
+
 import Header from "../components/Header";
 
 import { Search, Receipt, Download, Pencil, Trash2 } from "lucide-react";
+
 import toast from "react-hot-toast";
 
+import Select from "react-select";
+
 import Swal from "sweetalert2";
+
 import { useState, useEffect } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -19,6 +24,13 @@ function InvoiceHistory() {
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(true);
 
   const [search, setSearch] = useState("");
+
+  const [sortBy, setSortBy] = useState(null);
+
+  const [filterMonth, setFilterMonth] = useState(null);
+
+  const inputStyle =
+    "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
 
   const fetchInvoices = async () => {
     const invoiceList = await getInvoices();
@@ -67,12 +79,48 @@ function InvoiceHistory() {
     };
   }, []);
 
-  const filteredInvoices = invoices.filter((invoice) => {
-    return (
-      invoice.studentName?.toLowerCase().includes(search.toLowerCase()) ||
-      invoice.invoiceNumber?.toLowerCase().includes(search.toLowerCase())
+  let filteredInvoices = invoices.filter((invoice) =>
+    invoice.studentName.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  if (filterMonth) {
+    filteredInvoices = filteredInvoices.filter(
+      (invoice) => invoice.paidMonth === filterMonth,
     );
-  });
+  }
+
+  switch (sortBy) {
+    case "oldest":
+      filteredInvoices.sort(
+        (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      );
+      break;
+
+    case "nameAsc":
+      filteredInvoices.sort((a, b) =>
+        a.studentName.localeCompare(b.studentName),
+      );
+      break;
+
+    case "nameDesc":
+      filteredInvoices.sort((a, b) =>
+        b.studentName.localeCompare(a.studentName),
+      );
+      break;
+
+    case "amountHigh":
+      filteredInvoices.sort((a, b) => b.paidAmount - a.paidAmount);
+      break;
+
+    case "amountLow":
+      filteredInvoices.sort((a, b) => a.paidAmount - b.paidAmount);
+      break;
+
+    default:
+      filteredInvoices.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+      );
+  }
 
   const navigate = useNavigate();
 
@@ -126,24 +174,21 @@ function InvoiceHistory() {
   );
 
   const islamicRevenue = islamicInvoices.reduce(
-  (sum, invoice) => sum + Number(invoice.paidAmount || 0),
-  0
-);
+    (sum, invoice) => sum + Number(invoice.paidAmount || 0),
+    0,
+  );
 
-const skillRevenue = skillInvoices.reduce(
-  (sum, invoice) => sum + Number(invoice.paidAmount || 0),
-  0
-);
+  const skillRevenue = skillInvoices.reduce(
+    (sum, invoice) => sum + Number(invoice.paidAmount || 0),
+    0,
+  );
 
-const academicRevenue = academicInvoices.reduce(
-  (sum, invoice) => sum + Number(invoice.paidAmount || 0),
-  0
-);
+  const academicRevenue = academicInvoices.reduce(
+    (sum, invoice) => sum + Number(invoice.paidAmount || 0),
+    0,
+  );
 
-const totalRevenue =
-  islamicRevenue +
-  skillRevenue +
-  academicRevenue;
+  const totalRevenue = islamicRevenue + skillRevenue + academicRevenue;
 
   const [showAllIslamic, setShowAllIslamic] = useState(false);
   const [showAllSkill, setShowAllSkill] = useState(false);
@@ -237,7 +282,6 @@ const totalRevenue =
                             }`}
                       >
                         <Pencil size={15} />
-                        Edit
                       </button>
 
                       {/* DOWNLOAD */}
@@ -282,6 +326,90 @@ const totalRevenue =
     );
   };
 
+  const monthOptions = [
+    {
+      value: "",
+      label: "All Months",
+    },
+
+    ...[...new Set(invoices.map((invoice) => invoice.paidMonth))]
+      .filter(Boolean)
+      .map((month) => ({
+        value: month,
+        label: month,
+      })),
+  ];
+
+  const sortOptions = [
+  {
+    value: "newest",
+    label: "Newest First",
+  },
+  {
+    value: "oldest",
+    label: "Oldest First",
+  },
+  {
+    value: "nameAsc",
+    label: "Student A-Z",
+  },
+  {
+    value: "nameDesc",
+    label: "Student Z-A",
+  },
+  {
+    value: "amountHigh",
+    label: "Amount High-Low",
+  },
+  {
+    value: "amountLow",
+    label: "Amount Low-High",
+  },
+];
+
+  const selectStyles = {
+  control: (base) => ({
+    ...base,
+    minHeight: "52px",
+    borderRadius: "16px",
+    borderColor: "#e2e8f0",
+    backgroundColor: "#f8fafc",
+    boxShadow: "none",
+    paddingLeft: "4px",
+  }),
+
+  placeholder: (base) => ({
+    ...base,
+    color: "#94a3b8",
+    fontSize: "14px",
+    fontWeight: 500,
+  }),
+
+  singleValue: (base) => ({
+    ...base,
+    color: "#0f172a",
+    fontSize: "14px",
+    fontWeight: 600,
+  }),
+
+  menu: (base) => ({
+    ...base,
+    borderRadius: "16px",
+    overflow: "hidden",
+  }),
+
+  option: (base, state) => ({
+    ...base,
+    backgroundColor: state.isSelected
+      ? "#0f172a"
+      : state.isFocused
+        ? "#f1f5f9"
+        : "#fff",
+    color: state.isSelected ? "#fff" : "#0f172a",
+    cursor: "pointer",
+  }),
+};
+
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
       <Sidebar />
@@ -313,51 +441,95 @@ const totalRevenue =
 
             {/* SEARCH */}
 
-            <div className="relative w-full lg:w-96">
-              <Search
-                size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              />
+            <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+              <div className="grid gap-3 md:grid-cols-[3fr_1fr_1fr]">
+                
+    <div className="relative">
+      <Search
+        size={18}
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+      />
 
-              <input
-                type="text"
-                placeholder="Search invoices..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-              />
+      <input
+        type="text"
+        placeholder="Search invoices..."
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="h-[52px] w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-blue-500"
+      />
+    </div>
+      
+      {/* MONTH */}
+
+    <Select
+      placeholder="Filter by month"
+      options={monthOptions}
+      value={
+        monthOptions.find(
+          (m) => m.value === filterMonth
+        ) || null
+      }
+      onChange={(selected) =>
+        setFilterMonth(selected?.value || "")
+      }
+      styles={selectStyles}
+      isSearchable={false}
+    />
+
+    {/* SORT */}
+
+    <Select
+      placeholder=" Sort by"
+      options={sortOptions}
+      value={
+        sortOptions.find(
+          (option) => option.value === sortBy
+        ) || null
+      }
+      onChange={(selected) =>
+        setSortBy(selected?.value || "newest")
+      }
+      styles={selectStyles}
+      isSearchable={false}
+    />
+  </div>
+
+  <p className="mt-3 text-sm text-right font-medium text-slate-500">
+    ( Showing {filteredInvoices.length} invoices )
+  </p>
+              
             </div>
           </div>
 
           <div className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-4">
-  <div className="rounded-2xl bg-green-50 border border-green-200 p-5">
-    <p className="text-sm text-green-700">Total Revenue</p>
-    <h2 className="mt-2 text-2xl font-bold text-green-800">
-      ₹ {totalRevenue}
-    </h2>
-  </div>
+            <div className="rounded-2xl bg-green-50 border border-green-200 p-5">
+              <p className="text-sm text-green-700">Total Revenue</p>
+              <h2 className="mt-2 text-2xl font-bold text-green-800">
+                ₹ {totalRevenue}
+              </h2>
+            </div>
 
-  <div className="rounded-2xl bg-blue-50 border border-blue-200 p-5">
-    <p className="text-sm text-blue-700">Islamic Courses</p>
-    <h2 className="mt-2 text-2xl font-bold text-blue-800">
-      ₹ {islamicRevenue}
-    </h2>
-  </div>
+            <div className="rounded-2xl bg-blue-50 border border-blue-200 p-5">
+              <p className="text-sm text-blue-700">Islamic Courses</p>
+              <h2 className="mt-2 text-2xl font-bold text-blue-800">
+                ₹ {islamicRevenue}
+              </h2>
+            </div>
 
-  <div className="rounded-2xl bg-purple-50 border border-purple-200 p-5">
-    <p className="text-sm text-purple-700">Skill Development</p>
-    <h2 className="mt-2 text-2xl font-bold text-purple-800">
-      ₹ {skillRevenue}
-    </h2>
-  </div>
+            <div className="rounded-2xl bg-purple-50 border border-purple-200 p-5">
+              <p className="text-sm text-purple-700">Skill Development</p>
+              <h2 className="mt-2 text-2xl font-bold text-purple-800">
+                ₹ {skillRevenue}
+              </h2>
+            </div>
 
-  <div className="rounded-2xl bg-orange-50 border border-orange-200 p-5">
-    <p className="text-sm text-orange-700">Academic Classes</p>
-    <h2 className="mt-2 text-2xl font-bold text-orange-800">
-      ₹ {academicRevenue}
-    </h2>
-  </div>
-</div>
+            <div className="rounded-2xl bg-orange-50 border border-orange-200 p-5">
+              <p className="text-sm text-orange-700">Academic Classes</p>
+              <h2 className="mt-2 text-2xl font-bold text-orange-800">
+                ₹ {academicRevenue}
+              </h2>
+            </div>
+          </div>
 
           {/* TABLE CARD */}
 

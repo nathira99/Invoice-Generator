@@ -59,7 +59,7 @@ function Courses() {
 
     daysPerWeek: "",
 
-    status: "Active",
+    status: "",
   });
 
   useEffect(() => {
@@ -377,6 +377,49 @@ function Courses() {
     );
   };
 
+  const selectStyles = {
+    control: (base) => ({
+      ...base,
+      minHeight: "52px",
+      borderRadius: "16px",
+      borderColor: "#e2e8f0",
+      backgroundColor: "#f8fafc",
+      boxShadow: "none",
+      paddingLeft: "4px",
+    }),
+
+    placeholder: (base) => ({
+      ...base,
+      color: "#94a3b8",
+      fontSize: "14px",
+      fontWeight: 500,
+    }),
+
+    singleValue: (base) => ({
+      ...base,
+      color: "#0f172a",
+      fontSize: "14px",
+      fontWeight: 600,
+    }),
+
+    menu: (base) => ({
+      ...base,
+      borderRadius: "16px",
+      overflow: "hidden",
+    }),
+
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#0f172a"
+        : state.isFocused
+          ? "#f1f5f9"
+          : "#fff",
+      color: state.isSelected ? "#fff" : "#0f172a",
+      cursor: "pointer",
+    }),
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
       <Sidebar />
@@ -482,31 +525,7 @@ function Courses() {
                 }}
                 placeholder="Select Category"
                 className="text-sm"
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: "48px",
-                    borderRadius: "12px",
-                    borderColor: "#e2e8f0",
-                    backgroundColor: "#f8fafc",
-                    boxShadow: "none",
-                    paddingLeft: "4px",
-                  }),
-
-                  placeholder: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#94a3b8",
-                  }),
-
-                  singleValue: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "#0f172a",
-                  }),
-                }}
+                styles={selectStyles}
               />
 
               <Select
@@ -544,86 +563,9 @@ function Courses() {
                   });
                 }}
                 placeholder="Select Status"
-                className="text-sm"
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: "48px",
-                    borderRadius: "12px",
-                    borderColor: "#e2e8f0",
-                    backgroundColor: "#f8fafc",
-                    boxShadow: "none",
-                    paddingLeft: "4px",
-                  }),
-
-                  placeholder: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#94a3b8",
-                  }),
-
-                  singleValue: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 600,
-                    color: "#0f172a",
-                  }),
-                }}
+                className="text-sm "
+                styles={selectStyles}
               />
-
-              {/* <div className="grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCourseData({
-                      ...courseData,
-                      category: "Islamic",
-                    })
-                  }
-                  className={`rounded-xl p-3 border text-sm font-semibold ${
-                    courseData.category === "Islamic"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  Islamic
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCourseData({
-                      ...courseData,
-                      category: "Skill Development",
-                    })
-                  }
-                  className={`rounded-xl p-3 border text-sm font-semibold ${
-                    courseData.category === "Skill Development"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  Skills
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCourseData({
-                      ...courseData,
-                      category: "Academic",
-                    })
-                  }
-                  className={`rounded-xl p-3 border text-sm font-semibold ${
-                    courseData.category === "Academic"
-                      ? "bg-blue-600 text-white"
-                      : "bg-white"
-                  }`}
-                >
-                  Academic
-                </button>
-              </div> */}
 
               <input
                 type="number"

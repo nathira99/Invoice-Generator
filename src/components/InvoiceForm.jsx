@@ -7,6 +7,8 @@ import {
   updateInvoice,
 } from "../utils/Storage";
 
+import { useLocation } from "react-router-dom";
+
 import toast from "react-hot-toast";
 
 import Swal from "sweetalert2";
@@ -18,13 +20,13 @@ import { useState } from "react";
 function InvoiceForm({
   invoiceData,
   setInvoiceData,
+  editId,
+  setEditId,
   loadInvoices,
   students,
   courses,
 }) {
   const [studentCourses, setStudentCourses] = useState([]);
-
-  const [editId, setEditId] = useState(null);
 
   const handleChange = (e) => {
     setInvoiceData({
@@ -46,7 +48,9 @@ function InvoiceForm({
       !invoiceData.invoiceNumber ||
       !invoiceData.invoiceDate ||
       !invoiceData.studentName ||
-      !invoiceData.courseName
+      !invoiceData.courseName ||
+      !invoiceData.paidMonth ||
+      !invoiceData.status
     ) {
       toast.error("Please fill required fields.");
 
@@ -66,7 +70,7 @@ function InvoiceForm({
     setInvoiceData({
       invoiceNumber: nextInvoiceNumber,
 
-     invoiceDate: new Date().toISOString().split("T")[0],
+      invoiceDate: new Date().toISOString().split("T")[0],
 
       studentName: "",
 
@@ -95,59 +99,62 @@ function InvoiceForm({
 
   /* SAVE OR UPDATE */
 
-const saveOrUpdateInvoice = async () => {
+  const saveOrUpdateInvoice = async () => {
 
-  const existingInvoices = await getInvoices();
+    const existingInvoices = await getInvoices();
 
-  const alreadyExists = existingInvoices.find(
-  (invoice) =>
-    invoice.studentName?.trim().toLowerCase() ===
-      invoiceData.studentName?.trim().toLowerCase() &&
-    invoice.courseName?.trim().toLowerCase() ===
-      invoiceData.courseName?.trim().toLowerCase() &&
-    invoice.paidMonth?.trim().toLowerCase() ===
-      invoiceData.paidMonth?.trim().toLowerCase() &&
-    invoice._id !== editId
-);
+    const alreadyExists = existingInvoices.find(
+      (invoice) =>
+        invoice.studentName?.trim().toLowerCase() ===
+          invoiceData.studentName?.trim().toLowerCase() &&
+        invoice.courseName?.trim().toLowerCase() ===
+          invoiceData.courseName?.trim().toLowerCase() &&
+        invoice.paidMonth?.trim().toLowerCase() ===
+          invoiceData.paidMonth?.trim().toLowerCase() &&
+        invoiceData.status?.trim().toLowerCase() ===
+          invoice.status?.trim().toLowerCase() &&
+        invoice._id !== editId,
+    );
 
-  if (alreadyExists) {
-  toast.error(
-    `${invoiceData.studentName} already has an invoice for ${invoiceData.courseName} (${invoiceData.paidMonth})`
-  );
+    if (alreadyExists) {
+      toast.error(
+        `${invoiceData.studentName} already has an invoice for ${invoiceData.courseName} (${invoiceData.paidMonth})`,
+      );
 
-  return false;
-}
+      return false;
+    }
 
-  if (editId) {
-    return await updateInvoice(editId, invoiceData);
-  }
+    if (editId) {
+      return await updateInvoice(editId, invoiceData);
+    }
 
-  return await saveInvoice(invoiceData);
-};
+    return await saveInvoice(invoiceData);
+  };
 
   /* SAVE */
 
   const handleSaveInvoice = async () => {
-  if (!validateInvoice()) {
-    return;
-  }
+    if (!validateInvoice()) {
+      return;
+    }
 
-  try {
-    const result = await saveOrUpdateInvoice();
+    try {
+      const result = await saveOrUpdateInvoice();
 
-    if (!result) return;
+      if (!result) return;
+      
+      await loadInvoices();
 
-    toast.success("Invoice saved successfully");
+      toast.success("Invoice saved successfully");
 
-    await loadInvoices();
+      await resetInvoiceForm();
+      
+    } catch (error) {
+      console.error(error);
 
-    await resetInvoiceForm();
-  } catch (error) {
-    console.error(error);
-
-    toast.error(error.message || "Failed to save invoice");
-  }
-};
+      toast.error(error.message || "Failed to save invoice");
+    }
+  };
 
   /* DOWNLOAD PDF */
 
@@ -165,6 +172,7 @@ const saveOrUpdateInvoice = async () => {
     try {
       await saveOrUpdateInvoice();
 
+      
       await loadInvoices();
 
       toast.success("Invoice downloaded");
@@ -179,101 +187,326 @@ const saveOrUpdateInvoice = async () => {
     }
   };
 
-  return (
-<div className="mx-auto max-w-4xl rounded-3xl bg-white p-6">      {/* TITLE */}
 
+  return (
+    <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6">
+      {" "}
+      {/* TITLE */}
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-900">Invoice Details</h2>
 
         <p className="mt-2 text-gray-500">Fill student and payment details</p>
       </div>
-
       {/* FORM */}
+      <div className="mx-auto max-w-5xl">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          {" "}
+          {/* INVOICE NUMBER */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Invoice Number
+            </label>
 
+            <input
+              type="text"
+              name="invoiceNumber"
+              value={invoiceData.invoiceNumber}
+              onChange={handleChange}
+              className={inputStyle}
+            />
+          </div>
+          {/* DATE */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Invoice Date
+            </label>
 
-<div className="mx-auto max-w-5xl">
-  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">        {/* INVOICE NUMBER */}
+            <input
+              type="date"
+              name="invoiceDate"
+              value={
+                invoiceData.invoiceDate
+                  ? invoiceData.invoiceDate.split("T")[0]
+                  : ""
+              }
+              onChange={handleChange}
+              className={inputStyle}
+            />
+          </div>
+          {/* STUDENT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Student Name
+            </label>
 
+            <Select
+              options={students.map((student) => ({
+                value: student.name,
+                label: `${student.name} (${student.studentId})`,
+              }))}
+              value={
+                invoiceData.studentName
+                  ? {
+                      value: invoiceData.studentName,
+                      label: invoiceData.studentName,
+                    }
+                  : null
+              }
+              onChange={(selectedStudent) => {
+                const student = students.find(
+                  (s) => s.name === selectedStudent.value,
+                );
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Invoice Number
-          </label>
+                setInvoiceData({
+                  ...invoiceData,
 
-          <input
-            type="text"
-            name="invoiceNumber"
-            value={invoiceData.invoiceNumber}
-            onChange={handleChange}
-            className={inputStyle}
-          />
-        </div>
+                  studentName: student?.name || "",
 
-        {/* DATE */}
+                  contactNumber: student?.contact || "",
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Invoice Date
-          </label>
+                  courseName: "",
 
-          <input
-            type="date"
-            name="invoiceDate"
-            value={
-  invoiceData.invoiceDate
-    ? invoiceData.invoiceDate.split("T")[0]
-    : ""
-}
-            onChange={handleChange}
-            className={inputStyle}
-          />
-        </div>
+                  courseFee: "",
 
-        {/* STUDENT */}
+                  paidAmount: "",
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Student Name
-          </label>
+                  daysPerWeek: "",
+                });
 
+                setStudentCourses(student?.enrolledCourses || []);
+                
+              }}
+              placeholder="Search Student"
+              isSearchable
+              className="text-sm"
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: "52px",
+                  borderRadius: "16px",
+                  borderColor: "#e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  boxShadow: "none",
+                  paddingLeft: "4px",
+                }),
+
+                placeholder: (base) => ({
+                  ...base,
+                  color: "#6b7280",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                }),
+
+                singleValue: (base) => ({
+                  ...base,
+                  color: "#111827",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                }),
+
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999,
+                }),
+              }}
+            />
+          </div>
+          {/* CONTACT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Contact Number
+            </label>
+
+            <input
+              type="text"
+              value={invoiceData.contactNumber}
+              readOnly
+              className={readOnlyStyle}
+            />
+          </div>
+          {/* COURSE */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Course Name
+            </label>
+
+            <Select
+              options={studentCourses.map((courseName) => ({
+                value: courseName,
+                label: courseName,
+              }))}
+              value={
+                invoiceData.courseName
+                  ? {
+                      value: invoiceData.courseName,
+                      label: invoiceData.courseName,
+                    }
+                  : null
+              }
+              onChange={(selectedCourse) => {
+                const course = courses.find(
+                  (c) => c.courseName === selectedCourse.value,
+                );
+
+                setInvoiceData({
+                  ...invoiceData,
+
+                  courseName: course?.courseName || "",
+
+                  courseFee: course?.fee || "",
+
+                  paidAmount: course?.fee || "",
+
+                  daysPerWeek: course?.daysPerWeek || "",
+                });
+              }}
+              placeholder="Select Course"
+              isSearchable
+              className="text-sm"
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: "52px",
+                  borderRadius: "16px",
+                  borderColor: "#e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  boxShadow: "none",
+                  paddingLeft: "4px",
+                }),
+
+                placeholder: (base) => ({
+                  ...base,
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#9ca3af",
+                }),
+
+                singleValue: (base) => ({
+                  ...base,
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#111827",
+                }),
+
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999,
+                }),
+              }}
+            />
+          </div>
+          {/* PAID MONTH */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Paid Month
+            </label>
+
+            <input
+              type="text"
+              name="paidMonth"
+              value={invoiceData.paidMonth}
+              onChange={handleChange}
+              className={inputStyle}
+            />
+          </div>
+          {/* COURSE FEE */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Course Fee
+            </label>
+
+            <input
+              type="number"
+              value={invoiceData.courseFee}
+              readOnly
+              className={readOnlyStyle}
+            />
+          </div>
+          {/* DAYS */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Days Per Week
+            </label>
+
+            <input
+              type="text"
+              value={invoiceData.daysPerWeek}
+              readOnly
+              className={readOnlyStyle}
+            />
+          </div>
+          {/* DISCOUNT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Discount
+            </label>
+
+            <input
+              type="number"
+              name="discount"
+              value={invoiceData.discount}
+              onChange={(e) => {
+                const discount = Number(e.target.value) || 0;
+
+                const courseFee = Number(invoiceData.courseFee) || 0;
+
+                const paidAmount = courseFee - discount;
+
+                setInvoiceData({
+                  ...invoiceData,
+
+                  discount: e.target.value,
+
+                  paidAmount,
+                });
+              }}
+              className={inputStyle}
+            />
+          </div>
+          {/* PAID AMOUNT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Paid Amount
+            </label>
+
+            <input
+              type="number"
+              value={invoiceData.paidAmount}
+              readOnly
+              className={readOnlyStyle}
+            />
+          </div>
+          {/* STATUS */}
           <Select
-            options={students.map((student) => ({
-              value: student.name,
-              label: `${student.name} (${student.studentId})`,
-            }))}
+            options={[
+              {
+                value: "Paid",
+                label: "Paid",
+              },
+              {
+                value: "Pending",
+                label: "Pending",
+              },
+            ]}
             value={
-              invoiceData.studentName
+              invoiceData.status
                 ? {
-                    value: invoiceData.studentName,
-                    label: invoiceData.studentName,
+                    value: invoiceData.status,
+                    label: invoiceData.status === "Paid" ? "Paid" : "Pending",
                   }
                 : null
             }
-            onChange={(selectedStudent) => {
-              const student = students.find(
-                (s) => s.name === selectedStudent.value,
-              );
-
+            onChange={(selectedOption) =>
               setInvoiceData({
                 ...invoiceData,
-
-                studentName: student?.name || "",
-
-                contactNumber: student?.contact || "",
-
-                courseName: "",
-
-                courseFee: "",
-
-                paidAmount: "",
-
-                daysPerWeek: "",
-              });
-
-              setStudentCourses(student?.enrolledCourses || []);
-            }}
-            placeholder="Search Student"
-            isSearchable
+                status: selectedOption?.value || "",
+              })
+            }
+            placeholder="Select Status"
             className="text-sm"
             menuPortalTarget={document.body}
             menuPosition="fixed"
@@ -298,7 +531,7 @@ const saveOrUpdateInvoice = async () => {
               singleValue: (base) => ({
                 ...base,
                 color: "#111827",
-                fontWeight: 500,
+                fontWeight: 600,
                 fontSize: "14px",
               }),
 
@@ -310,275 +543,30 @@ const saveOrUpdateInvoice = async () => {
           />
         </div>
 
-        {/* CONTACT */}
+        {/* BUTTONS */}
 
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Contact Number
-          </label>
+        <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+          <button
+            onClick={handleSaveInvoice}
+            className="flex-1 rounded-2xl bg-blue-700 px-6 py-4 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
+          >
+            Save Invoice
+          </button>
 
-          <input
-            type="text"
-            value={invoiceData.contactNumber}
-            readOnly
-            className={readOnlyStyle}
-          />
-        </div>
-
-        {/* COURSE */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Course Name
-          </label>
-
-          <Select
-            options={studentCourses.map((courseName) => ({
-              value: courseName,
-              label: courseName,
-            }))}
-            value={
-              invoiceData.courseName
-                ? {
-                    value: invoiceData.courseName,
-                    label: invoiceData.courseName,
-                  }
-                : null
-            }
-            onChange={(selectedCourse) => {
-              const course = courses.find(
-                (c) => c.courseName === selectedCourse.value,
-              );
-
-              setInvoiceData({
-                ...invoiceData,
-
-                courseName: course?.courseName || "",
-
-                courseFee: course?.fee || "",
-
-                paidAmount: course?.fee || "",
-
-                daysPerWeek: course?.daysPerWeek || "",
-              });
-            }}
-            placeholder="Select Course"
-            isSearchable
-            className="text-sm"
-            menuPortalTarget={document.body}
-            menuPosition="fixed"
-            styles={{
-              control: (base) => ({
-                ...base,
-                minHeight: "52px",
-                borderRadius: "16px",
-                borderColor: "#e5e7eb",
-                backgroundColor: "#f9fafb",
-                boxShadow: "none",
-                paddingLeft: "4px",
-              }),
-
-              placeholder: (base) => ({
-                ...base,
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "#9ca3af",
-              }),
-
-              singleValue: (base) => ({
-                ...base,
-                fontSize: "14px",
-                fontWeight: 500,
-                color: "#111827",
-              }),
-
-              menuPortal: (base) => ({
-                ...base,
-                zIndex: 9999,
-              }),
-            }}
-          />
-        </div>
-
-        {/* PAID MONTH */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Paid Month
-          </label>
-
-          <input
-            type="text"
-            name="paidMonth"
-            value={invoiceData.paidMonth}
-            onChange={handleChange}
-            className={inputStyle}
-          />
-        </div>
-
-        {/* COURSE FEE */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Course Fee
-          </label>
-
-          <input
-            type="number"
-            value={invoiceData.courseFee}
-            readOnly
-            className={readOnlyStyle}
-          />
-        </div>
-
-        {/* DAYS */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Days Per Week
-          </label>
-
-          <input
-            type="text"
-            value={invoiceData.daysPerWeek}
-            readOnly
-            className={readOnlyStyle}
-          />
-        </div>
-
-        {/* DISCOUNT */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Discount
-          </label>
-
-          <input
-            type="number"
-            name="discount"
-            value={invoiceData.discount}
-            onChange={(e) => {
-              const discount = Number(e.target.value) || 0;
-
-              const courseFee = Number(invoiceData.courseFee) || 0;
-
-              const paidAmount = courseFee - discount;
-
-              setInvoiceData({
-                ...invoiceData,
-
-                discount: e.target.value,
-
-                paidAmount,
-              });
-            }}
-            className={inputStyle}
-          />
-        </div>
-
-        {/* PAID AMOUNT */}
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-700">
-            Paid Amount
-          </label>
-
-          <input
-            type="number"
-            value={invoiceData.paidAmount}
-            readOnly
-            className={readOnlyStyle}
-          />
-        </div>
-
-        {/* STATUS */}
-
-        <Select
-          options={[
-            {
-              value: "Paid",
-              label: "Paid",
-            },
-            {
-              value: "Pending",
-              label: "Pending",
-            },
-          ]}
-          value={
-            invoiceData.status
-              ? {
-                  value: invoiceData.status,
-                  label: invoiceData.status === "Paid" ? "Paid" : "Pending",
-                }
-              : null
-          }
-          onChange={(selectedOption) =>
-            setInvoiceData({
-              ...invoiceData,
-              status: selectedOption?.value || "",
-            })
-          }
-          placeholder="Select Status"
-          className="text-sm"
-          menuPortalTarget={document.body}
-          menuPosition="fixed"
-          styles={{
-            control: (base) => ({
-              ...base,
-              minHeight: "52px",
-              borderRadius: "16px",
-              borderColor: "#e5e7eb",
-              backgroundColor: "#f9fafb",
-              boxShadow: "none",
-              paddingLeft: "4px",
-            }),
-
-            placeholder: (base) => ({
-              ...base,
-              color: "#6b7280",
-              fontWeight: 500,
-              fontSize: "14px",
-            }),
-
-            singleValue: (base) => ({
-              ...base,
-              color: "#111827",
-              fontWeight: 600,
-              fontSize: "14px",
-            }),
-
-            menuPortal: (base) => ({
-              ...base,
-              zIndex: 9999,
-            }),
-          }}
-        />
-      </div>
-
-      {/* BUTTONS */}
-
-      <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-        <button
-          onClick={handleSaveInvoice}
-          className="flex-1 rounded-2xl bg-blue-700 px-6 py-4 font-semibold text-white transition-all hover:bg-blue-800 hover:shadow-lg"
-        >
-          Save Invoice
-        </button>
-
-        <button
-          onClick={handleDownloadPDF}
-          className={`flex-1 rounded-2xl px-6 py-4 font-semibold text-white transition-all
+          <button
+            onClick={handleDownloadPDF}
+            className={`flex-1 rounded-2xl px-6 py-4 font-semibold text-white transition-all
 
           ${
             invoiceData.status === "Pending"
               ? "cursor-not-allowed bg-gray-400"
               : "bg-green-600 hover:bg-green-700 hover:shadow-lg"
           }`}
-        >
-          Download PDF
-        </button>
+          >
+            Download PDF
+          </button>
+        </div>
       </div>
-    </div>
     </div>
   );
 }
