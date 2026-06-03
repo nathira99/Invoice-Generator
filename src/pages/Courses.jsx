@@ -40,15 +40,6 @@ function Courses() {
     Academic: false,
   });
 
-  const [editData, setEditData] = useState({
-    courseName: "",
-
-    category: "",
-
-    fee: "",
-
-    daysPerWeek: "",
-  });
 
   const [courseData, setCourseData] = useState({
     courseName: "",
@@ -60,6 +51,8 @@ function Courses() {
     daysPerWeek: "",
 
     status: "",
+
+    duration: "",
   });
 
   useEffect(() => {
@@ -98,7 +91,9 @@ function Courses() {
       !courseData.courseName ||
       !courseData.category ||
       !courseData.fee ||
-      !courseData.daysPerWeek
+      !courseData.daysPerWeek ||
+      !courseData.status ||
+      !courseData.duration
     ) {
       toast.error("Please fill all fields.");
 
@@ -118,6 +113,10 @@ function Courses() {
         fee: "",
 
         daysPerWeek: "",
+
+        status: "",
+
+        duration: "",
       });
     } catch (error) {
       console.error(error);
@@ -152,24 +151,14 @@ function Courses() {
     }
   };
 
-  const handleEditCourse = (course) => {
-    setEditId(course._id);
-
-    setEditData({
-      ...course,
-      courseName: course.courseName || "",
-      category: course.category || "",
-      fee: course.fee || "",
-      daysPerWeek: course.daysPerWeek || "",
-    });
-  };
-
   const handleDuplicateCourse = async (course) => {
     const duplicateData = {
       courseName: `${course.courseName} Copy`,
       category: course.category,
       fee: course.fee,
       daysPerWeek: course.daysPerWeek,
+      status: course.status,
+      duration: course.duration,
     };
 
     await saveCourse(duplicateData);
@@ -194,38 +183,9 @@ function Courses() {
         category: "",
         fee: "",
         daysPerWeek: "",
+        duration: "",
+        status: "",
       });
-    } catch (error) {
-      console.error(error);
-
-      toast.error("Failed to update course");
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    if (
-      !editData.courseName ||
-      !editData.category ||
-      !editData.fee ||
-      !editData.daysPerWeek
-    ) {
-      toast.error("Please fill all fields.");
-
-      if (
-        !editData.courseName ||
-        !editData.category ||
-        !editData.fee ||
-        !editData.daysPerWeek
-      )
-        return toast.error("Please fill all fields.");
-    }
-
-    try {
-      await updateCourse(editData._id, editData);
-
-      await loadCourses();
-
-      setEditId(null);
     } catch (error) {
       console.error(error);
 
@@ -347,6 +307,8 @@ function Courses() {
                             category: course.category || "",
                             fee: course.fee || "",
                             daysPerWeek: course.daysPerWeek || "",
+                            duration: course.duration || "",
+                            status: course.status || "",
                           });
 
                           window.scrollTo({
