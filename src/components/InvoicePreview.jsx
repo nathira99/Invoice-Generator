@@ -150,8 +150,16 @@ function InvoicePreview({ invoiceData }) {
                 </p>
 
                 <div className="pt-1">
-                  <span className="rounded-full bg-green-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-green-700">
-                    Payment Received
+                  <span
+                    className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
+                      invoiceData.status === "Paid"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }`}
+                  >
+                    {invoiceData.status === "Paid"
+                      ? "✓ Payment Received"
+                      : "⚠ Payment Pending"}
                   </span>
                 </div>
               </div>
@@ -268,7 +276,7 @@ function InvoicePreview({ invoiceData }) {
                 <span className="font-semibold text-[#1E3A8A]">INSTAGRAM:</span>
 
                 <span>@ilmuljannah</span>
-                </div>
+              </div>
 
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-[#1E3A8A]">EMAIL:</span>
