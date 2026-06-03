@@ -193,9 +193,7 @@ function InvoiceForm({
       {" "}
       {/* TITLE */}
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900">Invoice Details</h2>
-
-        <p className="mt-2 text-gray-500">Fill student and payment details</p>
+        <h2 className="text-xl font-bold text-gray-900">Fill student and payment details</h2>
       </div>
       {/* FORM */}
       <div className="mx-auto max-w-5xl">
