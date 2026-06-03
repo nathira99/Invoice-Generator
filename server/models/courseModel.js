@@ -34,22 +34,22 @@ const courseSchema = new mongoose.Schema(
     },
 
     status: {
-  type: String,
-  enum: ["Active", "Upcoming", "Closed"],
-  default: "Active",
-},
-
-  teacherId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Teacher",
-  },
-
-  enrolledStudents: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
+      type: String,
+      enum: ["Active", "Upcoming", "Closed"],
+      default: "Active",
     },
-  ],
+
+    teacherId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+    },
+
+    enrolledStudents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Student",
+      },
+    ],
   },
   {
     timestamps: true,
