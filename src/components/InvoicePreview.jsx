@@ -22,7 +22,7 @@ function InvoicePreview({ invoiceData }) {
   });
 
   return (
-    <div className="w-full overflow-x-auto bg-slate-200 p-3 md:p-6 rounded-3xl">
+    <div className="w-full overflow-x-auto p-3 md:p-6 rounded-3xl">
       <div className="flex justify-center min-w-fit">
         <div
         id="invoice-preview"

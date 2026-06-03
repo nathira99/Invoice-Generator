@@ -201,7 +201,9 @@ function Dashboard() {
 
     {
       title: "Pending",
-      value: isLoadingInvoices ? "..." : `Rs. ${pendingAmount.toLocaleString()}`,
+      value: isLoadingInvoices
+        ? "..."
+        : `Rs. ${pendingAmount.toLocaleString()}`,
       icon: AlertCircle,
       bg: "bg-orange-100",
       color: "text-orange-700",
@@ -321,16 +323,26 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-            {/* FORM */}
-            <div className="mx-auto w-full max-w-5xl">
-              <div className="mb-2">
-              <h2 className="text-3xl font-bold text-slate-900">
-                Create Invoice
-              </h2>
 
-              <p className="mt-1 text-sm font-medium text-slate-500">
-                Generate and manage student invoices
-              </p>
+            <div className="mt-10 flex items-center gap-4">
+              <div className="h-px flex-1 bg-slate-200" />
+
+              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                Invoice Management
+              </span>
+
+              <div className="h-px flex-1 bg-slate-200" />
+            </div>
+            {/* FORM */}
+            <div className=" w-full max-w-5xl">
+              <div className="mb-4">
+                <h2 className="text-3xl font-bold text-slate-900">
+                  Create Invoice
+                </h2>
+
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  Generate and manage student invoices
+                </p>
               </div>
               <InvoiceForm
                 invoiceData={invoiceData}
@@ -342,17 +354,17 @@ function Dashboard() {
                 courses={courses}
               />
             </div>
-
+            <div className="my-5 border-t border-slate-200" />
             {/* PREVIEW */}
             <div className="flex flex-col justify-center">
-              <div className="mx-auto mb-2 w-full max-w-5xl">
+              <div className="mb-4 w-full max-w-5xl">
                 <h2 className="text-3xl font-bold text-slate-900">
-                Invoice Preview
-              </h2>
+                  Invoice Preview
+                </h2>
 
-              <p className="mt-1 text-sm font-medium text-slate-500">
-                Review before download or save
-              </p>
+                <p className="mt-1 text-sm font-medium text-slate-500">
+                  Review before download or save
+                </p>
               </div>
               <InvoicePreview invoiceData={invoiceData} />
             </div>
