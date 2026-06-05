@@ -1,16 +1,9 @@
-import { v4 as uuidv4 } from "uuid";
+import FingerprintJS from "@fingerprintjs/fingerprintjs";
 
-export const getDeviceId = () => {
-  let deviceId = localStorage.getItem("deviceId");
+export const getDeviceId = async () => {
+  const fp = await FingerprintJS.load();
 
-  if (!deviceId) {
-    deviceId = uuidv4();
+  const result = await fp.get();
 
-    localStorage.setItem(
-      "deviceId",
-      deviceId
-    );
-  }
-
-  return deviceId;
+  return result.visitorId;
 };

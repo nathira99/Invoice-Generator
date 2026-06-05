@@ -11,7 +11,9 @@ const deviceSchema = new mongoose.Schema(
     deviceId: {
       type: String,
       required: true,
+      
     },
+    
 
     deviceName: {
       type: String,
@@ -28,9 +30,19 @@ const deviceSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+deviceSchema.index(
+  {
+    userId: 1,
+    deviceId: 1,
+  },
+  {
+    unique: true,
+  }
+);
 
 export default mongoose.model(
   "Device",
   deviceSchema,
   "devices"
 );
+

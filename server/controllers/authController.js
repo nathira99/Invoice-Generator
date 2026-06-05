@@ -52,42 +52,48 @@ export const loginUser =
           });
 
       }
+      console.log("LOGIN BODY", {
+  email,
+  deviceId,
+  deviceName,
+});
 
-      const devices =
-  await Device.find({
+try {
+  const devices = await Device.find({
     userId: user._id,
   });
 
-const existingDevice =
-  devices.find(
-    (d) => d.deviceId === deviceId
-  );
+
+  const existingDevice =
+    devices.find(
+      (d) => d.deviceId === deviceId
+    );
 
   if (existingDevice) {
-  existingDevice.lastLogin =
-    new Date();
+    existingDevice.lastLogin =
+      new Date();
 
-  await existingDevice.save();
-}
-else {
-
-  if (devices.length >= 5) {
-
-    return res
-      .status(403)
-      .json({
+    await existingDevice.save();
+  } else {
+    if (devices.length >= 10) {
+      return res.status(403).json({
         message:
-          "Maximum 5 devices reached. Remove an existing device first.",
+          "Maximum 10 devices reached.",
       });
+    }
 
+    await Device.create({
+      userId: user._id,
+      deviceId,
+      deviceName,
+    });
   }
-
-  await Device.create({
-    userId: user._id,
-    deviceId,
-    deviceName,
-  });
-
+} catch (err) {
+  console.log(
+    "DEVICE ERROR",
+    err
+  );
+  throw err;
 }
 
       const token =

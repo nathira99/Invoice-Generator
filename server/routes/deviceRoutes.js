@@ -17,3 +17,5 @@ router.delete(
   protect,
   removeDevice
 );
+
+export default router;

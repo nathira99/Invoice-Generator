@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 
 import { getDeviceId } from "../utils/device";
+import axios from "axios";
 
 function Login() {
   const navigate = useNavigate();
@@ -19,7 +20,41 @@ function Login() {
 
   const [loading, setLoading] = useState(false);
 
-  const deviceId = getDeviceId();
+  const getDeviceName = () => {
+  const ua = navigator.userAgent;
+
+  let device = "Unknown Device";
+  let browser = "";
+
+  if (ua.includes("Windows"))
+    device = "Windows PC";
+
+  else if (ua.includes("Android"))
+    device = "Android Phone";
+
+  else if (ua.includes("iPhone"))
+    device = "iPhone";
+
+  else if (ua.includes("iPad"))
+    device = "iPad";
+
+  else if (ua.includes("Mac"))
+    device = "MacBook";
+
+  if (ua.includes("Edg"))
+    browser = "Edge";
+
+  else if (ua.includes("Chrome"))
+    browser = "Chrome";
+
+  else if (ua.includes("Firefox"))
+    browser = "Firefox";
+
+  else if (ua.includes("Safari"))
+    browser = "Safari";
+
+  return `${device} • ${browser}`;
+};
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -27,7 +62,24 @@ function Login() {
     try {
       setLoading(true);
 
-      await login(email, password, deviceId, navigator.userAgent);
+      const deviceId = await getDeviceId();
+
+      const deviceName = getDeviceName();
+
+      await axios.post(
+        `${import.meta.env.VITE_API_URL}/auth/login`,
+        {
+          email,
+          password,
+          deviceId,
+          deviceName
+        },
+        {
+          withCredentials: true,
+        }
+      );
+
+      await login( email, password, deviceId, deviceName);
 
       navigate("/");
     } catch (error) {
