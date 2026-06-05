@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import Select from "react-select";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
@@ -210,6 +210,11 @@ function Teachers() {
     }
   };
 
+  const courseOptions = courses.map((course) => ({
+  value: course.courseName,
+  label: course.courseName,
+}));
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -251,7 +256,7 @@ function Teachers() {
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               {/* SEARCH */}
 
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full xs:w-72">
                 <Search
                   size={18}
                   className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -259,7 +264,7 @@ function Teachers() {
 
                 <input
                   type="text"
-                  placeholder="🔍 Search teacher..."
+                  placeholder="Search teacher..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
@@ -318,20 +323,68 @@ function Teachers() {
                 className={inputStyle}
               />
 
-              <select
-                name="course"
-                value={teacherData.course}
-                onChange={handleChange}
-                className={inputStyle}
-              >
-                <option value="">Select Course</option>
+              <Select
+  options={courseOptions}
+  value={
+    teacherData.course
+      ? {
+          value: teacherData.course,
+          label: teacherData.course,
+        }
+      : null
+  }
+  onChange={(selectedOption) =>
+    setTeacherData({
+      ...teacherData,
+      course: selectedOption?.value || "",
+    })
+  }
+  placeholder="Select Course"
+  isSearchable
+  className="text-sm"
+  styles={{
+    control: (base) => ({
+      ...base,
+      minHeight: "48px",
+      borderRadius: "12px",
+      borderColor: "#e2e8f0",
+      backgroundColor: "#f8fafc",
+      boxShadow: "none",
+      paddingLeft: "4px",
+    }),
 
-                {courses.map((course, index) => (
-                  <option key={index} value={course.courseName}>
-                    {course.courseName}
-                  </option>
-                ))}
-              </select>
+    placeholder: (base) => ({
+      ...base,
+      fontSize: "14px",
+      fontWeight: 500,
+      color: "#94a3b8",
+    }),
+
+    singleValue: (base) => ({
+      ...base,
+      fontSize: "14px",
+      fontWeight: 600,
+      color: "#0f172a",
+    }),
+
+    menu: (base) => ({
+      ...base,
+      borderRadius: "12px",
+      overflow: "hidden",
+    }),
+
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#0f172a"
+        : state.isFocused
+          ? "#f1f5f9"
+          : "#fff",
+      color: state.isSelected ? "#fff" : "#0f172a",
+      cursor: "pointer",
+    }),
+  }}
+/>
 
               <input
                 type="date"
@@ -373,219 +426,183 @@ function Teachers() {
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              {/* HEADER */}
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+  <table className="min-w-[1100px] w-full">
+    <thead>
+      <tr className="border-b bg-slate-50">
+        <th className="px-4 py-3 text-left">Teacher</th>
+        <th className="px-4 py-3 text-left">Contact</th>
+        <th className="px-4 py-3 text-left">Course</th>
+        <th className="px-4 py-3 text-left">Joining Date</th>
+        <th className="px-4 py-3 text-left">Status</th>
+        <th className="px-4 py-3 text-center">Actions</th>
+      </tr>
+    </thead>
 
-              <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
-                <div className="grid grid-cols-[1.2fr_1fr_1fr_1fr_0.8fr_1fr] gap-4 text-sm font-semibold text-slate-500">
-                  <p>Teacher</p>
+    <tbody>
+      {filteredTeachers.map((teacher) => (
+        <tr
+          key={teacher._id}
+          className="border-b border-slate-100 hover:bg-slate-50"
+        >
+          {/* TEACHER */}
+          <td className="px-4 py-4">
+            {editId === teacher._id ? (
+              <input
+                type="text"
+                value={editData.teacherName}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    teacherName: e.target.value,
+                  })
+                }
+                className={inputStyle}
+              />
+            ) : (
+              <p className="font-semibold text-slate-900">
+                {teacher.teacherName}
+              </p>
+            )}
+          </td>
 
-                  <p>Contact</p>
+          {/* CONTACT */}
+          <td className="px-4 py-4">
+            {editId === teacher._id ? (
+              <input
+                type="text"
+                value={editData.contact}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    contact: e.target.value,
+                  })
+                }
+                className={inputStyle}
+              />
+            ) : (
+              <p className="text-sm text-slate-600">
+                {teacher.contact}
+              </p>
+            )}
+          </td>
 
-                  <p>Course</p>
-
-                  <p>Joining Date</p>
-
-                  <p>Status</p>
-
-                  <p className="text-center">Actions</p>
-                </div>
-              </div>
-
-              {/* ROWS */}
-
-              <div>
-                {filteredTeachers.map((teacher) => (
-                  <div
-                    key={teacher._id}
-                    className="border-b border-slate-100 last:border-none"
+          {/* COURSE */}
+          <td className="px-4 py-4">
+            {editId === teacher._id ? (
+              <select
+                value={editData.course}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    course: e.target.value,
+                  })
+                }
+                className={inputStyle}
+              >
+                {courses.map((course) => (
+                  <option
+                    key={course._id}
+                    value={course.courseName}
                   >
-                    <div className="grid gap-5 px-6 py-5 lg:grid-cols-[1.2fr_1fr_1fr_1fr_0.8fr_1fr] lg:items-center">
-                      {/* NAME */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Teacher
-                        </p>
-
-                        {editId === teacher._id ? (
-                          <input
-                            type="text"
-                            value={editData.teacherName}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                teacherName: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 font-semibold text-slate-900">
-                            {teacher.teacherName}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* CONTACT */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Contact
-                        </p>
-
-                        {editId === teacher._id ? (
-                          <input
-                            type="text"
-                            value={editData.contact}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                contact: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 text-sm font-medium text-slate-600">
-                            {teacher.contact}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* COURSE */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Course
-                        </p>
-
-                        {editId === teacher._id ? (
-                          <select
-                            value={editData.course}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                course: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          >
-                            {courses.map((course, index) => (
-                              <option key={index} value={course.courseName}>
-                                {course.courseName}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <p className="mt-1 text-sm font-medium text-slate-700">
-                            {teacher.course}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* DATE */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Joining Date
-                        </p>
-
-                        {editId === teacher._id ? (
-                          <input
-                            type="date"
-                            value={editData.joiningDate}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                joiningDate: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          />
-                        ) : (
-                          <p className="mt-1 text-sm font-medium text-slate-600">
-                            {new Date(teacher.joiningDate).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                                timeZone: "Asia/Kolkata",
-                              },
-                            )}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* STATUS */}
-
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 lg:hidden">
-                          Status
-                        </p>
-
-                        {editId === teacher._id ? (
-                          <select
-                            value={editData.status}
-                            onChange={(e) =>
-                              setEditData({
-                                ...editData,
-                                status: e.target.value,
-                              })
-                            }
-                            className={`${inputStyle} mt-2`}
-                          >
-                            <option value="Active">Active</option>
-
-                            <option value="Inactive">Inactive</option>
-                          </select>
-                        ) : (
-                          <span
-                            className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
-                              teacher.status === "Active"
-                                ? "bg-emerald-100 text-emerald-700"
-                                : "bg-red-100 text-red-700"
-                            }`}
-                          >
-                            {teacher.status}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* ACTIONS */}
-
-                      <div className="flex flex-wrap items-center justify-start gap-2 lg:justify-center">
-                        {editId === teacher._id ? (
-                          <button
-                            onClick={handleSaveEdit}
-                            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                          >
-                            <Check size={15} />
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditTeacher(teacher)}
-                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                          >
-                            <Pencil size={15} />
-                            Edit
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleDeleteTeacher(teacher._id)}
-                          className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
-                        >
-                          <Trash2 size={15} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                    {course.courseName}
+                  </option>
                 ))}
-              </div>
+              </select>
+            ) : (
+              <p className="text-sm text-slate-700">
+                {teacher.course}
+              </p>
+            )}
+          </td>
+
+          {/* DATE */}
+          <td className="px-4 py-4">
+            {editId === teacher._id ? (
+              <input
+                type="date"
+                value={editData.joiningDate}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    joiningDate: e.target.value,
+                  })
+                }
+                className={inputStyle}
+              />
+            ) : (
+              new Date(teacher.joiningDate).toLocaleDateString(
+                "en-IN",
+                {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                }
+              )
+            )}
+          </td>
+
+          {/* STATUS */}
+          <td className="px-4 py-4">
+            {editId === teacher._id ? (
+              <select
+                value={editData.status}
+                onChange={(e) =>
+                  setEditData({
+                    ...editData,
+                    status: e.target.value,
+                  })
+                }
+                className={inputStyle}
+              >
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            ) : (
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  teacher.status === "Active"
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {teacher.status}
+              </span>
+            )}
+          </td>
+
+          {/* ACTIONS */}
+          <td className="px-4 py-4">
+            <div className="flex justify-center gap-2">
+              {editId === teacher._id ? (
+                <button
+                  onClick={handleSaveEdit}
+                  className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                >
+                  <Check size={15} />
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleEditTeacher(teacher)}
+                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                >
+                  <Pencil size={15} />
+                </button>
+              )}
+
+              <button
+                onClick={() => handleDeleteTeacher(teacher._id)}
+                className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+              >
+                <Trash2 size={15} />
+              </button>
             </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
           )}
         </div>
       </main>
