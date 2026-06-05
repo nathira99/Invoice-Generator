@@ -10,6 +10,10 @@ import Select from "react-select";
 
 import Swal from "sweetalert2";
 
+import DatePicker from "react-datepicker";
+
+import "react-datepicker/dist/react-datepicker.css";
+
 import { useState, useEffect } from "react";
 
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,6 +32,16 @@ function InvoiceHistory() {
   const [sortBy, setSortBy] = useState(null);
 
   const [filterMonth, setFilterMonth] = useState(null);
+
+  const [selectedYear, setSelectedYear] = useState(null);
+
+  const [filterType, setFilterType] = useState("all");
+
+  const [fromDate, setFromDate] = useState("");
+
+  const [toDate, setToDate] = useState("");
+
+  const [showDateModal, setShowDateModal] = useState(false);
 
   const inputStyle =
     "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
@@ -83,10 +97,28 @@ function InvoiceHistory() {
     invoice.studentName.toLowerCase().includes(search.toLowerCase()),
   );
 
-  if (filterMonth) {
+  if (filterType === "month" && filterMonth) {
     filteredInvoices = filteredInvoices.filter(
       (invoice) => invoice.paidMonth === filterMonth,
     );
+  }
+
+  if (filterType === "year") {
+    filteredInvoices = filteredInvoices.filter((invoice) => {
+      return (
+        new Date(invoice.invoiceDate).getFullYear().toString() === selectedYear
+      );
+    });
+  }
+
+  if (filterType === "custom" && fromDate && toDate) {
+    filteredInvoices = filteredInvoices.filter((invoice) => {
+      const invoiceDate = new Date(invoice.invoiceDate);
+
+      return (
+        invoiceDate >= new Date(fromDate) && invoiceDate <= new Date(toDate)
+      );
+    });
   }
 
   switch (sortBy) {
@@ -340,75 +372,93 @@ function InvoiceHistory() {
       })),
   ];
 
+  const filterOptions = [
+    { value: "all", label: "All Invoices" },
+    { value: "month", label: "Month" },
+    { value: "year", label: "Year" },
+    { value: "custom", label: "Custom Range" },
+  ];
+
+  const yearOptions = [
+    ...new Set(
+      invoices.map((invoice) => new Date(invoice.invoiceDate).getFullYear()),
+    ),
+  ]
+    .sort((a, b) => b - a)
+    .map((year) => ({
+      value: year.toString(),
+      label: year.toString(),
+    }));
+
   const sortOptions = [
-  {
-    value: "newest",
-    label: "Newest First",
-  },
-  {
-    value: "oldest",
-    label: "Oldest First",
-  },
-  {
-    value: "nameAsc",
-    label: "Student A-Z",
-  },
-  {
-    value: "nameDesc",
-    label: "Student Z-A",
-  },
-  {
-    value: "amountHigh",
-    label: "Amount High-Low",
-  },
-  {
-    value: "amountLow",
-    label: "Amount Low-High",
-  },
-];
+    {
+      value: "newest",
+      label: "Newest First",
+    },
+    {
+      value: "oldest",
+      label: "Oldest First",
+    },
+    {
+      value: "nameAsc",
+      label: "Student A-Z",
+    },
+    {
+      value: "nameDesc",
+      label: "Student Z-A",
+    },
+    {
+      value: "amountHigh",
+      label: "Amount High-Low",
+    },
+    {
+      value: "amountLow",
+      label: "Amount Low-High",
+    },
+  ];
 
   const selectStyles = {
-  control: (base) => ({
-    ...base,
-    minHeight: "52px",
-    borderRadius: "16px",
-    borderColor: "#e2e8f0",
-    backgroundColor: "#f8fafc",
-    boxShadow: "none",
-    paddingLeft: "4px",
-  }),
+    control: (base) => ({
+      ...base,
+      minHeight: "52px",
+      borderRadius: "16px",
+      borderColor: "#e2e8f0",
+      backgroundColor: "#f8fafc",
+      boxShadow: "none",
+      paddingLeft: "4px",
+    }),
 
-  placeholder: (base) => ({
-    ...base,
-    color: "#94a3b8",
-    fontSize: "14px",
-    fontWeight: 500,
-  }),
+    placeholder: (base) => ({
+      ...base,
+      color: "#94a3b8",
+      fontSize: "14px",
+      fontWeight: 500,
+    }),
 
-  singleValue: (base) => ({
-    ...base,
-    color: "#0f172a",
-    fontSize: "14px",
-    fontWeight: 600,
-  }),
+    singleValue: (base) => ({
+      ...base,
+      color: "#0f172a",
+      fontSize: "14px",
+      fontWeight: 600,
+    }),
 
-  menu: (base) => ({
-    ...base,
-    borderRadius: "16px",
-    overflow: "hidden",
-  }),
+    menu: (base) => ({
+      ...base,
+      borderRadius: "16px",
+      overflow: "hidden",
+    }),
 
-  option: (base, state) => ({
-    ...base,
-    backgroundColor: state.isSelected
-      ? "#0f172a"
-      : state.isFocused
-        ? "#f1f5f9"
-        : "#fff",
-    color: state.isSelected ? "#fff" : "#0f172a",
-    cursor: "pointer",
-  }),
-};
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#0f172a"
+        : state.isFocused
+          ? "#f1f5f9"
+          : "#fff",
+      color: state.isSelected ? "#fff" : "#0f172a",
+      cursor: "pointer",
+    }),
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -442,62 +492,152 @@ function InvoiceHistory() {
             {/* SEARCH */}
 
             <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-              <div className="grid gap-3 md:grid-cols-[3fr_1fr_1fr]">
-                
-    <div className="relative">
-      <Search
-        size={18}
-        className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-      />
+              <div className="flex flex-wrap gap-3">
+                <div className="relative">
+                  <Search
+                    size={18}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                  />
 
-      <input
-        type="text"
-        placeholder="Search invoices..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="h-[52px] w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-blue-500"
-      />
-    </div>
-      
-      {/* MONTH */}
+                  <input
+                    type="text"
+                    placeholder="Search invoices..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="h-[52px] w-full rounded-2xl border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-blue-500"
+                  />
+                </div>
 
-    <Select
-      placeholder="Filter by month"
-      options={monthOptions}
-      value={
-        monthOptions.find(
-          (m) => m.value === filterMonth
-        ) || null
-      }
-      onChange={(selected) =>
-        setFilterMonth(selected?.value || "")
-      }
-      styles={selectStyles}
-      isSearchable={false}
-    />
+                {/* FILTER */}
 
-    {/* SORT */}
+                <Select
+                  options={filterOptions}
+                  value={filterOptions.find(
+                    (option) => option.value === filterType,
+                  )}
+                  onChange={(selected) => {
+                    setFilterType(selected.value);
 
-    <Select
-      placeholder=" Sort by"
-      options={sortOptions}
-      value={
-        sortOptions.find(
-          (option) => option.value === sortBy
-        ) || null
-      }
-      onChange={(selected) =>
-        setSortBy(selected?.value || "newest")
-      }
-      styles={selectStyles}
-      isSearchable={false}
-    />
-  </div>
+                    if (selected.value === "custom") {
+                      setShowDateModal(true);
+                    }
+                  }}
+                  placeholder="Filter"
+                  styles={selectStyles}
+                  isSearchable={false}
+                />
 
-  <p className="mt-3 text-sm text-right font-medium text-slate-500">
-    ( Showing {filteredInvoices.length} invoices )
-  </p>
+                {/* MONTH */}
+
+                {filterType === "month" && (
+                <Select
+                  placeholder="Filter by month"
+                  options={monthOptions}
+                  value={
+                    monthOptions.find((m) => m.value === filterMonth) || null
+                  }
+                  onChange={(selected) => setFilterMonth(selected?.value || "")}
+                  styles={selectStyles}
+                  isSearchable={false}
+                />
+              )}
               
+                {/* YEAR */}
+
+                {filterType === "year" && (
+                  <Select
+                    options={yearOptions}
+                    value={
+                      yearOptions.find(
+                        (option) => option.value === selectedYear,
+                      ) || null
+                    }
+                    onChange={(selected) =>
+                      setSelectedYear(selected?.value || "")
+                    }
+                    placeholder="Select Year"
+                    styles={selectStyles}
+                    isSearchable={false}
+                  />
+                )}
+
+                {showDateModal && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+                    <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
+                      <h2 className="mb-5 text-xl font-bold">
+                        Custom Date Range
+                      </h2>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="mb-2 block text-sm font-medium">
+                            From
+                          </label>
+
+                          <DatePicker
+                            selected={fromDate}
+                            onChange={(date) => setFromDate(date)}
+                            className="w-full rounded-xl border p-3"
+                            dateFormat="dd/MM/yyyy"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-2 block text-sm font-medium">
+                            To
+                          </label>
+
+                          <DatePicker
+                            selected={toDate}
+                            onChange={(date) => setToDate(date)}
+                            className="w-full rounded-xl border p-3"
+                            dateFormat="dd/MM/yyyy"
+                          />
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-4">
+                          <button
+                            onClick={() => {
+                              setShowDateModal(false);
+                              setFilterType("all");
+                            }}
+                            className="rounded-xl border px-4 py-2"
+                          >
+                            Cancel
+                          </button>
+
+                          <button
+                            onClick={() => setShowDateModal(false)}
+                            className="rounded-xl bg-blue-600 px-4 py-2 text-white"
+                          >
+                            Apply
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* SORT */}
+
+                <Select
+                  placeholder=" Sort by"
+                  options={sortOptions}
+                  value={
+                    sortOptions.find((option) => option.value === sortBy) ||
+                    null
+                  }
+                  onChange={(selected) =>
+                    setSortBy(selected?.value || "newest")
+                  }
+                  styles={selectStyles}
+                  isSearchable={false}
+                />
+              </div>
+
+              <p className="mt-3 text-sm text-right font-medium text-slate-500">
+                ( Showing {filteredInvoices.length} invoices )
+              </p>
             </div>
           </div>
 
