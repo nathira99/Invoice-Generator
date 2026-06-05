@@ -189,7 +189,7 @@ function Teachers() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editData.teacherName || !editData.contact || !editData.course) {
+    if (!editData.teacherName || !editData.contact || !editData.course || !editData.joiningDate || !editData.status) {
       toast.error("Please fill all fields");
 
       return;
@@ -579,7 +579,6 @@ function Teachers() {
                           className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
                         >
                           <Trash2 size={15} />
-                          Delete
                         </button>
                       </div>
                     </div>

@@ -243,7 +243,7 @@ function Dashboard() {
                         {stat.title}
                       </p>
 
-                      <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                      <h2 className="mt-3 text-2xl font-bold tracking-tight text-slate-950">
                         {stat.value}
                       </h2>
                     </div>
