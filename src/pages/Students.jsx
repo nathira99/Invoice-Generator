@@ -28,7 +28,7 @@ function Students() {
 
   const [search, setSearch] = useState("");
 
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
 
   const [editData, setEditData] = useState({
     studentId: "",
@@ -45,7 +45,6 @@ function Students() {
     contact: "",
     enrolledCourses: [],
     notes: "",
-    status: "Active",
   });
 
   useEffect(() => {
@@ -127,7 +126,7 @@ function Students() {
       cancelButtonColor: "#64748b",
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
-      borderRadius: "20px",
+      // borderRadius: "20px",
     });
 
     if (!result.isConfirmed) return;
@@ -146,23 +145,40 @@ function Students() {
   };
 
   const handleEditStudent = (student, index) => {
-    setEditIndex(index);
+  setEditId(student._id);
 
-    setEditData({
-      ...student,
-      enrolledCourses: student.enrolledCourses || [],
-    });
-  };
+  setStudentData({
+    ...student,
+    studentId: student.studentId || "",
+    name: student.name || "",
+    contact: student.contact || "",
+    enrolledCourses: student.enrolledCourses || [],
+    notes: student.notes || "",
+  });
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 
   const handleSaveEdit = async () => {
     try {
-      await updateStudent(editData._id, editData);
+      await updateStudent(editId, studentData);
 
       toast.success("Student updated");
 
       await loadStudents();
 
-      setEditIndex(null);
+      setEditId(null);
+
+      setStudentData({
+        studentId: "",
+        name: "",
+        contact: "",
+        enrolledCourses: [],
+        notes: "",
+      });
     } catch (error) {
       console.error(error);
 
@@ -172,16 +188,16 @@ function Students() {
 
   const searchText = search.toLowerCase();
 
-const filteredStudents = students.filter((student) => {
-  return (
-    student.studentId?.toLowerCase().includes(searchText) ||
-    student.name?.toLowerCase().includes(searchText) ||
-    student.contact?.toLowerCase().includes(searchText) ||
-    student.enrolledCourses?.some((course) =>
-      course.toLowerCase().includes(searchText)
-    )
-  );
-});
+  const filteredStudents = students.filter((student) => {
+    return (
+      student.studentId?.toLowerCase().includes(searchText) ||
+      student.name?.toLowerCase().includes(searchText) ||
+      student.contact?.toLowerCase().includes(searchText) ||
+      student.enrolledCourses?.some((course) =>
+        course.toLowerCase().includes(searchText),
+      )
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -219,6 +235,16 @@ const filteredStudents = students.filter((student) => {
                 {students.length}
               </h2>
             </div>
+          </div>
+
+          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+            <input
+              type="text"
+              placeholder="🔍 Search Student..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={inputStyle}
+            />
           </div>
 
           {/* FORM */}
@@ -344,19 +370,56 @@ const filteredStudents = students.filter((student) => {
                 }}
               />
 
-              <button
-                onClick={handleAddStudent}
-                disabled={saving}
-                className={`rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all
+              <div className="flex flex-wrap gap-3">
+  {editId ? (
+    <>
+      <button
+        onClick={handleSaveEdit}
+        className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+      >
+        Update Student
+      </button>
 
-                ${
-                  saving
-                    ? "cursor-not-allowed bg-slate-400"
-                    : "bg-slate-900 hover:bg-slate-800 hover:shadow-lg"
-                }`}
-              >
-                {saving ? "Adding..." : "Add Student"}
-              </button>
+      <button
+        onClick={() => {
+          setEditId(null);
+
+          setStudentData({ 
+            studentId: "",
+            name: "",
+            contact: "",
+            enrolledCourses: [],
+            notes: "",
+          });
+        }}
+        className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+      >
+        Cancel
+      </button>
+    </>
+  ) : (
+    <div className="flex gap-3">
+  {editId ? (
+    <>
+      <button
+        onClick={handleAddStudent}
+        className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white"
+      >
+        Add Student
+      </button>
+    </>
+  ) : (
+    <button
+      onClick={handleAddStudent}
+      disabled={saving}
+      className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white"
+    >
+      {saving ? "Adding..." : "Add Student"}
+    </button>
+  )}
+</div>
+  )}
+</div>
             </div>
           </div>
 
@@ -379,189 +442,93 @@ const filteredStudents = students.filter((student) => {
               </p>
             </div>
           ) : (
-            <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-              {/* HEADER */}
-
-              <div className="hidden border-b border-slate-100 bg-slate-50 px-6 py-4 lg:block">
-                <div className="grid grid-cols-[0.8fr_1fr_1fr_1.2fr_1.2fr_0.8fr] lg:grid-cols-[0.8fr_1fr_1fr_1.8fr_1.5fr_0.8fr] gap-4 text-sm font-semibold text-slate-500">
-                  <p>Student ID</p>
-
-                  <p>Student Name</p>
-
-                  <p>Contact</p>
-
-                  <p>Courses</p>
-
-                  <p className="text-center">Actions</p>
-                </div>
-              </div>
-
-              {/* ROWS */}
-
-              <div>
-                {filteredStudents.map((student, index) => (
-                  <div
-                    key={student._id || index}
-                    className="border-b border-slate-100 last:border-none"
-                  >
-                    <div className="grid gap-4 px-6 py-5 lg:grid-cols-[0.8fr_1fr_1fr_1.8fr_1.5fr_0.8fr] lg:items-center">
-                      {/* ID */}
-
-                      <p className="font-semibold text-slate-700">
+            <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
+              <table className="min-w-[1000px] w-full table-fixed">
+                
+                {/* HEADER */}
+                <thead>
+                  <tr className="border-b bg-slate-50">
+                    <th className="px-4 py-3 text-left">ID</th>
+                    <th className="px-4 py-3 text-left">Student</th>
+                    <th className="px-4 py-3 text-left">Contact</th>
+                    <th className="px-4 py-3 text-left">Courses</th>
+                    <th className="px-4 py-3 text-left">Joined</th>
+                    <th className="px-4 py-3 text-left">Actions</th>
+                  </tr>
+                </thead>
+                {/* ROWS */}
+                <tbody>
+                  {filteredStudents.map((student, index) => (
+                    <tr
+                      key={student._id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      <td className="px-4 py-4 font-semibold">
                         {student.studentId}
-                      </p>
+                      </td>
 
-                      {/* NAME */}
+                      <td className="px-4 py-4">{student.name}</td>
 
-                      {editIndex === index ? (
-                        <input
-                          type="text"
-                          value={editData.name}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              name: e.target.value,
-                            })
-                          }
-                          className={inputStyle}
-                        />
-                      ) : (
-                        <p className="font-semibold text-slate-900">
-                          {student.name}
-                        </p>
-                      )}
+                      <td className="px-4 py-4">{student.contact}</td>
 
-                      {/* CONTACT */}
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-2">
+                          {student.enrolledCourses?.map((course) => (
+                            <span
+                              key={course}
+                              className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
+                            >
+                              {course}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
 
-                      {editIndex === index ? (
-                        <input
-                          type="text"
-                          value={editData.contact}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              contact: e.target.value,
-                            })
-                          }
-                          className={inputStyle}
-                        />
-                      ) : (
-                        <p className="text-sm font-medium text-slate-600">
-                          {student.contact}
-                        </p>
-                      )}
+                      <td className="px-4 py-4">
+                        {new Date(student.createdAt).toLocaleDateString()}
+                      </td>
 
-                      {/* COURSES */}
+                      <td className="px-4 py-4">
+                        <div className="flex gap-2">
+                          {/* ACTIONS */}
 
-                      {editIndex === index ? (
-                        <Select
-                          isMulti
-                          menuPortalTarget={document.body}
-                          menuPosition="fixed"
-                          options={courses.map((course) => ({
-                            value: course.courseName,
-                            label: course.courseName,
-                          }))}
-                          value={(editData.enrolledCourses || []).map(
-                            (course) => ({
-                              value: course,
-                              label: course,
-                            }),
-                          )}
-                          onChange={(selectedOptions) => {
-                            setEditData({
-                              ...editData,
+                          {/* Edit Button */}
+                          <div className="flex flex-wrap items-center justify-center gap-2">
+                            {editId === index ? (
+                              <button
+                                onClick={handleSaveEdit}
+                                className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
+                              >
+                                <Check size={15} />
+                                Save
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() =>
+                                  handleEditStudent(student, index)
+                                }
+                                className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
+                              >
+                                <Pencil size={15} />
+                                Edit
+                              </button>
+                            )}
+                            
+                          {/* Delete Button */}
 
-                              enrolledCourses: selectedOptions
-                                ? selectedOptions.map((option) => option.value)
-                                : [],
-                            });
-                          }}
-                          className="text-sm"
-                          styles={{
-                            control: (base) => ({
-                              ...base,
-                              minHeight: "48px",
-                              borderRadius: "12px",
-                              borderColor: "#e2e8f0",
-                              backgroundColor: "#f8fafc",
-                              boxShadow: "none",
-                            }),
-
-                            multiValue: (base) => ({
-                              ...base,
-                              borderRadius: "8px",
-                              backgroundColor: "#dbeafe",
-                            }),
-
-                            multiValueLabel: (base) => ({
-                              ...base,
-                              color: "#1e40af",
-                              fontWeight: 500,
-                              fontSize: "14px",
-                            }),
-
-                            placeholder: (base) => ({
-                              ...base,
-                              fontSize: "14px",
-                              fontWeight: 500,
-                              color: "#94a3b8",
-                            }),
-
-                            input: (base) => ({
-                              ...base,
-                              fontSize: "14px",
-                              fontWeight: 500,
-                              color: "#0f172a",
-                            }),
-
-                            menuPortal: (base) => ({
-                              ...base,
-                              zIndex: 9999,
-                            }),
-                          }}
-                        />
-                      ) : (
-                        <p className="text-sm text-slate-700">
-                          {student.enrolledCourses?.length > 0
-                            ? student.enrolledCourses.join(", ")
-                            : "No Courses"}
-                        </p>
-                      )}
-
-                      {/* ACTIONS */}
-
-                      <div className="flex flex-wrap items-center justify-center gap-2">
-                        {editIndex === index ? (
-                          <button
-                            onClick={handleSaveEdit}
-                            className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
-                          >
-                            <Check size={15} />
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleEditStudent(student, index)}
-                            className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
-                          >
-                            <Pencil size={15} />
-                            Edit
-                          </button>
-                        )}
-
-                        <button
-                          onClick={() => handleDeleteStudent(student._id)}
-                          className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-600"
-                        >
-                          <Trash2 size={15} />
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                            <button
+                              onClick={() => handleDeleteStudent(student._id)}
+                              className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-red-600"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>

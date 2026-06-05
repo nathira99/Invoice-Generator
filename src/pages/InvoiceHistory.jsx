@@ -518,6 +518,11 @@ function InvoiceHistory() {
                   onChange={(selected) => {
                     setFilterType(selected.value);
 
+                    setFilterMonth("");
+                    setSelectedYear("");
+                    setFromDate("");
+                    setToDate("");
+
                     if (selected.value === "custom") {
                       setShowDateModal(true);
                     }
@@ -530,18 +535,20 @@ function InvoiceHistory() {
                 {/* MONTH */}
 
                 {filterType === "month" && (
-                <Select
-                  placeholder="Filter by month"
-                  options={monthOptions}
-                  value={
-                    monthOptions.find((m) => m.value === filterMonth) || null
-                  }
-                  onChange={(selected) => setFilterMonth(selected?.value || "")}
-                  styles={selectStyles}
-                  isSearchable={false}
-                />
-              )}
-              
+                  <Select
+                    placeholder="Filter by month"
+                    options={monthOptions}
+                    value={
+                      monthOptions.find((m) => m.value === filterMonth) || null
+                    }
+                    onChange={(selected) =>
+                      setFilterMonth(selected?.value || "")
+                    }
+                    styles={selectStyles}
+                    isSearchable={false}
+                  />
+                )}
+
                 {/* YEAR */}
 
                 {filterType === "year" && (
