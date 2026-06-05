@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import Select from "react-select";
 import {
   ShieldCheck,
   UserPlus,
@@ -11,6 +11,13 @@ import {
   CalendarDays,
   Search,
 } from "lucide-react";
+
+import {
+  getStaffs,
+  createStaff,
+  updateStaff,
+  deleteStaff,
+} from "../utils/Storage";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import Sidebar from "../components/Sidebar";
@@ -20,8 +27,7 @@ function Staff() {
   const [staffs, setStaffs] = useState([]);
 
   const [search, setSearch] = useState("");
-
-  const [editIndex, setEditIndex] = useState(null);
+  const [editId, setEditId] = useState(null);
 
   const [editData, setEditData] = useState({
     name: "",
@@ -51,20 +57,17 @@ function Staff() {
     status: "Active",
   });
 
-  useEffect(() => {
-    const storedStaffs = JSON.parse(localStorage.getItem("staffs")) || [];
+  const loadStaffs = async () => {
+    const data = await getStaffs();
+    setStaffs(data);
+  };
 
-    setStaffs(storedStaffs);
+  useEffect(() => {
+    loadStaffs();
   }, []);
 
   const inputStyle =
     "w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 outline-none transition-all focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-100";
-
-  const saveStaffs = (updatedStaffs) => {
-    localStorage.setItem("staffs", JSON.stringify(updatedStaffs));
-
-    setStaffs(updatedStaffs);
-  };
 
   const handleChange = (e) => {
     setStaffData({
@@ -73,32 +76,31 @@ function Staff() {
     });
   };
 
-  const handleAddStaff = () => {
+  const handleAddStaff = async () => {
     if (!staffData.name || !staffData.contact || !staffData.email) {
       toast.error("Please fill all fields.");
-
       return;
     }
 
-    const updatedStaffs = [...staffs, staffData];
+    try {
+      await createStaff(staffData);
 
-    saveStaffs(updatedStaffs);
+      await loadStaffs();
 
-    setStaffData({
-      name: "",
+      toast.success("Staff added");
 
-      role: "Admin",
-
-      contact: "",
-
-      email: "",
-
-      joiningDate: new Date().toISOString().split("T")[0],
-
-      status: "Active",
-    });
+      setStaffData({
+        name: "",
+        role: "Admin",
+        contact: "",
+        email: "",
+        joiningDate: new Date().toISOString().split("T")[0],
+        status: "Active",
+      });
+    } catch (error) {
+      toast.error("Failed to add staff");
+    }
   };
-
   const handleDeleteStaff = async (index) => {
     const result = await Swal.fire({
       title: "Delete staff?",
@@ -114,31 +116,30 @@ function Staff() {
 
     if (!result.isConfirmed) return;
 
-    const updatedStaffs = staffs.filter((_, i) => i !== index);
+    await deleteStaff(staffs._id);
 
-    saveStaffs(updatedStaffs);
+    await loadStaffs();
   };
 
-  const handleEditStaff = (staff, index) => {
-    setEditIndex(index);
-
+  const handleEditStaff = (staff) => {
+    setEditId(staff._id);
     setEditData(staff);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editData.name || !editData.contact || !editData.email) {
       toast.error("Please fill all fields.");
 
       return;
     }
 
-    const updatedStaffs = [...staffs];
+    await updateStaff(editId, editData);
 
-    updatedStaffs[editIndex] = editData;
+    await loadStaffs();
 
-    saveStaffs(updatedStaffs);
+    toast.success("Staff updated");
 
-    setEditIndex(null);
+    setEditId(null);
   };
 
   const filteredStaffs = staffs.filter(
@@ -146,6 +147,16 @@ function Staff() {
       staff.name?.toLowerCase().includes(search.toLowerCase()) ||
       staff.role?.toLowerCase().includes(search.toLowerCase()),
   );
+
+  console.log(filteredStaffs);
+  console.log(staffs);
+
+  const roleOptions = [
+    { value: "Admin", label: "Admin" },
+    { value: "Accountant", label: "Accountant" },
+    { value: "Receptionist", label: "Receptionist" },
+    { value: "Staff", label: "Staff" },
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -235,20 +246,68 @@ function Staff() {
                 className={inputStyle}
               />
 
-              <select
-                name="role"
-                value={staffData.role}
-                onChange={handleChange}
-                className={inputStyle}
-              >
-                <option value="Admin">Admin</option>
+              <Select
+                options={roleOptions}
+                value={
+                  staffData.role
+                    ? {
+                        value: staffData.role,
+                        label: staffData.role,
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setStaffData({
+                    ...staffData,
+                    role: selectedOption?.value || "",
+                  })
+                }
+                placeholder="Select Role"
+                isSearchable={false}
+                className="text-sm"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: "48px",
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    boxShadow: "none",
+                    paddingLeft: "4px",
+                  }),
 
-                <option value="Accountant">Accountant</option>
+                  placeholder: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                  }),
 
-                <option value="Receptionist">Receptionist</option>
+                  singleValue: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#0f172a",
+                  }),
 
-                <option value="Staff">Staff</option>
-              </select>
+                  menu: (base) => ({
+                    ...base,
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  }),
+
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isSelected
+                      ? "#0f172a"
+                      : state.isFocused
+                        ? "#f1f5f9"
+                        : "#fff",
+                    color: state.isSelected ? "#fff" : "#0f172a",
+                    cursor: "pointer",
+                  }),
+                }}
+              />
 
               <input
                 type="text"
@@ -313,7 +372,7 @@ function Staff() {
                       {/* INFO */}
 
                       <div>
-                        {editIndex === index ? (
+                        {editId === index ? (
                           <input
                             type="text"
                             value={editData.name}
@@ -332,7 +391,7 @@ function Staff() {
                         )}
 
                         <div className="mt-2">
-                          {editIndex === index ? (
+                          {editId === index ? (
                             <select
                               value={editData.role}
                               onChange={(e) =>
@@ -363,7 +422,7 @@ function Staff() {
                     {/* STATUS */}
 
                     <div>
-                      {editIndex === index ? (
+                      {editId === index ? (
                         <select
                           value={editData.status}
                           onChange={(e) =>
@@ -409,7 +468,7 @@ function Staff() {
                           Contact
                         </p>
 
-                        {editIndex === index ? (
+                        {editId === index ? (
                           <input
                             type="text"
                             value={editData.contact}
@@ -441,7 +500,7 @@ function Staff() {
                           Email
                         </p>
 
-                        {editIndex === index ? (
+                        {editId === index ? (
                           <input
                             type="email"
                             value={editData.email}
@@ -473,7 +532,7 @@ function Staff() {
                           Joining Date
                         </p>
 
-                        {editIndex === index ? (
+                        {editId === index ? (
                           <input
                             type="date"
                             value={editData.joiningDate}
@@ -505,7 +564,7 @@ function Staff() {
                   {/* ACTIONS */}
 
                   <div className="mt-6 flex flex-wrap gap-3">
-                    {editIndex === index ? (
+                    {editId === index ? (
                       <button
                         onClick={handleSaveEdit}
                         className="flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"

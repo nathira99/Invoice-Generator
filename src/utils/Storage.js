@@ -188,7 +188,9 @@ export const getStaffs = async () => {
   return res.data;
 };
 
-export const saveStaff = async (staff) => {
+
+
+export const createStaff = async (staff) => {
   const res = await api.post("/staffs", staff);
 
   return res.data;
