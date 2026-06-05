@@ -152,7 +152,7 @@ function Staff() {
   const roleOptions = [
     { value: "Admin", label: "Admin" },
     { value: "Accountant", label: "Accountant" },
-    { value: "Receptionist", label: "Receptionist" },
+    { value: "Whatsapp Support", label: "Whatsapp Support" },
     { value: "Staff", label: "Staff" },
   ];
 
@@ -404,7 +404,7 @@ function Staff() {
 
                               <option value="Accountant">Accountant</option>
 
-                              <option value="Receptionist">Receptionist</option>
+                              <option value="Whatsapp support">Whatsapp support</option>
 
                               <option value="Staff">Staff</option>
                             </select>
@@ -533,7 +533,7 @@ function Staff() {
                         {editId === staff._id ? (
                           <input
                             type="date"
-                            value={editData.joiningDate}
+                            value={editData.joiningDate?.split("T")[0] || ""}
                             onChange={(e) =>
                               setEditData({
                                 ...editData,
