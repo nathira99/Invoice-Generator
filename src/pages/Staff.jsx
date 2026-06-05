@@ -148,9 +148,6 @@ function Staff() {
       staff.role?.toLowerCase().includes(search.toLowerCase()),
   );
 
-  console.log(filteredStaffs);
-  console.log(staffs);
-
   const roleOptions = [
     { value: "Admin", label: "Admin" },
     { value: "Accountant", label: "Accountant" },
