@@ -21,29 +21,31 @@ export const AuthProvider =
 
       const API = import.meta.env.VITE_API_URL
       
-    const login =
-      async (
+    const login = async (
+  email,
+  password,
+  deviceId,
+  deviceName
+) => {
+
+  const response =
+    await axios.post(
+      `${API}/auth/login`,
+      {
         email,
-        password
-      ) => {
+        password,
+        deviceId,
+        deviceName,
+      },
+      {
+        withCredentials: true,
+      }
+    );
 
-        const response =
-          await axios.post(
-            `${API}/auth/login`,
-            {
-              email,
-              password,
-            },
-            {
-              withCredentials: true,
-            }
-          );
-
-        setUser(
-          response.data.user
-        );
-
-      };
+  setUser(
+    response.data.user
+  );
+};
 
     const logout =
       async () => {

@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 
 import User from "../models/userModel.js";
 
+import Device from "../models/deviceModel.js";
 
 // LOGIN
 
@@ -15,6 +16,8 @@ export const loginUser =
       const {
         email,
         password,
+        deviceId,
+        deviceName,
       } = req.body;
 
       const user =
@@ -49,6 +52,43 @@ export const loginUser =
           });
 
       }
+
+      const devices =
+  await Device.find({
+    userId: user._id,
+  });
+
+const existingDevice =
+  devices.find(
+    (d) => d.deviceId === deviceId
+  );
+
+  if (existingDevice) {
+  existingDevice.lastLogin =
+    new Date();
+
+  await existingDevice.save();
+}
+else {
+
+  if (devices.length >= 5) {
+
+    return res
+      .status(403)
+      .json({
+        message:
+          "Maximum 5 devices reached. Remove an existing device first.",
+      });
+
+  }
+
+  await Device.create({
+    userId: user._id,
+    deviceId,
+    deviceName,
+  });
+
+}
 
       const token =
         jwt.sign(
