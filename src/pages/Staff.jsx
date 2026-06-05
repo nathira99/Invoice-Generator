@@ -127,7 +127,7 @@ function Staff() {
   };
 
   const handleSaveEdit = async () => {
-    if (!editData.name || !editData.contact || !editData.email) {
+    if (!editData.name || !editData.contact || !editData.email || !editData.joiningDate) {
       toast.error("Please fill all fields.");
 
       return;
@@ -140,6 +140,7 @@ function Staff() {
     toast.success("Staff updated");
 
     setEditId(null);
+    
   };
 
   const filteredStaffs = staffs.filter(
@@ -369,7 +370,7 @@ function Staff() {
                       {/* INFO */}
 
                       <div>
-                        {editId === index ? (
+                        {editId === staff._id ? (
                           <input
                             type="text"
                             value={editData.name}
@@ -388,7 +389,7 @@ function Staff() {
                         )}
 
                         <div className="mt-2">
-                          {editId === index ? (
+                          {editId === staff._id ? (
                             <select
                               value={editData.role}
                               onChange={(e) =>
@@ -419,7 +420,7 @@ function Staff() {
                     {/* STATUS */}
 
                     <div>
-                      {editId === index ? (
+                      {editId === staff._id ? (
                         <select
                           value={editData.status}
                           onChange={(e) =>
@@ -465,7 +466,7 @@ function Staff() {
                           Contact
                         </p>
 
-                        {editId === index ? (
+                        {editId === staff._id ? (
                           <input
                             type="text"
                             value={editData.contact}
@@ -497,7 +498,7 @@ function Staff() {
                           Email
                         </p>
 
-                        {editId === index ? (
+                        {editId === staff._id ? (
                           <input
                             type="email"
                             value={editData.email}
@@ -529,7 +530,7 @@ function Staff() {
                           Joining Date
                         </p>
 
-                        {editId === index ? (
+                        {editId === staff._id ? (
                           <input
                             type="date"
                             value={editData.joiningDate}
@@ -561,7 +562,7 @@ function Staff() {
                   {/* ACTIONS */}
 
                   <div className="mt-6 flex flex-wrap gap-3">
-                    {editId === index ? (
+                    {editId === staff._id ? (
                       <button
                         onClick={handleSaveEdit}
                         className="flex items-center gap-2 rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800"
