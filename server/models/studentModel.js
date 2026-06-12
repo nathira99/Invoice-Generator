@@ -19,6 +19,7 @@ const studentSchema = new mongoose.Schema(
     },
 
     age: {
+<<<<<<< HEAD
       type: Number,
     },
 
@@ -26,6 +27,15 @@ const studentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+=======
+  type: Number,
+},
+
+place: {
+  type: String,
+  trim: true,
+},
+>>>>>>> 3257741c895a9bc10b466a033e922c6ee64c5302
 
     enrolledCourses: [
       {
