@@ -405,13 +405,3 @@ function Admin() {
 
 export default Admin;
 
-
-// {  "instituteName": "Ilmul Jannah",
-
-//   "institutePhone": "03000000000",  
-
-//   "instituteAddress": "Address",
-  
-//   "invoicePrefix": "INV",
-
-//   "currency": "Rs.",  }
