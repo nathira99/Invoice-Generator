@@ -18,6 +18,15 @@ const studentSchema = new mongoose.Schema(
       required: true,
     },
 
+    age: {
+      type: Number,
+    },
+
+    place: {
+      type: String,
+      trim: true,
+    },
+
     enrolledCourses: [
       {
         type: String,

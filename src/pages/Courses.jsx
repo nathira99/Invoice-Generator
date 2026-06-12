@@ -30,7 +30,7 @@ import {
 function Courses() {
   const [courses, setCourses] = useState([]);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const [search, setSearch] = useState("");
 
   const [editId, setEditId] = useState(null);
 
@@ -193,9 +193,17 @@ function Courses() {
     }
   };
 
-  const filteredCourses = courses.filter((course) =>
-    course.courseName.toLowerCase().includes(searchQuery.toLowerCase()),
+const filteredCourses = courses.filter((course) => {
+  const searchText = search.toLowerCase();
+
+  return (
+    course.courseName?.toLowerCase().includes(searchText) ||
+    course.category?.toLowerCase().includes(searchText) ||
+    course.status?.toLowerCase().includes(searchText) ||
+    course.duration?.toLowerCase().includes(searchText) ||
+    String(course.fee || "").includes(searchText)
   );
+});
 
   const islamicCourses = filteredCourses.filter(
     (course) => course.category === "Islamic",
@@ -239,7 +247,7 @@ function Courses() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-[900px] w-full table-fixed">
+          <table className="min-w-[1000px] w-full table-fixed">
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="px-4 py-3 text-left">Course</th>
@@ -409,18 +417,39 @@ function Courses() {
               </div>
             </div>
 
-            {/* TOTAL */}
-
-            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Total Courses
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-slate-950">
-                {courses.length}
-              </h2>
-            </div>
-          </div>
+           {/* RIGHT */}
+           
+                       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                         {/* SEARCH */}
+           
+                         <div className="relative w-full xs:w-72">
+                           <Search
+                             size={18}
+                             className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                           />
+           
+                           <input
+                             type="text"
+                             placeholder="Search course..."
+                             value={search}
+                             onChange={(e) => setSearch(e.target.value)}
+                             className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                           />
+                         </div>
+           
+                         {/* TOTAL */}
+           
+                         <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                           <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                             Total Courses
+                           </p>
+           
+                           <h2 className="mt-1 text-3xl font-bold text-slate-950">
+                             {filteredCourses.length}
+                           </h2>
+                         </div>
+                       </div>
+                     </div>
 
           {/* ADD FORM */}
 
@@ -441,7 +470,7 @@ function Courses() {
 
             {/* INPUTS */}
 
-            <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <input
                 type="text"
                 name="courseName"
@@ -581,16 +610,6 @@ function Courses() {
                 </button>
               )}
             </div>
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <input
-              type="text"
-              placeholder="🔍 Search Course..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={inputStyle}
-            />
           </div>
 
           {/* TABLE */}

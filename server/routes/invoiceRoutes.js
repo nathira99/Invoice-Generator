@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   createInvoice,
+  generateInvoicesByCourse,
   deleteInvoice,
   getInvoiceById,
   getInvoices,
@@ -13,6 +14,10 @@ import {
 const router = express.Router();
 
 router.route('/').post(createInvoice).get(getInvoices);
+router.post(
+  "/generate-by-course",
+  generateInvoicesByCourse
+);
 router.get(
   "/trash",
   getTrashedInvoices

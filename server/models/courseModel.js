@@ -12,6 +12,12 @@ const courseSchema = new mongoose.Schema(
       required: true,
     },
 
+    batch: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
     category: {
       type: String,
       enum: ["Islamic", "Skill Development", "Academic"],

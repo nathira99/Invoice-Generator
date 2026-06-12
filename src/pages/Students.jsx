@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-import { Users, UserPlus, Pencil, Trash2, Check } from "lucide-react";
+import { Users, UserPlus, Pencil, Trash2, Check, Search } from "lucide-react";
 
 import Select from "react-select";
 
@@ -145,22 +145,22 @@ function Students() {
   };
 
   const handleEditStudent = (student, index) => {
-  setEditId(student._id);
+    setEditId(student._id);
 
-  setStudentData({
-    ...student,
-    studentId: student.studentId || "",
-    name: student.name || "",
-    contact: student.contact || "",
-    enrolledCourses: student.enrolledCourses || [],
-    notes: student.notes || "",
-  });
+    setStudentData({
+      ...student,
+      studentId: student.studentId || "",
+      name: student.name || "",
+      contact: student.contact || "",
+      enrolledCourses: student.enrolledCourses || [],
+      notes: student.notes || "",
+    });
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth",
-  });
-};
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
 
   const handleSaveEdit = async () => {
     try {
@@ -175,7 +175,10 @@ function Students() {
       setStudentData({
         studentId: "",
         name: "",
+        age: "",
+        place: "",
         contact: "",
+        email: "",
         enrolledCourses: [],
         notes: "",
       });
@@ -189,15 +192,19 @@ function Students() {
   const searchText = search.toLowerCase();
 
   const filteredStudents = students.filter((student) => {
-    return (
-      student.studentId?.toLowerCase().includes(searchText) ||
-      student.name?.toLowerCase().includes(searchText) ||
-      student.contact?.toLowerCase().includes(searchText) ||
-      student.enrolledCourses?.some((course) =>
-        course.toLowerCase().includes(searchText),
-      )
-    );
-  });
+  return (
+    student.studentId?.toLowerCase().includes(searchText) ||
+    student.name?.toLowerCase().includes(searchText) ||
+    student.contact?.toLowerCase().includes(searchText) ||
+    student.notes?.toLowerCase().includes(searchText) ||
+    String(student.age || "").includes(searchText) ||
+    student.place?.toLowerCase().includes(searchText) ||
+    student.email?.toLowerCase().includes(searchText) ||
+    student.enrolledCourses?.some((course) =>
+      course.toLowerCase().includes(searchText),
+    )
+  );
+});
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -226,25 +233,38 @@ function Students() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                Total Students
-              </p>
+            {/* RIGHT */}
 
-              <h2 className="mt-1 text-3xl font-bold text-slate-950">
-                {students.length}
-              </h2>
+            <div className="flex flex-col gap-4 sm:flex-row md:text-sm sm:items-center">
+              {/* SEARCH */}
+
+              <div className="relative w-full xs:w-72">
+                <Search
+                  size={18}
+                  className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+
+                <input
+                  type="text"
+                  placeholder="Search student..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-700 outline-none transition-all focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+              </div>
+
+              {/* TOTAL */}
+
+              <div className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  Total Students
+                </p>
+
+                <h2 className="mt-1 text-3xl font-bold text-slate-950">
+                  {filteredStudents.length}
+                </h2>
+              </div>
             </div>
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <input
-              type="text"
-              placeholder="🔍 Search Student..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={inputStyle}
-            />
           </div>
 
           {/* FORM */}
@@ -286,6 +306,24 @@ function Students() {
               />
 
               <input
+                type="number"
+                name="age"
+                value={studentData.age}
+                onChange={handleChange}
+                placeholder="Age"
+                className={inputStyle}
+              />
+
+              <input
+                type="text"
+                name="place"
+                value={studentData.place}
+                onChange={handleChange}
+                placeholder="Place"
+                className={inputStyle}
+              />
+
+              <input
                 type="text"
                 name="contact"
                 value={studentData.contact}
@@ -294,143 +332,152 @@ function Students() {
                 className={inputStyle}
               />
 
+              <input
+                type="email"
+                name="email"
+                value={studentData.email}
+                onChange={handleChange}
+                placeholder="Email (Optional)"
+                className={inputStyle}
+              />
+
               {/* COURSES */}
+              <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 xl:grid-cols-1">
+                <Select
+                  isMulti
+                  options={courses.map((course) => ({
+                    value: course.courseName,
+                    label: course.courseName,
+                  }))}
+                  value={studentData.enrolledCourses.map((course) => ({
+                    value: course,
+                    label: course,
+                  }))}
+                  onChange={(selectedOptions) => {
+                    setStudentData({
+                      ...studentData,
+                      enrolledCourses: selectedOptions
+                        ? selectedOptions.map((option) => option.value)
+                        : [],
+                    });
+                  }}
+                  placeholder="Select Courses"
+                  className="text-sm"
+                  styles={{
+                    control: (base) => ({
+                      ...base,
+                      minHeight: "48px",
+                      borderRadius: "12px",
+                      borderColor: "#e2e8f0",
+                      backgroundColor: "#f8fafc",
+                      boxShadow: "none",
+                      paddingLeft: "4px",
+                    }),
 
-              <Select
-                isMulti
-                options={courses.map((course) => ({
-                  value: course.courseName,
-                  label: course.courseName,
-                }))}
-                value={studentData.enrolledCourses.map((course) => ({
-                  value: course,
-                  label: course,
-                }))}
-                onChange={(selectedOptions) => {
-                  setStudentData({
-                    ...studentData,
-                    enrolledCourses: selectedOptions
-                      ? selectedOptions.map((option) => option.value)
-                      : [],
-                  });
-                }}
-                placeholder="Select Courses"
-                className="text-sm"
-                styles={{
-                  control: (base) => ({
-                    ...base,
-                    minHeight: "48px",
-                    borderRadius: "12px",
-                    borderColor: "#e2e8f0",
-                    backgroundColor: "#f8fafc",
-                    boxShadow: "none",
-                    paddingLeft: "4px",
-                  }),
+                    multiValue: (base) => ({
+                      ...base,
+                      borderRadius: "8px",
+                      backgroundColor: "#dbeafe",
+                    }),
 
-                  multiValue: (base) => ({
-                    ...base,
-                    borderRadius: "8px",
-                    backgroundColor: "#dbeafe",
-                  }),
+                    multiValueLabel: (base) => ({
+                      ...base,
+                      color: "#1e40af",
+                      fontWeight: 800,
+                      fontSize: "14px",
+                    }),
 
-                  multiValueLabel: (base) => ({
-                    ...base,
-                    color: "#1e40af",
-                    fontWeight: 800,
-                    fontSize: "14px",
-                  }),
+                    multiValueRemove: (base) => ({
+                      ...base,
+                      color: "#1e40af",
+                      fontWeight: 800,
+                      fontSize: "14px",
+                    }),
 
-                  multiValueRemove: (base) => ({
-                    ...base,
-                    color: "#1e40af",
-                    fontWeight: 800,
-                    fontSize: "14px",
-                  }),
+                    placeholder: (base) => ({
+                      ...base,
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#94a3b8",
+                    }),
 
-                  placeholder: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#94a3b8",
-                  }),
+                    input: (base) => ({
+                      ...base,
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#0f172a",
+                    }),
 
-                  input: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#0f172a",
-                  }),
+                    singleValue: (base) => ({
+                      ...base,
+                      fontSize: "14px",
+                      fontWeight: 500,
+                      color: "#0f172a",
+                    }),
+                  }}
+                />
+              </div>
 
-                  singleValue: (base) => ({
-                    ...base,
-                    fontSize: "14px",
-                    fontWeight: 500,
-                    color: "#0f172a",
-                  }),
-                }}
+              <textarea
+                name="notes"
+                value={studentData.notes}
+                onChange={handleChange}
+                placeholder="Notes (Optional)"
+                rows={1}
+                className={`${inputStyle} resize-none`}
               />
 
               <div className="flex flex-wrap gap-3">
-  {editId ? (
-    <>
-      <button
-        onClick={handleSaveEdit}
-        className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
-      >
-        Update Student
-      </button>
+                {editId ? (
+                  <>
+                    <button
+                      onClick={handleSaveEdit}
+                      className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
+                    >
+                      Update Student
+                    </button>
 
-      <button
-        onClick={() => {
-          setEditId(null);
+                    <button
+                      onClick={() => {
+                        setEditId(null);
 
-          setStudentData({ 
-            studentId: "",
-            name: "",
-            contact: "",
-            enrolledCourses: [],
-            notes: "",
-          });
-        }}
-        className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-      >
-        Cancel
-      </button>
-    </>
-  ) : (
-    <div className="flex gap-3">
-  {editId ? (
-    <>
-      <button
-        onClick={handleAddStudent}
-        className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white"
-      >
-        Add Student
-      </button>
-    </>
-  ) : (
-    <button
-      onClick={handleAddStudent}
-      disabled={saving}
-      className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white"
-    >
-      {saving ? "Adding..." : "Add Student"}
-    </button>
-  )}
-</div>
-  )}
-</div>
+                        setStudentData({
+                          studentId: "",
+                          name: "",
+                          contact: "",
+                          enrolledCourses: [],
+                          notes: "",
+                        });
+                      }}
+                      className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <div className="flex gap-3">
+                    {editId ? (
+                      <>
+                        <button
+                          onClick={handleAddStudent}
+                          className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white"
+                        >
+                          Add Student
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleAddStudent}
+                        disabled={saving}
+                        className="rounded-xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white"
+                      >
+                        {saving ? "Adding..." : "Add Student"}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-
-          <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <input
-              type="text"
-              placeholder="🔍 Search Student ID, Name, Contact or Course"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className={inputStyle}
-            />
           </div>
 
           {/* TABLE */}
@@ -443,16 +490,17 @@ function Students() {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
-              <table className="min-w-[1000px] w-full table-fixed">
-                
+              <table className="min-w-[1200px] w-full table-fixed">
                 {/* HEADER */}
                 <thead>
                   <tr className="border-b bg-slate-50">
                     <th className="px-4 py-3 text-left">ID</th>
                     <th className="px-4 py-3 text-left">Student</th>
+                    <th className="px-4 py-3 text-left">Age</th>
+                    <th className="px-4 py-3 text-left">Place</th>
                     <th className="px-4 py-3 text-left">Contact</th>
                     <th className="px-4 py-3 text-left">Courses</th>
-                    <th className="px-4 py-3 text-left">Joined</th>
+                    {/* <th className="px-4 py-3 text-left">Joined</th> */}
                     <th className="px-4 py-3 text-left">Actions</th>
                   </tr>
                 </thead>
@@ -469,6 +517,10 @@ function Students() {
 
                       <td className="px-4 py-4">{student.name}</td>
 
+                      <td className="px-4 py-4">{student.age}</td>
+
+                      <td className="px-4 py-4">{student.place}</td>
+
                       <td className="px-4 py-4">{student.contact}</td>
 
                       <td className="px-4 py-4">
@@ -484,9 +536,9 @@ function Students() {
                         </div>
                       </td>
 
-                      <td className="px-4 py-4">
+                      {/* <td className="px-4 py-4">
                         {new Date(student.createdAt).toLocaleDateString()}
-                      </td>
+                      </td> */}
 
                       <td className="px-4 py-4">
                         <div className="flex gap-2">
@@ -513,8 +565,8 @@ function Students() {
                                 Edit
                               </button>
                             )}
-                            
-                          {/* Delete Button */}
+
+                            {/* Delete Button */}
 
                             <button
                               onClick={() => handleDeleteStudent(student._id)}

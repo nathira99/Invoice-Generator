@@ -42,14 +42,6 @@ function Teachers() {
     status: "Active",
   });
 
-  const [editData, setEditData] = useState({
-    teacherName: "",
-    contact: "",
-    course: "",
-    joiningDate: "",
-    status: "Active",
-  });
-
   useEffect(() => {
     loadTeachers();
 
@@ -134,7 +126,18 @@ function Teachers() {
     }
 
     try {
-      await saveTeacher(teacherData);
+      const year = new Date().getFullYear();
+
+      const employeeId = `TCH-${year}-${String(teachers.length + 1).padStart(
+        3,
+        "0",
+      )}`;
+      const teacherPayload = {
+        employeeId,
+        ...teacherData,
+      };
+
+      await saveTeacher(teacherPayload);
 
       await loadTeachers();
 
@@ -185,24 +188,37 @@ function Teachers() {
   const handleEditTeacher = (teacher) => {
     setEditId(teacher._id);
 
-    setEditData(teacher);
+    setTeacherData({
+      teacherName: teacher.teacherName || "",
+      contact: teacher.contact || "",
+      course: teacher.course || "",
+      joiningDate: teacher.joiningDate ? teacher.joiningDate.split("T")[0] : "",
+      status: teacher.status || "Active",
+    });
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
   const handleSaveEdit = async () => {
-    if (!editData.teacherName || !editData.contact || !editData.course || !editData.joiningDate || !editData.status) {
-      toast.error("Please fill all fields");
-
-      return;
-    }
-
     try {
-      await updateTeacher(editData._id, editData);
+      await updateTeacher(editId, teacherData);
 
       await loadTeachers();
 
       setEditId(null);
 
-      toast.success("Teacher updated");
+      setTeacherData({
+        teacherName: "",
+        contact: "",
+        course: "",
+        joiningDate: new Date().toISOString().split("T")[0],
+        status: "Active",
+      });
+
+      toast.success("Teacher updated successfully");
     } catch (error) {
       console.error(error);
 
@@ -211,9 +227,15 @@ function Teachers() {
   };
 
   const courseOptions = courses.map((course) => ({
-  value: course.courseName,
-  label: course.courseName,
-}));
+    value: course.courseName,
+    label: course.courseName,
+  }));
+
+  const statusOptions = [
+    { value: "Active", label: "Active" },
+    { value: "Break", label: "Break" },
+    { value: "Inactive", label: "Inactive" },
+  ];
 
   if (loading) {
     return (
@@ -324,67 +346,67 @@ function Teachers() {
               />
 
               <Select
-  options={courseOptions}
-  value={
-    teacherData.course
-      ? {
-          value: teacherData.course,
-          label: teacherData.course,
-        }
-      : null
-  }
-  onChange={(selectedOption) =>
-    setTeacherData({
-      ...teacherData,
-      course: selectedOption?.value || "",
-    })
-  }
-  placeholder="Select Course"
-  isSearchable
-  className="text-sm"
-  styles={{
-    control: (base) => ({
-      ...base,
-      minHeight: "48px",
-      borderRadius: "12px",
-      borderColor: "#e2e8f0",
-      backgroundColor: "#f8fafc",
-      boxShadow: "none",
-      paddingLeft: "4px",
-    }),
+                options={courseOptions}
+                value={
+                  teacherData.course
+                    ? {
+                        value: teacherData.course,
+                        label: teacherData.course,
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setTeacherData({
+                    ...teacherData,
+                    course: selectedOption?.value || "",
+                  })
+                }
+                placeholder="Select Course"
+                isSearchable
+                className="text-sm"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: "48px",
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    boxShadow: "none",
+                    paddingLeft: "4px",
+                  }),
 
-    placeholder: (base) => ({
-      ...base,
-      fontSize: "14px",
-      fontWeight: 500,
-      color: "#94a3b8",
-    }),
+                  placeholder: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                  }),
 
-    singleValue: (base) => ({
-      ...base,
-      fontSize: "14px",
-      fontWeight: 600,
-      color: "#0f172a",
-    }),
+                  singleValue: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#0f172a",
+                  }),
 
-    menu: (base) => ({
-      ...base,
-      borderRadius: "12px",
-      overflow: "hidden",
-    }),
+                  menu: (base) => ({
+                    ...base,
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  }),
 
-    option: (base, state) => ({
-      ...base,
-      backgroundColor: state.isSelected
-        ? "#0f172a"
-        : state.isFocused
-          ? "#f1f5f9"
-          : "#fff",
-      color: state.isSelected ? "#fff" : "#0f172a",
-      cursor: "pointer",
-    }),
-  }}
-/>
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isSelected
+                      ? "#0f172a"
+                      : state.isFocused
+                        ? "#f1f5f9"
+                        : "#fff",
+                    color: state.isSelected ? "#fff" : "#0f172a",
+                    cursor: "pointer",
+                  }),
+                }}
+              />
 
               <input
                 type="date"
@@ -394,11 +416,78 @@ function Teachers() {
                 className={inputStyle}
               />
 
+              <Select
+                options={statusOptions}
+                value={
+                  teacherData.status
+                    ? {
+                        value: teacherData.status,
+                        label: teacherData.status,
+                      }
+                    : null
+                }
+                onChange={(selectedOption) =>
+                  setTeacherData({
+                    ...teacherData,
+                    status: selectedOption?.value || "",
+                  })
+                }
+                placeholder="Select Status"
+                isSearchable
+                className="text-sm"
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    minHeight: "48px",
+                    borderRadius: "12px",
+                    borderColor: "#e2e8f0",
+                    backgroundColor: "#f8fafc",
+                    boxShadow: "none",
+                    paddingLeft: "4px",
+                  }),
+
+                  placeholder: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 500,
+                    color: "#94a3b8",
+                  }),
+
+                  singleValue: (base) => ({
+                    ...base,
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "#0f172a",
+                  }),
+
+                  menu: (base) => ({
+                    ...base,
+                    borderRadius: "12px",
+                    overflow: "hidden",
+                  }),
+
+                  option: (base, state) => ({
+                    ...base,
+                    backgroundColor: state.isSelected
+                      ? "#0f172a"
+                      : state.isFocused
+                        ? "#f1f5f9"
+                        : "#fff",
+                    color: state.isSelected ? "#fff" : "#0f172a",
+                    cursor: "pointer",
+                  }),
+                }}
+              />
+
               <button
-                onClick={handleAddTeacher}
-                className="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-slate-800 hover:shadow-lg"
+                onClick={editId ? handleSaveEdit : handleAddTeacher}
+                className={`rounded-xl px-6 py-3 text-sm font-semibold text-white ${
+                  editId
+                    ? "bg-emerald-600 hover:bg-emerald-700"
+                    : "bg-slate-900"
+                }`}
               >
-                Add Teacher
+                {editId ? "Update Teacher" : "Add Teacher"}
               </button>
             </div>
           </div>
@@ -417,192 +506,107 @@ function Teachers() {
                 <GraduationCap size={30} />
               </div>
 
-              <h3 className="mt-5 text-lg font-bold text-slate-900">
-                No teachers found
-              </h3>
+              <div>
+                <h2>{editId ? "Edit Teacher" : "Add Teacher"}</h2>
 
-              <p className="mt-2 text-sm text-slate-500">
-                Add your first teacher to get started.
-              </p>
+                <p>
+                  {editId
+                    ? "Update teacher information"
+                    : "Create a new teacher profile"}
+                </p>
+              </div>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-3xl border border-slate-200 bg-white shadow-sm">
-  <table className="min-w-[1100px] w-full">
-    <thead>
-      <tr className="border-b bg-slate-50">
-        <th className="px-4 py-3 text-left">Teacher</th>
-        <th className="px-4 py-3 text-left">Contact</th>
-        <th className="px-4 py-3 text-left">Course</th>
-        <th className="px-4 py-3 text-left">Joining Date</th>
-        <th className="px-4 py-3 text-left">Status</th>
-        <th className="px-4 py-3 text-center">Actions</th>
-      </tr>
-    </thead>
+              <table className="min-w-[1100px] w-full">
+                <thead>
+                  <tr className="border-b bg-slate-50">
+                    <th className="px-4 py-3 text-left">ID</th>
+                    <th className="px-4 py-3 text-left">Teacher</th>
+                    <th className="px-4 py-3 text-left">Contact</th>
+                    <th className="px-4 py-3 text-left">Course</th>
+                    <th className="px-4 py-3 text-left">Joining Date</th>
+                    <th className="px-4 py-3 text-left">Status</th>
+                    <th className="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
 
-    <tbody>
-      {filteredTeachers.map((teacher) => (
-        <tr
-          key={teacher._id}
-          className="border-b border-slate-100 hover:bg-slate-50"
-        >
-          {/* TEACHER */}
-          <td className="px-4 py-4">
-            {editId === teacher._id ? (
-              <input
-                type="text"
-                value={editData.teacherName}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    teacherName: e.target.value,
-                  })
-                }
-                className={inputStyle}
-              />
-            ) : (
-              <p className="font-semibold text-slate-900">
-                {teacher.teacherName}
-              </p>
-            )}
-          </td>
+                <tbody>
+                  {filteredTeachers.map((teacher) => (
+                    <tr
+                      key={teacher._id}
+                      className="border-b border-slate-100 hover:bg-slate-50"
+                    >
+                      {/* ID */}
+                      <td className="px-4 py-4">{teacher.employeeId}</td>
 
-          {/* CONTACT */}
-          <td className="px-4 py-4">
-            {editId === teacher._id ? (
-              <input
-                type="text"
-                value={editData.contact}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    contact: e.target.value,
-                  })
-                }
-                className={inputStyle}
-              />
-            ) : (
-              <p className="text-sm text-slate-600">
-                {teacher.contact}
-              </p>
-            )}
-          </td>
+                      {/* TEACHER */}
 
-          {/* COURSE */}
-          <td className="px-4 py-4">
-            {editId === teacher._id ? (
-              <select
-                value={editData.course}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    course: e.target.value,
-                  })
-                }
-                className={inputStyle}
-              >
-                {courses.map((course) => (
-                  <option
-                    key={course._id}
-                    value={course.courseName}
-                  >
-                    {course.courseName}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <p className="text-sm text-slate-700">
-                {teacher.course}
-              </p>
-            )}
-          </td>
+                      <td className="px-4 py-4">
+                        <p className="font-semibold text-slate-900">
+                          {teacher.teacherName}
+                        </p>
+                      </td>
 
-          {/* DATE */}
-          <td className="px-4 py-4">
-            {editId === teacher._id ? (
-              <input
-                type="date"
-                value={editData.joiningDate}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    joiningDate: e.target.value,
-                  })
-                }
-                className={inputStyle}
-              />
-            ) : (
-              new Date(teacher.joiningDate).toLocaleDateString(
-                "en-IN",
-                {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                }
-              )
-            )}
-          </td>
+                      {/* CONTACT */}
+                      <td className="px-4 py-4">
+                        <p className="text-sm text-slate-600">
+                          {teacher.contact}
+                        </p>
+                      </td>
 
-          {/* STATUS */}
-          <td className="px-4 py-4">
-            {editId === teacher._id ? (
-              <select
-                value={editData.status}
-                onChange={(e) =>
-                  setEditData({
-                    ...editData,
-                    status: e.target.value,
-                  })
-                }
-                className={inputStyle}
-              >
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            ) : (
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                  teacher.status === "Active"
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-red-100 text-red-700"
-                }`}
-              >
-                {teacher.status}
-              </span>
-            )}
-          </td>
+                      {/* COURSE */}
+                      <td className="px-4 py-4">
+                        <p className="text-sm text-slate-700">
+                          {teacher.course}
+                        </p>
+                      </td>
 
-          {/* ACTIONS */}
-          <td className="px-4 py-4">
-            <div className="flex justify-center gap-2">
-              {editId === teacher._id ? (
-                <button
-                  onClick={handleSaveEdit}
-                  className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-                >
-                  <Check size={15} />
-                </button>
-              ) : (
-                <button
-                  onClick={() => handleEditTeacher(teacher)}
-                  className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-                >
-                  <Pencil size={15} />
-                </button>
-              )}
+                      {/* DATE */}
+                      <td className="px-4 py-4">
+                        {new Date(teacher.joiningDate).toLocaleDateString(
+                          "en-IN",
+                        )}
+                      </td>
 
-              <button
-                onClick={() => handleDeleteTeacher(teacher._id)}
-                className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
-              >
-                <Trash2 size={15} />
-              </button>
+                      {/* STATUS */}
+                      <td className="px-4 py-3  text-center ">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        teacher.status === "Active"
+                          ? "bg-green-100 text-green-700"
+                          : teacher.status === "Break"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {teacher.status}
+                    </span>
+                  </td>
+
+                      {/* ACTIONS */}
+                      <td className="px-4 py-4">
+                        <div className="flex justify-center gap-2">
+                          <button
+                            onClick={() => handleEditTeacher(teacher)}
+                            className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                          >
+                            <Pencil size={15} />
+                          </button>
+
+                          <button
+                            onClick={() => handleDeleteTeacher(teacher._id)}
+                            className="rounded-xl bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
           )}
         </div>
       </main>

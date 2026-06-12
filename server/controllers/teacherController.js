@@ -28,30 +28,26 @@ export const getTeachers =
 
 /* CREATE TEACHER */
 
-export const createTeacher =
-  async (req, res) => {
+export const createTeacher = async (req, res) => {
+  try {
+    const teacherCount = await Teacher.countDocuments();
 
-    try {
+    const employeeId = `TCH-2026-${String(
+      teacherCount + 1
+    ).padStart(3, "0")}`;
 
-      const teacher =
-        await Teacher.create(
-          req.body
-        );
+    const teacher = await Teacher.create({
+      ...req.body,
+      employeeId,
+    });
 
-      res.status(201).json(
-        teacher
-      );
-
-    } catch (error) {
-
-      res.status(400).json({
-        message:
-          error.message,
-      });
-
-    }
-
-  };
+    res.status(201).json(teacher);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
 
 /* UPDATE TEACHER */
 

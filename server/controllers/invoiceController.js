@@ -36,6 +36,64 @@ export const createInvoice = async (req, res) => {
   }
 };
 
+export const generateInvoicesByCourse = async (req, res) => {
+  try {
+    const { courseId, paidMonth } = req.body;
+
+    const course = await Course.findById(courseId).populate(
+      "enrolledStudents"
+    );
+
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    const invoices = [];
+
+    for (const student of course.enrolledStudents) {
+      const invoice = {
+        invoiceNumber: `INV-${Date.now()}-${student.studentId}`,
+
+        studentName: student.name,
+
+        contactNumber: student.contact,
+
+        courseName: course.courseName,
+
+        paidMonth,
+
+        invoiceDate: new Date(),
+
+        courseFee: course.fee,
+
+        category: course.category,
+
+        paidAmount: 0,
+
+        discount: 0,
+
+        status: "Pending",
+      };
+
+      invoices.push(invoice);
+    }
+
+    const createdInvoices =
+      await Invoice.insertMany(invoices);
+
+    res.status(201).json({
+      message: `${createdInvoices.length} invoices generated`,
+      invoices: createdInvoices,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
+
 export const getInvoices = async (req, res) => {
   try {
     const invoices = await Invoice.find({
