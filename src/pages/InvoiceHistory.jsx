@@ -256,7 +256,9 @@ function InvoiceHistory() {
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Student</th>
                 <th className="px-4 py-3 text-left">Course</th>
-                <th className="px-4 py-3 text-left">Amount</th>
+                <th className="px-4 py-3 text-left">Fee</th>
+                <th className="px-4 py-3 text-left">Paid</th>
+                <th className="px-4 py-3 text-left">Balance</th>
                 <th className="px-4 py-3 text-left">Status</th>
                 <th className="px-4 py-3 text-left">Action</th>
               </tr>
@@ -277,12 +279,35 @@ function InvoiceHistory() {
 
                   <td className="px-4 py-4">{invoice.courseName}</td>
 
+                  <td className="px-4 py-4 font-semibold">
+                    ₹{invoice.courseFee}
+                  </td>
+
                   <td className="px-4 py-4 font-semibold text-emerald-600">
                     ₹{invoice.paidAmount}
                   </td>
 
+                  <td className="px-4 py-4 font-semibold text-amber-600">
+                    ₹
+                    {Math.max(
+                      0,
+                      (invoice.courseFee || 0) -
+                        (invoice.discount || 0) -
+                        (invoice.paidAmount || 0),
+                    )}
+                  </td>
+
                   <td className="px-4 py-4">
-                    <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-semibold
+      ${
+        invoice.status === "Paid"
+          ? "bg-green-100 text-green-700"
+          : invoice.status === "Partially Paid"
+            ? "bg-yellow-100 text-yellow-700"
+            : "bg-red-100 text-red-700"
+      }`}
+                    >
                       {invoice.status}
                     </span>
                   </td>

@@ -154,12 +154,16 @@ function InvoicePreview({ invoiceData }) {
                     className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
                       invoiceData.status === "Paid"
                         ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
+                        : invoiceData.status === "Partially Paid"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
                     }`}
                   >
                     {invoiceData.status === "Paid"
                       ? "✓ Payment Received"
-                      : "⚠ Payment Pending"}
+                      : invoiceData.status === "Partially Paid"
+                        ? "◐ Partially Paid"
+                        : "⚠ Payment Pending"}
                   </span>
                 </div>
               </div>
@@ -176,7 +180,7 @@ function InvoicePreview({ invoiceData }) {
 
               <p className="col-span-2">Description</p>
 
-              <p className="text-right">Rate</p>
+              <p className="text-right">Course Fee</p>
 
               <p className="text-right">Discount</p>
 
@@ -185,7 +189,7 @@ function InvoicePreview({ invoiceData }) {
 
             {/* ROW */}
 
-            <div className="grid grid-cols-6 items-start border-b border-gray-200 px-5 py-4">
+            <div className="grid grid-cols-6 items-start border-b border-gray-200  px-5 py-5">
               <p className="text-sm text-gray-700">1</p>
 
               <div className="col-span-2">
@@ -211,16 +215,41 @@ function InvoicePreview({ invoiceData }) {
 
             {/* TOTAL */}
 
-            <div className="flex justify-end bg-gray-50 px-5 py-4">
-              <div className="flex w-72 items-center justify-between">
-                <p className="text-xl font-bold text-gray-900">Total</p>
+            <div className="flex justify-end bg-gray-50 px-6 py-5">
+  <div className="w-72 space-y-2 text-sm">
 
-                <p className="text-[28px] font-black text-[#1E3A8A]">
-                  Rs. {paidAmount}
-                </p>
-              </div>
-            </div>
+    <div className="flex justify-between">
+      <span>Course Fee</span>
+      <span>Rs. {totalFee}</span>
+    </div>
+
+    <div className="flex justify-between text-red-600">
+      <span>Discount</span>
+      <span>- Rs. {discount}</span>
+    </div>
+
+    <div className="flex justify-between text-orange-600">
+      <span>Pending Balance</span>
+      <span>  Rs.{" "}
+        {Math.max(
+          0,
+          totalFee - discount - paidAmount
+        )}
+      </span>
+    </div>
+
+    <div className="my-2 border-t border-gray-300"></div>
+
+    <div className="flex justify-between text-lg font-bold text-[#1E3A8A]">
+      <span>Amount Paid</span>
+      <span>Rs. {paidAmount}</span>
+    </div>
+
+  </div>
+</div>
           </div>
+
+
 
           {/* ================= FOOTER ================= */}
 
@@ -247,13 +276,21 @@ function InvoicePreview({ invoiceData }) {
               {/* MESSAGE */}
 
               <div className="pl-8">
-                <h3 className="text-sm font-semibold leading-tight text-[#1E3A8A]">
-                  Payment successfully received.
-                </h3>
+               <h3 className="text-sm font-semibold text-[#1E3A8A]">
+  {invoiceData.status === "Paid"
+    ? "Payment successfully received."
+    : invoiceData.status === "Partially Paid"
+    ? "Partial payment received."
+    : "Payment is pending."}
+</h3>
 
-                <p className="mt-1 text-xs text-gray-500">
-                  This receipt confirms payment for the enrolled online course.
-                </p>
+<p className="mt-1 text-xs text-gray-500">
+  {invoiceData.status === "Paid"
+    ? "This receipt confirms full payment for the enrolled course."
+    : invoiceData.status === "Partially Paid"
+    ? "This receipt confirms a partial payment. The remaining balance is still due."
+    : "No payment has been received for this invoice yet."}
+</p>
               </div>
             </div>
           </div>

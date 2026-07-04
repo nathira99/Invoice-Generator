@@ -89,9 +89,11 @@ function InvoiceForm({
 
       discount: "0",
 
-      paidAmount: "",
+      discountReason: "",
 
-      status: "Paid",
+      paidAmount: "0",
+
+      status: "Pending",
     });
 
     setStudentCourses([]);
@@ -111,8 +113,6 @@ function InvoiceForm({
           invoiceData.courseName?.trim().toLowerCase() &&
         invoice.paidMonth?.trim().toLowerCase() ===
           invoiceData.paidMonth?.trim().toLowerCase() &&
-        invoiceData.status?.trim().toLowerCase() ===
-          invoice.status?.trim().toLowerCase() &&
         invoice._id !== editId,
     );
 
@@ -437,13 +437,32 @@ function InvoiceForm({
               className={readOnlyStyle}
             />
           </div>
+          {/* PENDING AMOUNT */}
+
+<div>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Pending Amount
+  </label>
+
+  <input
+    type="number"
+    value={Math.max(
+      0,
+      (Number(invoiceData.courseFee) || 0) -
+      (Number(invoiceData.discount) || 0) -
+      (Number(invoiceData.paidAmount) || 0)
+    )}
+    readOnly
+    className={readOnlyStyle}
+  />
+</div>
+
           {/* DISCOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
               Discount
             </label>
-
-            <input
+          <input
               type="number"
               name="discount"
               value={invoiceData.discount}
@@ -465,6 +484,7 @@ function InvoiceForm({
               className={inputStyle}
             />
           </div>
+
           {/* PAID AMOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -473,72 +493,44 @@ function InvoiceForm({
 
             <input
               type="number"
+              name="paidAmount"
               value={invoiceData.paidAmount}
+              onChange={(e) => {
+                const paidAmount = Number(e.target.value) || 0;
+
+                const courseFee = Number(invoiceData.courseFee) || 0;
+
+                setInvoiceData({
+                  ...invoiceData,
+
+                  paidAmount: e.target.value,
+
+                  status: paidAmount <= 0
+                    ? "Pending"
+                    : paidAmount < courseFee
+                      ? "Partially Paid"
+                      : "Paid",
+                });
+              }}
+              value={invoiceData.paidAmount}
+              className={inputStyle}
+            />
+          </div>
+
+          {/* STATUS */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Status
+            </label>
+
+            <input
+              type="text"
+              name="status"
+              value={invoiceData.status}
               readOnly
               className={readOnlyStyle}
             />
           </div>
-          {/* STATUS */}
-          <Select
-            options={[
-              {
-                value: "Paid",
-                label: "Paid",
-              },
-              {
-                value: "Pending",
-                label: "Pending",
-              },
-            ]}
-            value={
-              invoiceData.status
-                ? {
-                    value: invoiceData.status,
-                    label: invoiceData.status === "Paid" ? "Paid" : "Pending",
-                  }
-                : null
-            }
-            onChange={(selectedOption) =>
-              setInvoiceData({
-                ...invoiceData,
-                status: selectedOption?.value || "",
-              })
-            }
-            placeholder="Select Status"
-            className="text-sm"
-            menuPortalTarget={document.body}
-            menuPosition="fixed"
-            styles={{
-              control: (base) => ({
-                ...base,
-                minHeight: "52px",
-                borderRadius: "16px",
-                borderColor: "#e5e7eb",
-                backgroundColor: "#f9fafb",
-                boxShadow: "none",
-                paddingLeft: "4px",
-              }),
-
-              placeholder: (base) => ({
-                ...base,
-                color: "#6b7280",
-                fontWeight: 500,
-                fontSize: "14px",
-              }),
-
-              singleValue: (base) => ({
-                ...base,
-                color: "#111827",
-                fontWeight: 600,
-                fontSize: "14px",
-              }),
-
-              menuPortal: (base) => ({
-                ...base,
-                zIndex: 9999,
-              }),
-            }}
-          />
         </div>
 
         {/* BUTTONS */}

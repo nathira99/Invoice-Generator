@@ -58,9 +58,9 @@ function Dashboard() {
 
       discount: "0",
 
-      paidAmount: "",
+      paidAmount: "0",
 
-      status: "Paid",
+      status: "Pending",
     },
   );
   useEffect(() => {

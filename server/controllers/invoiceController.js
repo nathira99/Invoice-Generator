@@ -1,13 +1,31 @@
 import mongoose from 'mongoose';
 import Invoice from '../models/InvoiceModel.js';
+import Course from '../models/courseModel.js';
+
+  const calculateStatus = (
+  courseFee,
+  discount = 0,
+  paidAmount = 0
+) => {
+  const payable =
+    Number(courseFee) - Number(discount);
+
+  const paid = Number(paidAmount);
+
+  if (paid <= 0) return "Pending";
+
+  if (paid < payable) return "Partially Paid";
+
+  return "Paid";
+};
 
 const handleInvoiceError = (error, res) => {
-  if (error.name === 'ValidationError') {
-    return res.status(400).json({
-      message: 'Invoice validation failed',
-      errors: Object.values(error.errors).map((err) => err.message),
-    });
-  }
+  if (error.name === "ValidationError") {
+  return res.status(400).json({
+    message: "Invoice validation failed",
+    errors: Object.values(error.errors).map((err) => err.message),
+  });
+}
 
   if (error.code === 11000) {
     return res.status(409).json({
@@ -29,7 +47,16 @@ const handleInvoiceError = (error, res) => {
 
 export const createInvoice = async (req, res) => {
   try {
-    const invoice = await Invoice.create(req.body);
+    const invoiceData = { ...req.body };
+    const invoice = await Invoice.create({
+      ...invoiceData,
+      status: calculateStatus(
+        invoiceData.courseFee,
+        invoiceData.discount,
+        invoiceData.paidAmount
+      ),
+    });
+
     return res.status(201).json(invoice);
   } catch (error) {
     return handleInvoiceError(error, res);
@@ -74,7 +101,11 @@ export const generateInvoicesByCourse = async (req, res) => {
 
         discount: 0,
 
-        status: "Pending",
+        status: calculateStatus(
+          course.fee,
+          0,
+          0
+        ),
       };
 
       invoices.push(invoice);
@@ -138,9 +169,15 @@ export const updateInvoice = async (req, res) => {
       return res.status(404).json({ message: 'Invoice not found' });
     }
 
-    invoice.set(req.body);
-    const updatedInvoice = await invoice.save();
+invoice.set(req.body);
 
+invoice.status = calculateStatus(
+  invoice.courseFee,
+  invoice.discount,
+  invoice.paidAmount
+);
+
+const updatedInvoice = await invoice.save();
     return res.status(200).json(updatedInvoice);
   } catch (error) {
     return handleInvoiceError(error, res);
