@@ -125,10 +125,15 @@ function InvoiceForm({
     }
 
     if (editId) {
-      return await updateInvoice(editId, invoiceData);
-    }
+  return await updateInvoice(editId, invoiceData);
+}
 
-    return await saveInvoice(invoiceData);
+const nextInvoiceNumber = await generateInvoiceNumber();
+
+return await saveInvoice({
+  ...invoiceData,
+  invoiceNumber: nextInvoiceNumber,
+});
   };
 
   /* SAVE */

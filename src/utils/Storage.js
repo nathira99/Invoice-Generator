@@ -25,9 +25,17 @@ const normalizeInvoice = (invoice) => ({
 });
 
 export const saveInvoice = async (invoice) => {
-  const res = await api.post("/invoices", normalizeInvoice(invoice));
+  try {
+    console.log("Sending Invoice:", invoice);
 
-  return res.data;
+    const res = await api.post("/invoices", invoice);
+
+    return res.data;
+  } catch (error) {
+    console.log("Backend Error:", error.response?.data);
+
+    throw error;
+  }
 };
 
 export const getInvoices = async () => {

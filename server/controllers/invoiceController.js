@@ -48,6 +48,7 @@ const handleInvoiceError = (error, res) => {
 export const createInvoice = async (req, res) => {
   try {
     const invoiceData = { ...req.body };
+
     const invoice = await Invoice.create({
       ...invoiceData,
       status: calculateStatus(
@@ -59,6 +60,7 @@ export const createInvoice = async (req, res) => {
 
     return res.status(201).json(invoice);
   } catch (error) {
+    console.error(error);
     return handleInvoiceError(error, res);
   }
 };

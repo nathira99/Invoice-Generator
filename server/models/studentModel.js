@@ -16,6 +16,7 @@ const studentSchema = new mongoose.Schema(
     contact: {
       type: String,
       required: true,
+       match: /^[0-9+\-\s()]{7,20}$/,
     },
 
     age: {
