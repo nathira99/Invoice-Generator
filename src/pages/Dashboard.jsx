@@ -145,14 +145,19 @@ function Dashboard() {
 
   /* TOTALS */
 
-  const totalRevenue = invoices
-    .filter((invoice) => invoice.status === "Paid")
-    .reduce((total, invoice) => total + Number(invoice.paidAmount || 0), 0);
+  const totalRevenue = invoices.reduce(
+  (total, invoice) => total + Number(invoice.paidAmount || 0),
+  0
+);
 
-  const pendingAmount = invoices
-    .filter((invoice) => invoice.status === "Pending")
-    .reduce((total, invoice) => total + Number(invoice.paidAmount || 0), 0);
+  const pendingAmount = invoices.reduce((total, invoice) => {
+  const remaining =
+    Number(invoice.courseFee || 0) -
+    Number(invoice.discount || 0) -
+    Number(invoice.paidAmount || 0);
 
+  return total + Math.max(remaining, 0);
+}, 0);
   const collectionRate =
     totalRevenue + pendingAmount === 0
       ? 0
