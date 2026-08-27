@@ -2,17 +2,19 @@ import mongoose from 'mongoose';
 import Invoice from '../models/InvoiceModel.js';
 import Course from '../models/courseModel.js';
 
-  const calculateStatus = (
+ const calculateStatus = (
   courseFee,
   discount = 0,
   paidAmount = 0
 ) => {
-  const payable =
-    Number(courseFee) - Number(discount);
+  const payable = Math.max(
+    Number(courseFee || 0) - Number(discount || 0),
+    0
+  );
 
-  const paid = Number(paidAmount);
+  const paid = Number(paidAmount || 0);
 
-  if (paid <= 0) return "Pending";
+  if (paid === 0) return "Pending";
 
   if (paid < payable) return "Partially Paid";
 

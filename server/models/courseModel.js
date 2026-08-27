@@ -4,8 +4,8 @@ const courseSchema = new mongoose.Schema(
   {
     courseCode: {
       type: String,
-      unique: true,
       trim: true,
+      default: undefined,
     },
     courseName: {
       type: String,
@@ -19,10 +19,10 @@ const courseSchema = new mongoose.Schema(
     },
 
     description: {
-  type: String,
-  trim: true,
-  default: "",
-},
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     category: {
       type: String,
