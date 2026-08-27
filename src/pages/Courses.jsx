@@ -43,15 +43,13 @@ function Courses() {
 
   const [courseData, setCourseData] = useState({
     courseName: "",
-
+    description: "",
     category: "",
-
+    subcategory: "",
+    audience: "",
     fee: "",
-
     daysPerWeek: "",
-
     status: "",
-
     duration: "",
   });
 
@@ -107,9 +105,10 @@ function Courses() {
 
       setCourseData({
         courseName: "",
-
+        description: "",
         category: "",
-
+        subcategory: "",
+        audience: "",
         fee: "",
 
         daysPerWeek: "",
@@ -180,7 +179,10 @@ function Courses() {
 
       setCourseData({
         courseName: "",
+        description: "",
         category: "",
+        subcategory: "",
+        audience: "",
         fee: "",
         daysPerWeek: "",
         duration: "",
@@ -251,6 +253,8 @@ const filteredCourses = courses.filter((course) => {
             <thead>
               <tr className="border-b bg-slate-50">
                 <th className="px-4 py-3 text-left">Course</th>
+                <th className="px-4 py-3 text-left">Subcategory</th>
+                <th className="px-4 py-3 text-left">Audience</th>
                 <th className="px-4 py-3 text-center">Fee</th>
                 <th className="px-4 py-3 text-center">Schedule</th>
                 <th className="px-4 py-3 text-center">Duration</th>
@@ -267,6 +271,14 @@ const filteredCourses = courses.filter((course) => {
                 >
                   <td className="px-4 py-3 font-semibold text-slate-900">
                     {course.courseName}
+                  </td>
+
+                  <td className="px-4 py-3 font-semibold text-slate-900">
+                    {course.subcategory || "N/A"}
+                  </td>
+
+                  <td className="px-4 py-3 font-semibold text-slate-900">
+                    {course.audience}
                   </td>
 
                   <td className="px-4 py-3">

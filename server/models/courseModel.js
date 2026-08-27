@@ -29,6 +29,23 @@ const courseSchema = new mongoose.Schema(
       enum: ["Islamic", "Skill Development", "Academic"],
       required: true,
     },
+    subcategory: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    audience: {
+      type: String,
+      enum: ["Kids", "Female", "Male", "Kids & Female", "All"],
+      default: "All",
+    },
+
+    level: {
+      type: String,
+      trim: true,
+      default: "",
+    },
 
     fee: {
       type: Number,
