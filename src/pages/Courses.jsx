@@ -45,7 +45,7 @@ function Courses() {
     courseName: "",
     description: "",
     category: "",
-    subcategory: "",
+    subcategory: "ONE-ON-ONE",
     audience: "",
     fee: "",
     daysPerWeek: "",
@@ -531,6 +531,54 @@ const filteredCourses = courses.filter((course) => {
                 styles={selectStyles}
               />
 
+              <input
+                type="text"
+                name="subcategory"
+                value={courseData.subcategory}
+                onChange={handleChange}
+                placeholder="Subcategory"
+                className={inputStyle}
+              />
+
+              <Select
+                options={[
+                  {
+                    value: "Kids & Female",
+                    label: "Kids & Female",
+                  },
+                  {
+                    value: "Male",
+                    label: "Male",
+                  },
+                  {
+                    value: "All",
+                    label: "All",
+                  }
+                ]}
+                value={
+                  courseData.audience
+                    ? {
+                        value: courseData.audience,
+                        label:
+                          courseData.audience === "Kids & Female"
+                            ? "Kids & Female"
+                            : courseData.audience === "Male"
+                              ? "Male"
+                              : "All",
+                      }
+                    : null
+                }
+                onChange={(selectedOption) => {
+                  setCourseData({
+                    ...courseData,
+                    audience: selectedOption?.value || "",
+                  });
+                }}
+                placeholder="Select Audience"
+                className="text-sm"
+                styles={selectStyles}
+              />
+
               <Select
                 options={[
                   {
@@ -614,6 +662,10 @@ const filteredCourses = courses.filter((course) => {
                       category: "",
                       fee: "",
                       daysPerWeek: "",
+                      audience: "",
+                      subcategory: "",
+                      status: "",
+                      duration: "",
                     });
                   }}
                   className="rounded-xl bg-red-500 px-6 py-3 text-sm font-semibold text-white"
