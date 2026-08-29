@@ -547,6 +547,10 @@ const filteredCourses = courses.filter((course) => {
                     label: "Kids & Female",
                   },
                   {
+                    value: "Female",
+                    label: "Female",
+                  },
+                  {
                     value: "Male",
                     label: "Male",
                   },

@@ -28,12 +28,16 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    enrolledCourses: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
+    enrollments: [
+  {
+    courseId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Course"
+    },
+    courseName: String,
+    courseRegistrationNo: String
+  }
+],
 
     email: {
       type: String,
