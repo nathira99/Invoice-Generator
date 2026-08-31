@@ -525,14 +525,18 @@ function Students() {
 
                       <td className="px-4 py-4">
                         <div className="flex flex-wrap gap-2">
-                          {student.enrolledCourses?.map((course) => (
-                            <span
-                              key={course}
-                              className="rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700"
-                            >
-                              {course}
-                            </span>
-                          ))}
+                          {student.enrollments?.length > 0
+  ? student.enrollments.map((enrollment, index) => (
+      <div key={index}>
+        {enrollment.courseName}
+        {enrollment.courseRegistrationNo && (
+          <span>
+            ({enrollment.courseRegistrationNo})
+          </span>
+        )}
+      </div>
+    ))
+  : "—"}
                         </div>
                       </td>
 
