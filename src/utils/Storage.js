@@ -75,33 +75,36 @@ export const restoreInvoice = async (
   return res.data;
 };
 
-export const permanentlyDeleteInvoice =
-  async (id) => {
-    const res = await api.delete(
-      `/invoices/permanent/${id}`
-    );
-
-    return res.data;
-  };
-
 export const generateInvoiceNumber = async () => {
   const invoices = await getInvoices();
 
-  if (!Array.isArray(invoices) || invoices.length === 0) {
-    return "INV-001";
-  }
+  const currentYear = new Date().getFullYear();
 
-  const numbers = invoices.map((invoice) => {
-    const match = invoice.invoiceNumber?.match(/INV-(\d+)/);
+  const prefix = `INV-${currentYear}-`;
 
-    return match ? parseInt(match[1]) : 0;
+  const currentYearInvoices = invoices.filter((invoice) =>
+    invoice.invoiceNumber?.startsWith(prefix)
+  );
+
+  let maxNumber = 0;
+
+  currentYearInvoices.forEach((invoice) => {
+    const match = invoice.invoiceNumber.match(
+      new RegExp(`^INV-${currentYear}-(\\d+)$`)
+    );
+
+    if (match) {
+      const number = parseInt(match[1], 10);
+
+      if (number > maxNumber) {
+        maxNumber = number;
+      }
+    }
   });
 
-  const highestNumber = Math.max(...numbers);
+  const nextNumber = maxNumber + 1;
 
-  const nextNumber = highestNumber + 1;
-
-  return `INV-${String(nextNumber).padStart(3, "0")}`;
+  return `${prefix}${String(nextNumber).padStart(3, "0")}`;
 };
 
 /* ---------------- STUDENTS ---------------- */

@@ -102,7 +102,6 @@ function InvoiceForm({
   /* SAVE OR UPDATE */
 
   const saveOrUpdateInvoice = async () => {
-
     const existingInvoices = await getInvoices();
 
     const alreadyExists = existingInvoices.find(
@@ -125,15 +124,15 @@ function InvoiceForm({
     }
 
     if (editId) {
-  return await updateInvoice(editId, invoiceData);
-}
+      return await updateInvoice(editId, invoiceData);
+    }
 
-const nextInvoiceNumber = await generateInvoiceNumber();
+    const nextInvoiceNumber = await generateInvoiceNumber();
 
-return await saveInvoice({
-  ...invoiceData,
-  invoiceNumber: nextInvoiceNumber,
-});
+    return await saveInvoice({
+      ...invoiceData,
+      invoiceNumber: nextInvoiceNumber,
+    });
   };
 
   /* SAVE */
@@ -147,13 +146,12 @@ return await saveInvoice({
       const result = await saveOrUpdateInvoice();
 
       if (!result) return;
-      
+
       await loadInvoices();
 
       toast.success("Invoice saved successfully");
 
       await resetInvoiceForm();
-      
     } catch (error) {
       console.error(error);
 
@@ -177,7 +175,6 @@ return await saveInvoice({
     try {
       await saveOrUpdateInvoice();
 
-      
       await loadInvoices();
 
       toast.success("Invoice downloaded");
@@ -192,13 +189,14 @@ return await saveInvoice({
     }
   };
 
-
   return (
     <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6">
       {" "}
       {/* TITLE */}
       <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-900">Fill student and payment details</h2>
+        <h2 className="text-xl font-bold text-gray-900">
+          Fill student and payment details
+        </h2>
       </div>
       {/* FORM */}
       <div className="mx-auto max-w-5xl">
@@ -277,7 +275,6 @@ return await saveInvoice({
                 });
 
                 setStudentCourses(student?.enrollments || []);
-                
               }}
               placeholder="Search Student"
               isSearchable
@@ -331,83 +328,85 @@ return await saveInvoice({
           </div>
           {/* COURSE */}
           <div>
-  <label className="mb-2 block text-sm font-semibold text-gray-700">
-    Course Name
-  </label>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Course Name
+            </label>
 
-  <Select
-    options={studentCourses.map((enrollment) => ({
-      value: enrollment.courseName,
-      label: enrollment.courseName,
-    }))}
-    value={
-      invoiceData.courseName
-        ? {
-            value: invoiceData.courseName,
-            label: invoiceData.courseName,
-          }
-        : null
-    }
-    onChange={(selectedCourse) => {
-      if (!selectedCourse) {
-        setInvoiceData({
-          ...invoiceData,
-          courseName: "",
-          courseFee: "",
-          paidAmount: "",
-          daysPerWeek: "",
-        });
-        return;
-      }
+            <Select
+              options={studentCourses.map((enrollment) => ({
+                value: enrollment.courseName,
+                label: enrollment.courseName,
+              }))}
+              value={
+                invoiceData.courseName
+                  ? {
+                      value: invoiceData.courseName,
+                      label: invoiceData.courseName,
+                    }
+                  : null
+              }
+              onChange={(selectedCourse) => {
+                if (!selectedCourse) {
+                  setInvoiceData({
+                    ...invoiceData,
+                    courseName: "",
+                    courseFee: "",
+                    paidAmount: "",
+                    daysPerWeek: "",
+                    status: "Pending",
+                  });
+                  return;
+                }
 
-      const course = courses.find(
-        (c) => c.courseName === selectedCourse.value
-      );
+                const course = courses.find(
+                  (c) => c.courseName === selectedCourse.value,
+                );
 
-      setInvoiceData({
-        ...invoiceData,
-        courseName: course?.courseName || selectedCourse.value,
-        courseFee: course?.fee || "",
-        paidAmount: course?.fee || "",
-        daysPerWeek: course?.daysPerWeek || "",
-      });
-    }}
-    placeholder="Select Course"
-    isSearchable
-    menuPortalTarget={document.body}
-    menuPosition="fixed"
-    styles={{
-      control: (base) => ({
-        ...base,
-        minHeight: "52px",
-        borderRadius: "16px",
-        borderColor: "#e5e7eb",
-        backgroundColor: "#f9fafb",
-        boxShadow: "none",
-        paddingLeft: "4px",
-      }),
+                setInvoiceData({
+                  ...invoiceData,
+                  courseName: course?.courseName || selectedCourse.value,
+                  courseFee: course?.fee || "",
+                  paidAmount: course?.fee || "",
+                  daysPerWeek: course?.daysPerWeek || "",
+                  status: course?.fee > 0 ? "Pending" : "Paid",
+                });
+              }}
+              placeholder="Select Course"
+              isSearchable
+              menuPortalTarget={document.body}
+              menuPosition="fixed"
+              styles={{
+                control: (base) => ({
+                  ...base,
+                  minHeight: "52px",
+                  borderRadius: "16px",
+                  borderColor: "#e5e7eb",
+                  backgroundColor: "#f9fafb",
+                  boxShadow: "none",
+                  paddingLeft: "4px",
+                }),
 
-      placeholder: (base) => ({
-        ...base,
-        fontSize: "14px",
-        fontWeight: 500,
-        color: "#9ca3af",
-      }),
+                placeholder: (base) => ({
+                  ...base,
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#9ca3af",
+                }),
 
-      singleValue: (base) => ({
-        ...base,
-        fontSize: "14px",
-        fontWeight: 500,
-        color: "#111827",
-      }),
+                singleValue: (base) => ({
+                  ...base,
+                  fontSize: "14px",
+                  fontWeight: 500,
+                  color: "#111827",
+                }),
 
-      menuPortal: (base) => ({
-        ...base,
-        zIndex: 9999,
-      }),
-    }}
-  />
-</div>
+                menuPortal: (base) => ({
+                  ...base,
+                  zIndex: 9999,
+                }),
+              }}
+            />
+          </div>
           {/* PAID MONTH */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -418,7 +417,24 @@ return await saveInvoice({
               type="text"
               name="paidMonth"
               value={invoiceData.paidMonth}
-              onChange={handleChange}
+              onChange={(e) => {
+                const paidAmount = Number(e.target.value) || 0;
+                const courseFee = Number(invoiceData.courseFee) || 0;
+                const discount = Number(invoiceData.discount) || 0;
+
+                const finalAmount = Math.max(0, courseFee - discount);
+
+                setInvoiceData({
+                  ...invoiceData,
+                  paidAmount: e.target.value,
+                  status:
+                    paidAmount <= 0
+                      ? "Pending"
+                      : paidAmount < finalAmount
+                        ? "Partially Paid"
+                        : "Paid",
+                });
+              }}
               className={inputStyle}
             />
           </div>
@@ -449,53 +465,48 @@ return await saveInvoice({
             />
           </div>
           {/* PENDING AMOUNT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Pending Amount
+            </label>
 
-<div>
-  <label className="mb-2 block text-sm font-semibold text-gray-700">
-    Pending Amount
-  </label>
-
-  <input
-    type="number"
-    value={Math.max(
-      0,
-      (Number(invoiceData.courseFee) || 0) -
-      (Number(invoiceData.discount) || 0) -
-      (Number(invoiceData.paidAmount) || 0)
-    )}
-    readOnly
-    className={readOnlyStyle}
-  />
-</div>
-
+            <input
+              type="number"
+              value={Math.max(
+                0,
+                (Number(invoiceData.courseFee) || 0) -
+                  (Number(invoiceData.discount) || 0) -
+                  (Number(invoiceData.paidAmount) || 0),
+              )}
+              readOnly
+              className={readOnlyStyle}
+            />
+          </div>
           {/* DISCOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
               Discount
             </label>
-          <input
+            <input
               type="number"
               name="discount"
               value={invoiceData.discount}
               onChange={(e) => {
                 const discount = Number(e.target.value) || 0;
-
                 const courseFee = Number(invoiceData.courseFee) || 0;
 
-                const paidAmount = courseFee - discount;
+                const finalAmount = Math.max(0, courseFee - discount);
 
                 setInvoiceData({
                   ...invoiceData,
-
                   discount: e.target.value,
-
-                  paidAmount,
+                  paidAmount: finalAmount,
+                  status: finalAmount <= 0 ? "Paid" : "Pending",
                 });
               }}
               className={inputStyle}
             />
           </div>
-
           {/* PAID AMOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -516,17 +527,17 @@ return await saveInvoice({
 
                   paidAmount: e.target.value,
 
-                  status: paidAmount <= 0
-                    ? "Pending"
-                    : paidAmount < courseFee
-                      ? "Partially Paid"
-                      : "Paid",
+                  status:
+                    paidAmount <= 0
+                      ? "Pending"
+                      : paidAmount < courseFee
+                        ? "Partially Paid"
+                        : "Paid",
                 });
               }}
               className={inputStyle}
             />
           </div>
-
           {/* STATUS */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
