@@ -59,6 +59,12 @@ export const deleteInvoice = async (id) => {
   return res.data;
 };
 
+export const permanentlyDeleteInvoice = async (id) => {
+  const res = await api.delete(`/invoices/${id}`);
+
+  return res.data;
+};
+
 export const getTrashedInvoices = async () => {
   const res = await api.get("/invoices/trash");
 
