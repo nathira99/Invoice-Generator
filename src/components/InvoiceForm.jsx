@@ -276,7 +276,7 @@ return await saveInvoice({
                   daysPerWeek: "",
                 });
 
-                setStudentCourses(student?.enrolledCourses || []);
+                setStudentCourses(student?.enrollments || []);
                 
               }}
               placeholder="Search Student"
@@ -331,77 +331,83 @@ return await saveInvoice({
           </div>
           {/* COURSE */}
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Course Name
-            </label>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Course Name
+  </label>
 
-            <Select
-              options={studentCourses.map((courseName) => ({
-                value: courseName,
-                label: courseName,
-              }))}
-              value={
-                invoiceData.courseName
-                  ? {
-                      value: invoiceData.courseName,
-                      label: invoiceData.courseName,
-                    }
-                  : null
-              }
-              onChange={(selectedCourse) => {
-                const course = courses.find(
-                  (c) => c.courseName === selectedCourse.value,
-                );
+  <Select
+    options={studentCourses.map((enrollment) => ({
+      value: enrollment.courseName,
+      label: enrollment.courseName,
+    }))}
+    value={
+      invoiceData.courseName
+        ? {
+            value: invoiceData.courseName,
+            label: invoiceData.courseName,
+          }
+        : null
+    }
+    onChange={(selectedCourse) => {
+      if (!selectedCourse) {
+        setInvoiceData({
+          ...invoiceData,
+          courseName: "",
+          courseFee: "",
+          paidAmount: "",
+          daysPerWeek: "",
+        });
+        return;
+      }
 
-                setInvoiceData({
-                  ...invoiceData,
+      const course = courses.find(
+        (c) => c.courseName === selectedCourse.value
+      );
 
-                  courseName: course?.courseName || "",
+      setInvoiceData({
+        ...invoiceData,
+        courseName: course?.courseName || selectedCourse.value,
+        courseFee: course?.fee || "",
+        paidAmount: course?.fee || "",
+        daysPerWeek: course?.daysPerWeek || "",
+      });
+    }}
+    placeholder="Select Course"
+    isSearchable
+    menuPortalTarget={document.body}
+    menuPosition="fixed"
+    styles={{
+      control: (base) => ({
+        ...base,
+        minHeight: "52px",
+        borderRadius: "16px",
+        borderColor: "#e5e7eb",
+        backgroundColor: "#f9fafb",
+        boxShadow: "none",
+        paddingLeft: "4px",
+      }),
 
-                  courseFee: course?.fee || "",
+      placeholder: (base) => ({
+        ...base,
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#9ca3af",
+      }),
 
-                  paidAmount: course?.fee || "",
+      singleValue: (base) => ({
+        ...base,
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#111827",
+      }),
 
-                  daysPerWeek: course?.daysPerWeek || "",
-                });
-              }}
-              placeholder="Select Course"
-              isSearchable
-              className="text-sm"
-              menuPortalTarget={document.body}
-              menuPosition="fixed"
-              styles={{
-                control: (base) => ({
-                  ...base,
-                  minHeight: "52px",
-                  borderRadius: "16px",
-                  borderColor: "#e5e7eb",
-                  backgroundColor: "#f9fafb",
-                  boxShadow: "none",
-                  paddingLeft: "4px",
-                }),
-
-                placeholder: (base) => ({
-                  ...base,
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  color: "#9ca3af",
-                }),
-
-                singleValue: (base) => ({
-                  ...base,
-                  fontSize: "14px",
-                  fontWeight: 500,
-                  color: "#111827",
-                }),
-
-                menuPortal: (base) => ({
-                  ...base,
-                  zIndex: 9999,
-                }),
-              }}
-            />
-          </div>
+      menuPortal: (base) => ({
+        ...base,
+        zIndex: 9999,
+      }),
+    }}
+  />
+</div>
           {/* PAID MONTH */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -517,7 +523,6 @@ return await saveInvoice({
                       : "Paid",
                 });
               }}
-              value={invoiceData.paidAmount}
               className={inputStyle}
             />
           </div>
