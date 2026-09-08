@@ -172,10 +172,10 @@ function InvoicePreview({ invoiceData }) {
 
           {/* ================= TABLE ================= */}
 
-          <div className="mt-7 overflow-hidden rounded-2xl border border-gray-200">
+          <div className="mt-6 overflow-hidden rounded-2xl border border-gray-200">
             {/* TABLE HEADER */}
 
-            <div className="grid grid-cols-6 bg-[#243B6B] px-5 py-3 text-sm font-semibold text-white">
+            <div className="grid grid-cols-6 bg-[#243B6B] px-5 py-2 text-sm font-semibold text-white">
               <p>#</p>
 
               <p className="col-span-2">Description</p>
@@ -189,7 +189,7 @@ function InvoicePreview({ invoiceData }) {
 
             {/* ROW */}
 
-            <div className="grid grid-cols-6 items-start border-b border-gray-200  px-5 py-5">
+            <div className="grid grid-cols-6 items-start border-b border-gray-200  px-5 py-4">
               <p className="text-sm text-gray-700">1</p>
 
               <div className="col-span-2">
@@ -204,7 +204,7 @@ function InvoicePreview({ invoiceData }) {
 
               <p className="text-right text-sm text-gray-700">Rs. {totalFee}</p>
 
-              <p className="text-right text-sm text-red-500">
+              <p className="text-right text-sm text-green-800">
                 - Rs. {discount}
               </p>
 
@@ -215,15 +215,10 @@ function InvoicePreview({ invoiceData }) {
 
             {/* TOTAL */}
 
-            <div className="flex justify-end bg-gray-50 px-6 py-5">
+            <div className="flex justify-end bg-gray-50 px-6 py-4">
   <div className="w-72 space-y-2 text-sm">
 
-    <div className="flex justify-between">
-      <span>Course Fee</span>
-      <span>Rs. {totalFee}</span>
-    </div>
-
-    <div className="flex justify-between text-red-600">
+    <div className="flex justify-between text-green-800">
       <span>Discount</span>
       <span>- Rs. {discount}</span>
     </div>
@@ -253,7 +248,7 @@ function InvoicePreview({ invoiceData }) {
 
           {/* ================= FOOTER ================= */}
 
-          <div className="mt-6 border-t border-gray-200 pt-6">
+          <div className="mt-6 border-t border-gray-200 pt-5">
             <div className="grid grid-cols-2 items-center">
               {/* SIGNATURE */}
 
@@ -304,7 +299,7 @@ function InvoicePreview({ invoiceData }) {
 
             <div className="mt-4 flex items-center justify-center gap-10 text-sm text-gray-700">
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-[#1E3A8A]">PHONE:</span>
+                <span className="font-semibold text-[#1E3A8A]">PH:</span>
 
                 <span>+91 63831 16428</span>
               </div>

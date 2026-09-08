@@ -72,6 +72,8 @@ function InvoiceForm({
 
       invoiceDate: new Date().toISOString().split("T")[0],
 
+      studentId: "",
+
       studentName: "",
 
       contactNumber: "",
@@ -162,9 +164,26 @@ function InvoiceForm({
   /* DOWNLOAD PDF */
 
   const handleDownloadPDF = async () => {
+    const cleanName = invoiceData.studentName
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_");
+
+    const cleanMonth = invoiceData.paidMonth
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_");
+
+    const cleanCourse = invoiceData.courseName
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_")
+      .substring(0, 20);
+
+    const filename = `${cleanName}_${cleanMonth}_${cleanCourse}_Invoice.pdf`;
+
     if (invoiceData.status === "Pending") {
       toast.error("Pending invoices cannot be downloaded.");
-
       return;
     }
 
@@ -179,12 +198,11 @@ function InvoiceForm({
 
       toast.success("Invoice downloaded");
 
-      await generatePDF();
+      await generatePDF(filename);
 
       await resetInvoiceForm();
     } catch (error) {
       console.error(error);
-
       toast.error(error.message || "Failed to download invoice");
     }
   };
@@ -242,24 +260,50 @@ function InvoiceForm({
 
             <Select
               options={students.map((student) => ({
-                value: student.name,
+                value: student.studentId,
                 label: `${student.name} (${student.studentId})`,
               }))}
               value={
-                invoiceData.studentName
-                  ? {
-                      value: invoiceData.studentName,
-                      label: invoiceData.studentName,
-                    }
+                invoiceData.studentId
+                  ? (() => {
+                      const student = students.find(
+                        (s) => s.studentId === invoiceData.studentId,
+                      );
+
+                      return student
+                        ? {
+                            value: student.studentId,
+                            label: `${student.name} (${student.studentId})`,
+                          }
+                        : null;
+                    })()
                   : null
               }
               onChange={(selectedStudent) => {
+                if (!selectedStudent) {
+                  setInvoiceData({
+                    ...invoiceData,
+                    studentId: "",
+                    studentName: "",
+                    contactNumber: "",
+                    courseName: "",
+                    courseFee: "",
+                    paidAmount: "",
+                    daysPerWeek: "",
+                  });
+
+                  setStudentCourses([]);
+                  return;
+                }
+
                 const student = students.find(
-                  (s) => s.name === selectedStudent.value,
+                  (s) => s.studentId === selectedStudent.value,
                 );
 
                 setInvoiceData({
                   ...invoiceData,
+
+                  studentId: student?.studentId || "",
 
                   studentName: student?.name || "",
 
@@ -272,6 +316,8 @@ function InvoiceForm({
                   paidAmount: "",
 
                   daysPerWeek: "",
+
+                  status: "Pending",
                 });
 
                 setStudentCourses(student?.enrollments || []);

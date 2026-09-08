@@ -1,7 +1,7 @@
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 
-const generatePDF = async () => {
+const generatePDF = async (filename) => {
 
   const invoice =
     document.getElementById(
@@ -73,7 +73,7 @@ const generatePDF = async () => {
 
   }
 
-  pdf.save("invoice.pdf");
+  pdf.save(filename || "invoice.pdf");
 
 };
 

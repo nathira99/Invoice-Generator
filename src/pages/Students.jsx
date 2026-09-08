@@ -30,20 +30,11 @@ function Students() {
 
   const [editId, setEditId] = useState(null);
 
-  const [editData, setEditData] = useState({
-    studentId: "",
-    name: "",
-    contact: "",
-    enrolledCourses: [],
-    notes: "",
-    status: "Active",
-  });
-
   const [studentData, setStudentData] = useState({
     studentId: "",
     name: "",
     contact: "",
-    enrolledCourses: [],
+    enrollments: [],
     notes: "",
   });
 
@@ -103,7 +94,7 @@ function Students() {
         studentId: "",
         name: "",
         contact: "",
-        enrolledCourses: [],
+        enrollments: [],
         notes: "",
         status: "Active",
       });
@@ -144,23 +135,26 @@ function Students() {
     }
   };
 
-  const handleEditStudent = (student, index) => {
-    setEditId(student._id);
+  const handleEditStudent = (student) => {
+  setEditId(student._id);
 
-    setStudentData({
-      ...student,
-      studentId: student.studentId || "",
-      name: student.name || "",
-      contact: student.contact || "",
-      enrolledCourses: student.enrolledCourses || [],
-      notes: student.notes || "",
-    });
+  setStudentData({
+    studentId: student.studentId || "",
+    name: student.name || "",
+    age: student.age || "",
+    place: student.place || "",
+    contact: student.contact || "",
+    email: student.email || "",
+    enrollments: student.enrollments || [],
+    notes: student.notes || "",
+    status: student.status || "Active",
+  });
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  };
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth",
+  });
+};
 
   const handleSaveEdit = async () => {
     try {
@@ -179,8 +173,9 @@ function Students() {
         place: "",
         contact: "",
         email: "",
-        enrolledCourses: [],
+        enrollments: [],
         notes: "",
+        status: "Active",
       });
     } catch (error) {
       console.error(error);
@@ -192,19 +187,21 @@ function Students() {
   const searchText = search.toLowerCase();
 
   const filteredStudents = students.filter((student) => {
-  return (
-    student.studentId?.toLowerCase().includes(searchText) ||
-    student.name?.toLowerCase().includes(searchText) ||
-    student.contact?.toLowerCase().includes(searchText) ||
-    student.notes?.toLowerCase().includes(searchText) ||
-    String(student.age || "").includes(searchText) ||
-    student.place?.toLowerCase().includes(searchText) ||
-    student.email?.toLowerCase().includes(searchText) ||
-    student.enrolledCourses?.some((course) =>
-      course.toLowerCase().includes(searchText),
-    )
-  );
-});
+    return (
+      student.studentId?.toLowerCase().includes(searchText) ||
+      student.name?.toLowerCase().includes(searchText) ||
+      student.contact?.toLowerCase().includes(searchText) ||
+      student.notes?.toLowerCase().includes(searchText) ||
+      String(student.age || "").includes(searchText) ||
+      student.place?.toLowerCase().includes(searchText) ||
+      student.email?.toLowerCase().includes(searchText) ||
+      student.enrollments?.some(
+        (enrollment) =>
+          enrollment.courseName?.toLowerCase().includes(searchText) ||
+          enrollment.courseRegistrationNo?.toLowerCase().includes(searchText),
+      )
+    );
+  });
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -349,16 +346,29 @@ function Students() {
                     value: course.courseName,
                     label: course.courseName,
                   }))}
-                  value={studentData.enrolledCourses.map((course) => ({
-                    value: course,
-                    label: course,
+                  value={studentData.enrollments.map((enrollment) => ({
+                    value: enrollment.courseName,
+                    label: enrollment.courseName,
                   }))}
                   onChange={(selectedOptions) => {
+                    const selectedEnrollments = selectedOptions || [];
+
+                    const newEnrollments = selectedEnrollments.map((option) => {
+                      const existingEnrollment = studentData.enrollments.find(
+                        (enrollment) => enrollment.courseName === option.value,
+                      );
+
+                      return (
+                        existingEnrollment || {
+                          courseName: option.value,
+                          courseRegistrationNo: "",
+                        }
+                      );
+                    });
+
                     setStudentData({
                       ...studentData,
-                      enrolledCourses: selectedOptions
-                        ? selectedOptions.map((option) => option.value)
-                        : [],
+                      enrollments: newEnrollments,
                     });
                   }}
                   placeholder="Select Courses"
@@ -431,22 +441,19 @@ function Students() {
                 {editId ? (
                   <>
                     <button
-                      onClick={handleSaveEdit}
-                      className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700"
-                    >
-                      Update Student
-                    </button>
-
-                    <button
                       onClick={() => {
                         setEditId(null);
 
                         setStudentData({
                           studentId: "",
                           name: "",
+                          age: "",
+                          place: "",
                           contact: "",
-                          enrolledCourses: [],
+                          email: "",
+                          enrollments: [],
                           notes: "",
+                          status: "Active",
                         });
                       }}
                       className="rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
@@ -550,7 +557,7 @@ function Students() {
 
                           {/* Edit Button */}
                           <div className="flex flex-wrap items-center justify-center gap-2">
-                            {editId === index ? (
+                            {editId === student._id ? (
                               <button
                                 onClick={handleSaveEdit}
                                 className="flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700"
@@ -561,7 +568,7 @@ function Students() {
                             ) : (
                               <button
                                 onClick={() =>
-                                  handleEditStudent(student, index)
+                                  handleEditStudent(student)
                                 }
                                 className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                               >
