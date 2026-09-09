@@ -15,7 +15,7 @@ import Swal from "sweetalert2";
 
 import Select from "react-select";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function InvoiceForm({
   invoiceData,
@@ -27,6 +27,32 @@ function InvoiceForm({
   courses,
 }) {
   const [studentCourses, setStudentCourses] = useState([]);
+
+  useEffect(() => {
+  const courseFee = Number(invoiceData.courseFee) || 0;
+  const discount = Number(invoiceData.discount) || 0;
+  const paidAmount = Number(invoiceData.paidAmount) || 0;
+
+  const finalAmount = Math.max(0, courseFee - discount);
+
+  const status =
+    paidAmount <= 0
+      ? "Pending"
+      : paidAmount < finalAmount
+        ? "Partially Paid"
+        : "Paid";
+
+  if (invoiceData.status !== status) {
+    setInvoiceData((prev) => ({
+      ...prev,
+      status,
+    }));
+  }
+}, [
+  invoiceData.courseFee,
+  invoiceData.discount,
+  invoiceData.paidAmount,
+]);
 
   const handleChange = (e) => {
     setInvoiceData({
@@ -414,8 +440,7 @@ function InvoiceForm({
                   courseFee: course?.fee || "",
                   paidAmount: course?.fee || "",
                   daysPerWeek: course?.daysPerWeek || "",
-                  status: course?.fee > 0 ? "Pending" : "Paid",
-                });
+                 });
               }}
               placeholder="Select Course"
               isSearchable
@@ -454,36 +479,25 @@ function InvoiceForm({
             />
           </div>
           {/* PAID MONTH */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Paid Month
-            </label>
+<div>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Paid Month
+  </label>
 
-            <input
-              type="text"
-              name="paidMonth"
-              value={invoiceData.paidMonth}
-              onChange={(e) => {
-                const paidAmount = Number(e.target.value) || 0;
-                const courseFee = Number(invoiceData.courseFee) || 0;
-                const discount = Number(invoiceData.discount) || 0;
+  <input
+    type="text"
+    name="paidMonth"
+    value={invoiceData.paidMonth}
+    onChange={(e) =>
+      setInvoiceData({
+        ...invoiceData,
+        paidMonth: e.target.value,
+      })
+    }
+    className={inputStyle}
+  />
+</div>
 
-                const finalAmount = Math.max(0, courseFee - discount);
-
-                setInvoiceData({
-                  ...invoiceData,
-                  paidAmount: e.target.value,
-                  status:
-                    paidAmount <= 0
-                      ? "Pending"
-                      : paidAmount < finalAmount
-                        ? "Partially Paid"
-                        : "Paid",
-                });
-              }}
-              className={inputStyle}
-            />
-          </div>
           {/* COURSE FEE */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
@@ -528,62 +542,52 @@ function InvoiceForm({
               className={readOnlyStyle}
             />
           </div>
+          
           {/* DISCOUNT */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Discount
-            </label>
-            <input
-              type="number"
-              name="discount"
-              value={invoiceData.discount}
-              onChange={(e) => {
-                const discount = Number(e.target.value) || 0;
-                const courseFee = Number(invoiceData.courseFee) || 0;
+<div>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Discount
+  </label>
 
-                const finalAmount = Math.max(0, courseFee - discount);
+  <input
+    type="number"
+    name="discount"
+    value={invoiceData.discount}
+    onChange={(e) => {
+      const discount = Number(e.target.value) || 0;
+      const courseFee = Number(invoiceData.courseFee) || 0;
 
-                setInvoiceData({
-                  ...invoiceData,
-                  discount: e.target.value,
-                  paidAmount: finalAmount,
-                  status: finalAmount <= 0 ? "Paid" : "Pending",
-                });
-              }}
-              className={inputStyle}
-            />
-          </div>
+      const finalAmount = Math.max(0, courseFee - discount);
+
+      setInvoiceData({
+        ...invoiceData,
+        discount: e.target.value,
+        paidAmount: finalAmount,
+      });
+    }}
+    className={inputStyle}
+  />
+</div>
+          
           {/* PAID AMOUNT */}
-          <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Paid Amount
-            </label>
+<div>
+  <label className="mb-2 block text-sm font-semibold text-gray-700">
+    Paid Amount
+  </label>
 
-            <input
-              type="number"
-              name="paidAmount"
-              value={invoiceData.paidAmount}
-              onChange={(e) => {
-                const paidAmount = Number(e.target.value) || 0;
-
-                const courseFee = Number(invoiceData.courseFee) || 0;
-
-                setInvoiceData({
-                  ...invoiceData,
-
-                  paidAmount: e.target.value,
-
-                  status:
-                    paidAmount <= 0
-                      ? "Pending"
-                      : paidAmount < courseFee
-                        ? "Partially Paid"
-                        : "Paid",
-                });
-              }}
-              className={inputStyle}
-            />
-          </div>
+  <input
+    type="number"
+    name="paidAmount"
+    value={invoiceData.paidAmount}
+    onChange={(e) => {
+      setInvoiceData({
+        ...invoiceData,
+        paidAmount: e.target.value,
+      });
+    }}
+    className={inputStyle}
+  />
+</div>
           {/* STATUS */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">
