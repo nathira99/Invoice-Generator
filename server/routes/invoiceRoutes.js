@@ -9,6 +9,8 @@ import {
   getTrashedInvoices,
   restoreInvoice,
   permanentlyDeleteInvoice,
+  syncAllInvoices,
+  updateInvoiceFromSheet,
 } from '../controllers/invoiceController.js';
 
 const router = express.Router();
@@ -18,6 +20,11 @@ router.post(
   "/generate-by-course",
   generateInvoicesByCourse
 );
+
+router.get("/sync-all", syncAllInvoices);
+
+router.put("/from-sheet", updateInvoiceFromSheet);
+
 router.get(
   "/trash",
   getTrashedInvoices

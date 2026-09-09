@@ -6,6 +6,7 @@ import {
   updateCourse,
   duplicateCourse,
   deleteCourse,
+  syncAllCourses,
 } from "../controllers/courseController.js";
 
 const router =
@@ -18,6 +19,10 @@ router
   .get(getCourses)
   .post(createCourse);
 
+/* SYNC ALL COURSES */
+
+router.get("/sync-all", syncAllCourses);
+
 /* UPDATE + DELETE */
 
 router
@@ -25,5 +30,6 @@ router
   .put(updateCourse)
   .post(duplicateCourse)
   .delete(deleteCourse);
+
 
 export default router;

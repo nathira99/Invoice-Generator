@@ -1,7 +1,7 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import "./cron/trashCleanup.js";
 import cors from 'cors';
-import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import cookieParser from "cookie-parser";
 import authRoutes from "./routes/authRoutes.js";
@@ -11,8 +11,15 @@ import courseRoutes from "./routes/courseRoutes.js";
 import teacherRoutes from "./routes/teacherRoutes.js";
 import staffRoutes from "./routes/staffRoutes.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
+import googleSheetsRoutes from "./routes/googleSheetsRoutes.js";
 
 dotenv.config();
+
+console.log("Google credentials loaded:", {
+  sheetId: !!process.env.GOOGLE_SHEET_ID,
+  clientEmail: !!process.env.GOOGLE_CLIENT_EMAIL,
+  privateKey: !!process.env.GOOGLE_PRIVATE_KEY,
+});
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -36,6 +43,8 @@ app.use("/api/auth", authRoutes);
 app.use('/api/invoices', invoiceRoutes);
 
 app.use("/api/students", studentRoutes);
+
+app.use("/api/google-sheets", googleSheetsRoutes);
 
 app.use("/api/courses", courseRoutes);
 

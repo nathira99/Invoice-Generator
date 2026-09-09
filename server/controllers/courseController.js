@@ -1,142 +1,173 @@
 import Course from "../models/courseModel.js";
+import {
+  syncCourseToSheet,
+  syncAllCoursesToSheet,
+  deleteCourseFromSheet,
+} from "../services/courseSheetSync.js";
 
 /* GET COURSES */
 
-export const getCourses =
-  async (req, res) => {
+export const getCourses = async (req, res) => {
+  try {
+    const courses = await Course.find().sort({
+      createdAt: -1,
+    });
 
-    try {
-
-      const courses =
-        await Course.find()
-          .sort({
-            createdAt: -1,
-          });
-
-      res.json(courses);
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
-    }
-
-  };
+    res.json(courses);
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
 
 /* CREATE COURSE */
 
-export const createCourse =
-  async (req, res) => {
+export const createCourse = async (req, res) => {
+  try {
+    const course = await Course.create(req.body);
+
+    /* SYNC NEW COURSE TO GOOGLE SHEETS */
 
     try {
-
-      const course =
-        await Course.create(
-          req.body
-        );
-
-      res.status(201).json(
-        course
+      await syncCourseToSheet(course);
+    } catch (syncError) {
+      console.error(
+        "Google Sheets course sync failed:",
+        syncError.message
       );
-
-    } catch (error) {
-
-      res.status(400).json({
-        message:
-          error.message,
-      });
-
     }
 
-  };
+    res.status(201).json(course);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
 
 /* UPDATE COURSE */
 
-export const updateCourse =
-  async (req, res) => {
+export const updateCourse = async (req, res) => {
+  try {
+    const updatedCourse =
+      await Course.findByIdAndUpdate(
+        req.params.id,
+        req.body,
+        {
+          new: true,
+          runValidators: true,
+        }
+      );
+
+    if (!updatedCourse) {
+      return res.status(404).json({
+        message: "Course not found",
+      });
+    }
+
+    /* SYNC UPDATED COURSE TO GOOGLE SHEETS */
 
     try {
-
-      const updatedCourse =
-        await Course.findByIdAndUpdate(
-          req.params.id,
-          req.body,
-          {
-            new: true,
-          }
-        );
-
-      res.json(
-        updatedCourse
+      await syncCourseToSheet(updatedCourse);
+    } catch (syncError) {
+      console.error(
+        "Google Sheets course sync failed:",
+        syncError.message
       );
-
-    } catch (error) {
-
-      res.status(400).json({
-        message:
-          error.message,
-      });
-
     }
 
-  };
+    res.json(updatedCourse);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
+// DUPLICATE COURSE
 
-  // DUPLICATE COURSE
+export const duplicateCourse = async (req, res) => {
+  try {
+    const duplicatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      },
+    );
 
-  export const duplicateCourse =
-    async (req, res) => {
-      try {
+    res.json(duplicatedCourse);
+  } catch (error) {
+    res.status(400).json({
+      message: error.message,
+    });
+  }
+};
 
-      const duplicatedCourse =
-        await Course.findByIdAndUpdate(
-          req.params.id,
-          req.body,
-          {
-            new: true,
-          }
-        );
+/* SYNC ALL COURSES TO GOOGLE SHEETS */
 
-      res.json(
-        duplicatedCourse
-      );
+export const syncAllCourses = async (req, res) => {
+  try {
+    const count = await syncAllCoursesToSheet();
 
-    } catch (error) {
+    res.json({
+      success: true,
+      message: "All courses synced successfully",
+      count,
+    });
+  } catch (error) {
+    console.error(
+      "All courses sync error:",
+      error
+    );
 
-      res.status(400).json({
-        message:
-          error.message,
-      });
-
-    }
-
-    }
+    res.status(500).json({
+      success: false,
+      message: "Failed to sync all courses",
+      error: error.message,
+    });
+  }
+};
 
 /* DELETE COURSE */
 
-export const deleteCourse =
-  async (req, res) => {
+export const deleteCourse = async (req, res) => {
+  try {
+    const course = await Course.findById(
+      req.params.id
+    );
 
-    try {
-
-      await Course.findByIdAndDelete(
-        req.params.id
-      );
-
-      res.json({
-        message:
-          "Course deleted",
+    if (!course) {
+      return res.status(404).json({
+        message: "Course not found",
       });
-
-    } catch (error) {
-
-      res.status(500).json({
-        message:
-          error.message,
-      });
-
     }
 
-  };
+    /* DELETE FROM GOOGLE SHEETS FIRST */
+
+    try {
+      await deleteCourseFromSheet(
+        course._id
+      );
+    } catch (syncError) {
+      console.error(
+        "Google Sheets course delete failed:",
+        syncError.message
+      );
+    }
+
+    /* DELETE FROM MONGODB */
+
+    await Course.findByIdAndDelete(
+      req.params.id
+    );
+
+    res.json({
+      message: "Course deleted",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};
