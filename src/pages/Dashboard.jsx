@@ -143,25 +143,82 @@ function Dashboard() {
     };
   }, [location.state]);
 
-  /* TOTALS */
+/* PAYMENT TOTALS */
 
-  const totalRevenue = invoices.reduce(
-  (total, invoice) => total + Number(invoice.paidAmount || 0),
-  0
+const currentMonth = new Date().toISOString().slice(0, 7);
+
+const getInvoiceMonth = (paidMonth) => {
+  if (!paidMonth) return "";
+
+  // Already in YYYY-MM format
+  if (/^\d{4}-\d{2}$/.test(paidMonth)) {
+    return paidMonth;
+  }
+
+  // Convert "September 2026" → "2026-09"
+  const date = new Date(`1 ${paidMonth}`);
+
+  if (isNaN(date.getTime())) {
+    return "";
+  }
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+    2,
+    "0",
+  )}`;
+};
+
+const currentMonthInvoices = invoices.filter(
+  (invoice) => getInvoiceMonth(invoice.paidMonth) === currentMonth,
 );
 
-  const pendingAmount = invoices.reduce((total, invoice) => {
-  const remaining =
-    Number(invoice.courseFee || 0) -
-    Number(invoice.discount || 0) -
-    Number(invoice.paidAmount || 0);
+const upcomingInvoices = invoices.filter(
+  (invoice) => getInvoiceMonth(invoice.paidMonth) > currentMonth,
+);
 
-  return total + Math.max(remaining, 0);
+/* CURRENT MONTH REVENUE */
+
+const totalRevenue = currentMonthInvoices.reduce(
+  (total, invoice) => total + Number(invoice.paidAmount || 0),
+  0,
+);
+
+/* UPCOMING PAYMENTS */
+
+const upcomingPayments = upcomingInvoices.reduce(
+  (total, invoice) => total + Number(invoice.paidAmount || 0),
+  0,
+);
+
+/* CURRENT MONTH DISCOUNT */
+
+const totalDiscount = currentMonthInvoices.reduce(
+  (total, invoice) => total + Number(invoice.discount || 0),
+  0,
+);
+
+/* CURRENT MONTH PENDING */
+
+const pendingAmount = currentMonthInvoices.reduce((total, invoice) => {
+  const courseFee = Number(invoice.courseFee || 0);
+  const discount = Number(invoice.discount || 0);
+  const paidAmount = Number(invoice.paidAmount || 0);
+
+  const payableAmount = Math.max(0, courseFee - discount);
+
+  const remaining = Math.max(0, payableAmount - paidAmount);
+
+  return total + remaining;
 }, 0);
-  const collectionRate =
-    totalRevenue + pendingAmount === 0
-      ? 0
-      : Math.round((totalRevenue / (totalRevenue + pendingAmount)) * 100);
+
+/* COLLECTION RATE */
+
+const collectionRate =
+  totalRevenue + pendingAmount === 0
+    ? 0
+    : Math.round(
+        (totalRevenue / (totalRevenue + pendingAmount)) * 100,
+      );
 
   const activeCourses = courses.filter((c) => c.status === "Active").length;
 
@@ -197,22 +254,34 @@ function Dashboard() {
     },
 
     {
-      title: "Revenue",
-      value: isLoadingInvoices ? "..." : `Rs. ${totalRevenue.toLocaleString()}`,
-      icon: Wallet,
-      bg: "bg-emerald-100",
-      color: "text-emerald-700",
-    },
+  title: "Revenue",
+  value: isLoadingInvoices
+    ? "..."
+    : `Rs. ${totalRevenue.toLocaleString()}`,
+  icon: Wallet,
+  bg: "bg-emerald-100",
+  color: "text-emerald-700",
+},
 
-    {
-      title: "Pending",
-      value: isLoadingInvoices
-        ? "..."
-        : `Rs. ${pendingAmount.toLocaleString()}`,
-      icon: AlertCircle,
-      bg: "bg-orange-100",
-      color: "text-orange-700",
-    },
+{
+  title: "Upcoming Payments",
+  value: isLoadingInvoices
+    ? "..."
+    : `Rs. ${upcomingPayments.toLocaleString()}`,
+  icon: Wallet,
+  bg: "bg-blue-100",
+  color: "text-blue-700",
+},
+
+{
+  title: "Pending",
+  value: isLoadingInvoices
+    ? "..."
+    : `Rs. ${pendingAmount.toLocaleString()}`,
+  icon: AlertCircle,
+  bg: "bg-orange-100",
+  color: "text-orange-700",
+},
   ];
 
   return (
@@ -233,7 +302,7 @@ function Dashboard() {
 
           {/* STATS */}
 
-          <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-5">
+          <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-6">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
 
@@ -274,19 +343,33 @@ function Dashboard() {
                 <h3 className="text-lg font-bold">Collection Status</h3>
 
                 <div className="mt-4 space-y-3">
-                  <div className="flex justify-between">
-                    <span>Paid Revenue</span>
-                    <span className="font-semibold">
-                      ₹{totalRevenue.toLocaleString()}
-                    </span>
-                  </div>
+  <div className="flex justify-between">
+    <span>Paid Revenue</span>
+    <span className="font-semibold">
+      ₹{totalRevenue.toLocaleString()}
+    </span>
+  </div>
 
-                  <div className="flex justify-between">
-                    <span>Pending Revenue</span>
-                    <span className="font-semibold">
-                      ₹{pendingAmount.toLocaleString()}
-                    </span>
-                  </div>
+  <div className="flex justify-between">
+    <span>Upcoming Payments</span>
+    <span className="font-semibold">
+      ₹{upcomingPayments.toLocaleString()}
+    </span>
+  </div>
+
+  <div className="flex justify-between">
+    <span>Pending</span>
+    <span className="font-semibold">
+      ₹{pendingAmount.toLocaleString()}
+    </span>
+  </div>
+
+  <div className="flex justify-between">
+    <span>Discount</span>
+    <span className="font-semibold">
+      ₹{totalDiscount.toLocaleString()}
+    </span>
+  </div>
 
                   <div className="mt-4">
                     <div className="h-2 overflow-hidden rounded-full bg-slate-200">

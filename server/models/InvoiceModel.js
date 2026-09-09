@@ -77,8 +77,8 @@ const invoiceSchema = new mongoose.Schema(
       type: String,
       required: [true, "Status is required"],
       enum: {
-        values: ["Paid", "Partially Paid", "Pending"],
-        message: "Status must be Paid, Partially Paid, or Pending.",
+        values: ["Paid", "Pending"],
+        message: "Status must be Paid or Pending.",
       },
       default: "Pending",
     },
