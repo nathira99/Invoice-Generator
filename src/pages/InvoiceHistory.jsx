@@ -317,29 +317,16 @@ function InvoiceHistory() {
 
                     <div className="flex flex-wrap gap-2">
                       {/* EDIT */}
-
-                      <button
-                        onClick={() => {
-                          if (invoice.status === "Paid") {
-                            toast.error("Paid invoices cannot be edited.");
-
-                            return;
-                          }
-
-                          navigate("/", {
-                            state: invoice,
-                          });
-                        }}
-                        className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all
-
-                            ${
-                              invoice.status === "Paid"
-                                ? "cursor-not-allowed bg-slate-200 text-slate-400"
-                                : "bg-blue-600 text-white hover:bg-blue-700"
-                            }`}
-                      >
-                        <Pencil size={15} />
-                      </button>
+<button
+  onClick={() => {
+    navigate("/", {
+      state: invoice,
+    });
+  }}
+  className="flex items-center gap-2 rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-blue-700"
+>
+  <Pencil size={15} />
+</button>
 
                       {/* DOWNLOAD */}
 

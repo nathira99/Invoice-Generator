@@ -224,3 +224,70 @@ export const deleteStaff = async (id) => {
 
   return res.data;
 };
+
+/* ---------------- SALARY ---------------- */
+
+export const getSalaries = async () => {
+  const res = await api.get("/salaries");
+
+  return res.data;
+};
+
+export const getSalary = async (id) => {
+  const res = await api.get(`/salaries/${id}`);
+
+  return res.data;
+};
+
+export const saveSalary = async (salary) => {
+  try {
+    console.log("Sending Salary:", salary);
+
+    const res = await api.post("/salaries", salary);
+
+    return res.data;
+  } catch (error) {
+    console.log("Salary Backend Error:", error.response?.data);
+
+    throw error;
+  }
+};
+
+export const updateSalary = async (id, updatedSalary) => {
+  const res = await api.put(
+    `/salaries/${id}`,
+    updatedSalary,
+  );
+
+  return res.data;
+};
+
+export const deleteSalary = async (id) => {
+  const res = await api.delete(`/salaries/${id}`);
+
+  return res.data;
+};
+
+export const permanentlyDeleteSalary = async (id) => {
+  const res = await api.delete(
+    `/salaries/${id}/permanent`,
+  );
+
+  return res.data;
+};
+
+export const restoreSalary = async (id) => {
+  const res = await api.patch(
+    `/salaries/${id}/restore`,
+  );
+
+  return res.data;
+};
+
+export const generateSalaryNumber = async () => {
+  const res = await api.get(
+    "/salaries/generate-number",
+  );
+
+  return res.data.salaryNumber;
+};

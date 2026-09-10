@@ -12,6 +12,7 @@ import teacherRoutes from "./routes/teacherRoutes.js";
 import staffRoutes from "./routes/staffRoutes.js";
 import deviceRoutes from "./routes/deviceRoutes.js";
 import googleSheetsRoutes from "./routes/googleSheetsRoutes.js";
+import salaryRoutes from "./routes/salaryRoutes.js";
 
 dotenv.config();
 
@@ -30,7 +31,7 @@ app.use(
       process.env.CLIENT_URL,
     ],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
   })
 );
 
@@ -53,6 +54,8 @@ app.use("/api/teachers", teacherRoutes);
 app.use("/api/staffs", staffRoutes);
 
 app.use("/api/devices", deviceRoutes);
+
+app.use("/api/salaries", salaryRoutes);
 
 app.get('/', (req, res) => {
   res.json({ message: 'Invoice Generator API is running' });
