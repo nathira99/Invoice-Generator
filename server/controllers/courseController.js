@@ -1,9 +1,14 @@
 import Course from "../models/courseModel.js";
+import Student from "../models/studentModel.js";
 import {
   syncCourseToSheet,
   syncAllCoursesToSheet,
   deleteCourseFromSheet,
 } from "../services/courseSheetSync.js";
+import {
+  syncStudentToSheet,
+  syncStudentEnrollmentsToSheet,
+} from "../services/studentSheetSync.js";
 
 /* GET COURSES */
 
@@ -32,10 +37,7 @@ export const createCourse = async (req, res) => {
     try {
       await syncCourseToSheet(course);
     } catch (syncError) {
-      console.error(
-        "Google Sheets course sync failed:",
-        syncError.message
-      );
+      console.error("Google Sheets course sync failed:", syncError.message);
     }
 
     res.status(201).json(course);
@@ -50,35 +52,126 @@ export const createCourse = async (req, res) => {
 
 export const updateCourse = async (req, res) => {
   try {
-    const updatedCourse =
-      await Course.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
+    // Get the existing course first
+    const existingCourse = await Course.findById(req.params.id);
 
-    if (!updatedCourse) {
+    if (!existingCourse) {
       return res.status(404).json({
         message: "Course not found",
       });
     }
 
+    // Keep the old course name before updating
+    const oldCourseName = existingCourse.courseName;
+
+    // Update the course
+    const updatedCourse = await Course.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    /*
+     * UPDATE STUDENTS' ENROLLMENT COURSE NAME
+     *
+     * Only do this when the course name has changed.
+     */
+    if (req.body.courseName && req.body.courseName !== oldCourseName) {
+      const students = await Student.find({
+        $or: [
+          { "enrollments.courseId": updatedCourse._id },
+          { "enrollments.courseName": oldCourseName },
+        ],
+      });
+
+      for (const student of students) {
+        let changed = false;
+
+        student.enrollments = student.enrollments.map((enrollment) => {
+          if (
+            enrollment.courseId?.toString() === updatedCourse._id.toString() ||
+            enrollment.courseName === oldCourseName
+          ) {
+            enrollment.courseName = updatedCourse.courseName;
+
+            changed = true;
+          }
+
+          return enrollment;
+        });
+
+        if (changed) {
+          await student.save();
+        }
+      }
+
+      console.log(
+        `Updated enrollment course name for ${students.length} student(s).`,
+      );
+    }
+
+    if (req.body.courseName && req.body.courseName !== oldCourseName) {
+      const students = await Student.find({
+        $or: [
+          { "enrollments.courseId": updatedCourse._id },
+          { "enrollments.courseName": oldCourseName },
+        ],
+      });
+
+      for (const student of students) {
+        let changed = false;
+
+        student.enrollments = student.enrollments.map((enrollment) => {
+          if (
+            enrollment.courseId?.toString() === updatedCourse._id.toString() ||
+            enrollment.courseName === oldCourseName
+          ) {
+            enrollment.courseName = updatedCourse.courseName;
+            changed = true;
+          }
+
+          return enrollment;
+        });
+
+        if (changed) {
+          await student.save();
+        }
+      }
+
+      console.log(
+        `Updated enrollment course name for ${students.length} student(s).`,
+      );
+
+      // SYNC UPDATED STUDENTS TO GOOGLE SHEETS
+
+      try {
+        for (const student of students) {
+          await syncStudentToSheet(student);
+        }
+
+        await syncStudentEnrollmentsToSheet();
+      } catch (syncError) {
+        console.error(
+          "Google Sheets student enrollment sync failed:",
+          syncError.message,
+        );
+      }
+    }
     /* SYNC UPDATED COURSE TO GOOGLE SHEETS */
 
     try {
       await syncCourseToSheet(updatedCourse);
     } catch (syncError) {
-      console.error(
-        "Google Sheets course sync failed:",
-        syncError.message
-      );
+      console.error("Google Sheets course sync failed:", syncError.message);
     }
 
     res.json(updatedCourse);
   } catch (error) {
+    console.error("Update course error:", error);
+
     res.status(400).json({
       message: error.message,
     });
@@ -116,10 +209,7 @@ export const syncAllCourses = async (req, res) => {
       count,
     });
   } catch (error) {
-    console.error(
-      "All courses sync error:",
-      error
-    );
+    console.error("All courses sync error:", error);
 
     res.status(500).json({
       success: false,
@@ -133,9 +223,7 @@ export const syncAllCourses = async (req, res) => {
 
 export const deleteCourse = async (req, res) => {
   try {
-    const course = await Course.findById(
-      req.params.id
-    );
+    const course = await Course.findById(req.params.id);
 
     if (!course) {
       return res.status(404).json({
@@ -146,21 +234,14 @@ export const deleteCourse = async (req, res) => {
     /* DELETE FROM GOOGLE SHEETS FIRST */
 
     try {
-      await deleteCourseFromSheet(
-        course._id
-      );
+      await deleteCourseFromSheet(course._id);
     } catch (syncError) {
-      console.error(
-        "Google Sheets course delete failed:",
-        syncError.message
-      );
+      console.error("Google Sheets course delete failed:", syncError.message);
     }
 
     /* DELETE FROM MONGODB */
 
-    await Course.findByIdAndDelete(
-      req.params.id
-    );
+    await Course.findByIdAndDelete(req.params.id);
 
     res.json({
       message: "Course deleted",
