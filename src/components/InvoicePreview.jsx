@@ -1,5 +1,9 @@
 function InvoicePreview({ invoiceData }) {
-  const totalFee = Number(invoiceData.courseFee) || 0;
+  const monthlyFee = Number(invoiceData.courseFee) || 0;
+
+  const paymentMonths = Number(invoiceData.paymentMonths) || 1;
+
+  const totalFee = monthlyFee * paymentMonths;
 
   const discount = Number(invoiceData.discount) || 0;
 
@@ -200,12 +204,22 @@ function InvoicePreview({ invoiceData }) {
                 </p>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  {invoiceData.paidMonth || "-"} Payment
+                  {invoiceData.paidMonth || "-"}{" "}
+                  {paymentMonths > 1
+                    ? `• ${paymentMonths} Months Payment`
+                    : "Payment"}
                 </p>
               </div>
 
-              <p className="text-right text-sm text-gray-700">Rs. {totalFee}</p>
+              <div className="text-right text-sm text-gray-700">
+                <p>Rs. {totalFee}</p>
 
+                {paymentMonths > 1 && (
+                  <p className="mt-1 text-[10px] text-gray-500">
+                    Rs. {monthlyFee} × {paymentMonths}
+                  </p>
+                )}
+              </div>
               <p className="text-right text-sm text-green-800">
                 - Rs. {discount}
               </p>

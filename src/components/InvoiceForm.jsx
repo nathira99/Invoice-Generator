@@ -29,11 +29,14 @@ function InvoiceForm({
   const [studentCourses, setStudentCourses] = useState([]);
 
   useEffect(() => {
-    const courseFee = Number(invoiceData.courseFee) || 0;
+    const monthlyFee = Number(invoiceData.courseFee) || 0;
+    const months = Number(invoiceData.paymentMonths) || 1;
     const discount = Number(invoiceData.discount) || 0;
     const paidAmount = Number(invoiceData.paidAmount) || 0;
 
-    const finalAmount = Math.max(0, courseFee - discount);
+    const totalFee = monthlyFee * months;
+
+    const finalAmount = Math.max(0, totalFee - discount);
 
     const status = paidAmount >= finalAmount ? "Paid" : "Pending";
 
@@ -43,8 +46,12 @@ function InvoiceForm({
         status,
       }));
     }
-  }, [invoiceData.courseFee, invoiceData.discount, invoiceData.paidAmount]);
-
+  }, [
+    invoiceData.courseFee,
+    invoiceData.paymentMonths,
+    invoiceData.discount,
+    invoiceData.paidAmount,
+  ]);
   const handleChange = (e) => {
     setInvoiceData({
       ...invoiceData,
@@ -107,6 +114,10 @@ function InvoiceForm({
       daysPerWeek: "",
 
       discount: "0",
+
+      paymentMonths: "1",
+
+      discountType: "Discount",
 
       discountReason: "",
 
@@ -180,44 +191,44 @@ function InvoiceForm({
 
   /* DOWNLOAD PDF */
 
- const handleDownloadPDF = async () => {
-  const cleanName = invoiceData.studentName
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "_");
+  const handleDownloadPDF = async () => {
+    const cleanName = invoiceData.studentName
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_");
 
-  const cleanMonth = invoiceData.paidMonth
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "_");
+    const cleanMonth = invoiceData.paidMonth
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_");
 
-  const cleanCourse = invoiceData.courseName
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "_")
-    .substring(0, 20);
+    const cleanCourse = invoiceData.courseName
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_")
+      .substring(0, 20);
 
-  const filename = `${cleanName}_${cleanMonth}_${cleanCourse}_Invoice.pdf`;
+    const filename = `${cleanName}_${cleanMonth}_${cleanCourse}_Invoice.pdf`;
 
-  if (!validateInvoice()) {
-    return;
-  }
+    if (!validateInvoice()) {
+      return;
+    }
 
-  try {
-    await saveOrUpdateInvoice();
+    try {
+      await saveOrUpdateInvoice();
 
-    await loadInvoices();
+      await loadInvoices();
 
-    toast.success("Invoice downloaded");
+      toast.success("Invoice downloaded");
 
-    await generatePDF(filename);
+      await generatePDF(filename);
 
-    await resetInvoiceForm();
-  } catch (error) {
-    console.error(error);
-    toast.error(error.message || "Failed to download invoice");
-  }
-};
+      await resetInvoiceForm();
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Failed to download invoice");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl rounded-3xl bg-white p-6">
@@ -418,11 +429,18 @@ function InvoiceForm({
                   (c) => c.courseName === selectedCourse.value,
                 );
 
+                const monthlyFee = Number(course?.fee) || 0;
+                const months = Number(invoiceData.paymentMonths) || 1;
+                const discount = Number(invoiceData.discount) || 0;
+
+                const totalFee = monthlyFee * months;
+                const finalAmount = Math.max(0, totalFee - discount);
+
                 setInvoiceData({
                   ...invoiceData,
                   courseName: course?.courseName || selectedCourse.value,
-                  courseFee: course?.fee || "",
-                  paidAmount: course?.fee || "",
+                  courseFee: monthlyFee,
+                  paidAmount: finalAmount,
                   daysPerWeek: course?.daysPerWeek || "",
                 });
               }}
@@ -469,15 +487,65 @@ function InvoiceForm({
             </label>
 
             <input
-              type="text"
+              type="month"
               name="paidMonth"
-              value={invoiceData.paidMonth}
-              onChange={(e) =>
+              value={
+                invoiceData.paidMonth
+                  ? (() => {
+                      const date = new Date(`${invoiceData.paidMonth} 1`);
+
+                      if (isNaN(date.getTime())) return "";
+
+                      return `${date.getFullYear()}-${String(
+                        date.getMonth() + 1,
+                      ).padStart(2, "0")}`;
+                    })()
+                  : ""
+              }
+              onChange={(e) => {
+                if (!e.target.value) return;
+
+                const [year, month] = e.target.value.split("-");
+
+                const date = new Date(Number(year), Number(month) - 1, 1);
+
                 setInvoiceData({
                   ...invoiceData,
-                  paidMonth: e.target.value,
-                })
-              }
+                  paidMonth: date.toLocaleString("default", {
+                    month: "long",
+                    year: "numeric",
+                  }),
+                });
+              }}
+              className={inputStyle}
+            />
+          </div>
+          {/* PAYMENT MONTHS */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Payment Months
+            </label>
+
+            <input
+              type="number"
+              name="paymentMonths"
+              min="1"
+              value={invoiceData.paymentMonths || 1}
+              onChange={(e) => {
+                const months = Math.max(1, Number(e.target.value) || 1);
+
+                const monthlyFee = Number(invoiceData.courseFee) || 0;
+                const discount = Number(invoiceData.discount) || 0;
+
+                const totalFee = monthlyFee * months;
+                const finalAmount = Math.max(0, totalFee - discount);
+
+                setInvoiceData({
+                  ...invoiceData,
+                  paymentMonths: months,
+                  paidAmount: finalAmount,
+                });
+              }}
               className={inputStyle}
             />
           </div>
@@ -517,7 +585,8 @@ function InvoiceForm({
               type="number"
               value={Math.max(
                 0,
-                (Number(invoiceData.courseFee) || 0) -
+                (Number(invoiceData.courseFee) || 0) *
+                  (Number(invoiceData.paymentMonths) || 1) -
                   (Number(invoiceData.discount) || 0) -
                   (Number(invoiceData.paidAmount) || 0),
               )}
@@ -525,49 +594,52 @@ function InvoiceForm({
               className={readOnlyStyle}
             />
           </div>
-          {/* DISCOUNT / Adjustment */}
+          {/* DISCOUNT / ADJUSTMENT */}
           <div>
-  <label className="mb-1 block text-sm font-medium text-slate-700">
-    Discount / Adjustment
-  </label>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Discount / Adjustment
+            </label>
 
-  <div className="flex gap-2">
-    <select
-      name="discountType"
-      value={invoiceData.discountType || "Discount"}
-      onChange={(e) =>
-        setInvoiceData({
-          ...invoiceData,
-          discountType: e.target.value,
-        })
-      }
-      className={`${inputStyle} w-1/2`}
-    >
-      <option value="Discount">Discount</option>
-      <option value="Adjustment">Adjustment</option>
-    </select>
+            <div className="flex gap-2">
+              <select
+                name="discountType"
+                value={invoiceData.discountType || "Discount"}
+                onChange={(e) =>
+                  setInvoiceData({
+                    ...invoiceData,
+                    discountType: e.target.value,
+                  })
+                }
+                className={`${inputStyle} w-1/2`}
+              >
+                <option value="Discount">Discount</option>
+                <option value="Adjustment">Adjustment</option>
+              </select>
 
-    <input
-      type="number"
-      name="discount"
-      min="0"
-      value={invoiceData.discount}
-      onChange={(e) => {
-        const discount = Number(e.target.value) || 0;
-        const courseFee = Number(invoiceData.courseFee) || 0;
-        const finalAmount = Math.max(0, courseFee - discount);
+              <input
+                type="number"
+                name="discount"
+                min="0"
+                value={invoiceData.discount}
+                onChange={(e) => {
+                  const discount = Number(e.target.value) || 0;
+                  const monthlyFee = Number(invoiceData.courseFee) || 0;
+                  const months = Number(invoiceData.paymentMonths) || 1;
 
-        setInvoiceData({
-          ...invoiceData,
-          discount: e.target.value,
-          paidAmount: finalAmount,
-        });
-      }}
-      className={`${inputStyle} w-1/2`}
-      placeholder="Amount"
-    />
-  </div>
-</div>
+                  const totalFee = monthlyFee * months;
+                  const finalAmount = Math.max(0, totalFee - discount);
+
+                  setInvoiceData({
+                    ...invoiceData,
+                    discount: e.target.value,
+                    paidAmount: finalAmount,
+                  });
+                }}
+                className={`${inputStyle} w-1/2`}
+                placeholder="Amount"
+              />
+            </div>
+          </div>
           {/* PAID AMOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">

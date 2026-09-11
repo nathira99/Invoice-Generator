@@ -7,23 +7,24 @@ import {
   deleteInvoiceFromSheet
 } from "../services/invoiceSheetSync.js";
 
- const calculateStatus = (
+const calculateStatus = (
   courseFee,
   discount = 0,
-  paidAmount = 0
+  paidAmount = 0,
+  paymentMonths = 1,
 ) => {
+  const monthlyFee = Number(courseFee || 0);
+  const months = Number(paymentMonths || 1);
+  const totalFee = monthlyFee * months;
+
   const payable = Math.max(
-    Number(courseFee || 0) - Number(discount || 0),
-    0
+    totalFee - Number(discount || 0),
+    0,
   );
 
   const paid = Number(paidAmount || 0);
 
-  if (paid === 0) return "Pending";
-
-  if (paid < payable) return "Partially Paid";
-
-  return "Paid";
+  return paid >= payable ? "Paid" : "Pending";
 };
 
 const handleInvoiceError = (error, res) => {
@@ -61,7 +62,8 @@ export const createInvoice = async (req, res) => {
   status: calculateStatus(
     invoiceData.courseFee,
     invoiceData.discount,
-    invoiceData.paidAmount
+    invoiceData.paidAmount,
+    invoiceData.paymentMonths
   ),
 });
 
@@ -204,7 +206,8 @@ invoice.set(req.body);
 invoice.status = calculateStatus(
   invoice.courseFee,
   invoice.discount,
-  invoice.paidAmount
+  invoice.paidAmount,
+  invoice.paymentMonths
 );
 
 const updatedInvoice = await invoice.save();
