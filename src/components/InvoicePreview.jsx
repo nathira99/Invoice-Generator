@@ -3,6 +3,8 @@ function InvoicePreview({ invoiceData }) {
 
   const discount = Number(invoiceData.discount) || 0;
 
+  const discountType = invoiceData.discountType || "Discount";
+
   const paidAmount = Number(invoiceData.paidAmount) || 0;
 
   const formattedDate = invoiceData.invoiceDate
@@ -182,7 +184,7 @@ function InvoicePreview({ invoiceData }) {
 
               <p className="text-right">Course Fee</p>
 
-              <p className="text-right">Discount</p>
+              <p className="text-right">{discountType}</p>
 
               <p className="text-right">Amount</p>
             </div>
@@ -216,35 +218,29 @@ function InvoicePreview({ invoiceData }) {
             {/* TOTAL */}
 
             <div className="flex justify-end bg-gray-50 px-6 py-4">
-  <div className="w-72 space-y-2 text-sm">
+              <div className="w-72 space-y-2 text-sm">
+                <div className="flex justify-between text-green-800">
+                  <span>{discountType}</span>
+                  <span>- Rs. {discount}</span>
+                </div>
 
-    <div className="flex justify-between text-green-800">
-      <span>Discount</span>
-      <span>- Rs. {discount}</span>
-    </div>
+                <div className="flex justify-between text-orange-600">
+                  <span>Pending Balance</span>
+                  <span>
+                    {" "}
+                    Rs. {Math.max(0, totalFee - discount - paidAmount)}
+                  </span>
+                </div>
 
-    <div className="flex justify-between text-orange-600">
-      <span>Pending Balance</span>
-      <span>  Rs.{" "}
-        {Math.max(
-          0,
-          totalFee - discount - paidAmount
-        )}
-      </span>
-    </div>
+                <div className="my-2 border-t border-gray-300"></div>
 
-    <div className="my-2 border-t border-gray-300"></div>
-
-    <div className="flex justify-between text-lg font-bold text-[#1E3A8A]">
-      <span>Amount Paid</span>
-      <span>Rs. {paidAmount}</span>
-    </div>
-
-  </div>
-</div>
+                <div className="flex justify-between text-lg font-bold text-[#1E3A8A]">
+                  <span>Amount Paid</span>
+                  <span>Rs. {paidAmount}</span>
+                </div>
+              </div>
+            </div>
           </div>
-
-
 
           {/* ================= FOOTER ================= */}
 
@@ -271,21 +267,19 @@ function InvoicePreview({ invoiceData }) {
               {/* MESSAGE */}
 
               <div className="pl-8">
-               <h3 className="text-sm font-semibold text-[#1E3A8A]">
-  {invoiceData.status === "Paid"
-    ? "Payment successfully received."
-    : invoiceData.status === "Partially Paid"
-    ? "Partial payment received."
-    : "Payment is pending."}
-</h3>
+                <h3 className="text-sm font-semibold text-[#1E3A8A]">
+                  {invoiceData.status === "Paid"
+                    ? "Payment successfully received."
+                    : "Payment is pending."}
+                </h3>
 
-<p className="mt-1 text-xs text-gray-500">
-  {invoiceData.status === "Paid"
-    ? "This receipt confirms full payment for the enrolled course."
-    : invoiceData.status === "Partially Paid"
-    ? "This receipt confirms a partial payment. The remaining balance is still due."
-    : "No payment has been received for this invoice yet."}
-</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  {invoiceData.status === "Paid"
+                    ? discountType === "Adjustment"
+                      ? "This receipt confirms payment for the adjusted course fee."
+                      : "This receipt confirms full payment for the enrolled course."
+                    : "The remaining balance is still due."}
+                </p>
               </div>
             </div>
           </div>

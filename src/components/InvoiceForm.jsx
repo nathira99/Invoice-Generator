@@ -525,31 +525,49 @@ function InvoiceForm({
               className={readOnlyStyle}
             />
           </div>
-          {/* DISCOUNT */}
+          {/* DISCOUNT / Adjustment*/}
           <div>
-            <label className="mb-2 block text-sm font-semibold text-gray-700">
-              Discount
-            </label>
+  <label className="mb-1 block text-sm font-medium text-slate-700">
+    Discount / Adjustment
+  </label>
 
-            <input
-              type="number"
-              name="discount"
-              value={invoiceData.discount}
-              onChange={(e) => {
-                const discount = Number(e.target.value) || 0;
-                const courseFee = Number(invoiceData.courseFee) || 0;
+  <div className="flex gap-2">
+    <select
+      name="discountType"
+      value={invoiceData.discountType || "Discount"}
+      onChange={(e) =>
+        setInvoiceData({
+          ...invoiceData,
+          discountType: e.target.value,
+        })
+      }
+      className={`${inputStyle} w-1/2`}
+    >
+      <option value="Discount">Discount</option>
+      <option value="Adjustment">Adjustment</option>
+    </select>
 
-                const finalAmount = Math.max(0, courseFee - discount);
+    <input
+      type="number"
+      name="discount"
+      min="0"
+      value={invoiceData.discount}
+      onChange={(e) => {
+        const discount = Number(e.target.value) || 0;
+        const courseFee = Number(invoiceData.courseFee) || 0;
+        const finalAmount = Math.max(0, courseFee - discount);
 
-                setInvoiceData({
-                  ...invoiceData,
-                  discount: e.target.value,
-                  paidAmount: finalAmount,
-                });
-              }}
-              className={inputStyle}
-            />
-          </div>
+        setInvoiceData({
+          ...invoiceData,
+          discount: e.target.value,
+          paidAmount: finalAmount,
+        });
+      }}
+      className={`${inputStyle} w-1/2`}
+      placeholder="Amount"
+    />
+  </div>
+</div>
           {/* PAID AMOUNT */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-gray-700">

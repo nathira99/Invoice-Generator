@@ -119,6 +119,8 @@ export const generateInvoicesByCourse = async (req, res) => {
 
         discount: 0,
 
+        discountType: "Discount",
+
         status: calculateStatus(
           course.fee,
           0,

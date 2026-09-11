@@ -58,6 +58,11 @@ const invoiceSchema = new mongoose.Schema(
         message: "Discount cannot exceed course fee",
       },
     },
+    discountType: {
+      type: String,
+      enum: ["Discount", "Adjustment"],
+      default: "Discount",
+    },
     paidAmount: {
       type: Number,
       required: [true, "Paid amount is required"],
