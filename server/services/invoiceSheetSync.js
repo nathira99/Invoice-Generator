@@ -20,10 +20,20 @@ const getInvoiceValues = (invoice) => {
       : "",
 
     invoice.courseFee ?? "",
+    invoice.paymentMonths ?? 1,
     invoice.category || "",
     invoice.discountType || "Discount",
     invoice.discount ?? 0,
     invoice.paidAmount ?? 0,
+
+    Math.max(
+    0,
+    Number(invoice.courseFee || 0) *
+      Number(invoice.paymentMonths || 1) -
+      Number(invoice.discount || 0) -
+      Number(invoice.paidAmount || 0)
+  ),
+
     invoice.status || "",
 
     invoice.isDeleted ? "Yes" : "No",
@@ -86,7 +96,7 @@ export const syncInvoiceToSheet = async (invoice) => {
       await sheets.spreadsheets.values.update({
         spreadsheetId,
         range:
-          `Invoices!A${sheetRow}:O${sheetRow}`,
+          `Invoices!A${sheetRow}:Q${sheetRow}`,
         valueInputOption: "USER_ENTERED",
         requestBody: {
           values,
@@ -104,7 +114,7 @@ export const syncInvoiceToSheet = async (invoice) => {
 
     await sheets.spreadsheets.values.append({
       spreadsheetId,
-      range: "Invoices!A:O",
+      range: "Invoices!A:Q",
       valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       requestBody: {
@@ -160,7 +170,7 @@ export const syncAllInvoicesToSheet = async () => {
 
       await sheets.spreadsheets.values.clear({
         spreadsheetId,
-        range: "Invoices!A2:O",
+        range: "Invoices!A2:Q",
       });
 
       /* Write current data */
@@ -170,7 +180,7 @@ export const syncAllInvoicesToSheet = async () => {
         await sheets.spreadsheets.values.update({
           spreadsheetId,
           range:
-            `Invoices!A2:O${rows.length + 1}`,
+            `Invoices!A2:Q${rows.length + 1}`,
           valueInputOption: "USER_ENTERED",
           requestBody: {
             values: rows,

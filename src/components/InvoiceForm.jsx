@@ -134,24 +134,77 @@ function InvoiceForm({
   const saveOrUpdateInvoice = async () => {
     const existingInvoices = await getInvoices();
 
-    const alreadyExists = existingInvoices.find(
-      (invoice) =>
-        invoice.studentName?.trim().toLowerCase() ===
-          invoiceData.studentName?.trim().toLowerCase() &&
-        invoice.courseName?.trim().toLowerCase() ===
-          invoiceData.courseName?.trim().toLowerCase() &&
-        invoice.paidMonth?.trim().toLowerCase() ===
-          invoiceData.paidMonth?.trim().toLowerCase() &&
-        invoice._id !== editId,
-    );
+    const getMonthIndex = (paidMonth) => {
+  if (!paidMonth) return null;
 
-    if (alreadyExists) {
-      toast.error(
-        `${invoiceData.studentName} already has an invoice for ${invoiceData.courseName} (${invoiceData.paidMonth})`,
-      );
+  const date = new Date(`1 ${paidMonth}`);
 
-      return false;
-    }
+  if (isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date.getFullYear() * 12 + date.getMonth();
+};
+
+const newStartMonth = getMonthIndex(invoiceData.paidMonth);
+
+const newPaymentMonths =
+  Number(invoiceData.paymentMonths) || 1;
+
+const newEndMonth =
+  newStartMonth !== null
+    ? newStartMonth + newPaymentMonths
+    : null;
+
+const overlappingInvoice = existingInvoices.find((invoice) => {
+  if (invoice._id === editId) {
+    return false;
+  }
+
+  const sameStudent =
+    invoice.studentId &&
+    invoiceData.studentId
+      ? invoice.studentId === invoiceData.studentId
+      : invoice.studentName?.trim().toLowerCase() ===
+        invoiceData.studentName?.trim().toLowerCase();
+
+  const sameCourse =
+    invoice.courseName?.trim().toLowerCase() ===
+    invoiceData.courseName?.trim().toLowerCase();
+
+  if (!sameStudent || !sameCourse) {
+    return false;
+  }
+
+  const existingStartMonth =
+    getMonthIndex(invoice.paidMonth);
+
+  const existingPaymentMonths =
+    Number(invoice.paymentMonths) || 1;
+
+  if (
+    existingStartMonth === null ||
+    newStartMonth === null
+  ) {
+    return false;
+  }
+
+  const existingEndMonth =
+    existingStartMonth + existingPaymentMonths;
+
+  return (
+    newStartMonth < existingEndMonth &&
+    existingStartMonth < newEndMonth
+  );
+});
+
+if (overlappingInvoice) {
+  toast.error(
+    `${invoiceData.studentName} already has a payment covering ${invoiceData.paidMonth}.`,
+  );
+
+  return false;
+}
 
     if (editId) {
       return await updateInvoice(editId, invoiceData);

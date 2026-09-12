@@ -280,7 +280,11 @@ function InvoiceHistory() {
                   <td className="px-4 py-4">{invoice.courseName}</td>
 
                   <td className="px-4 py-4 font-semibold">
-                    ₹{invoice.courseFee}
+                    ₹
+                    {(
+                      Number(invoice.courseFee || 0) *
+                      Number(invoice.paymentMonths || 1)
+                    ).toLocaleString()}
                   </td>
 
                   <td className="px-4 py-4 font-semibold text-emerald-600">
@@ -291,22 +295,20 @@ function InvoiceHistory() {
                     ₹
                     {Math.max(
                       0,
-                      (invoice.courseFee || 0) -
-                        (invoice.discount || 0) -
-                        (invoice.paidAmount || 0),
-                    )}
+                      Number(invoice.courseFee || 0) *
+                        Number(invoice.paymentMonths || 1) -
+                        Number(invoice.discount || 0) -
+                        Number(invoice.paidAmount || 0),
+                    ).toLocaleString()}
                   </td>
 
                   <td className="px-4 py-4">
                     <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold
-      ${
-        invoice.status === "Paid"
-          ? "bg-green-100 text-green-700"
-          : invoice.status === "Partially Paid"
-            ? "bg-yellow-100 text-yellow-700"
-            : "bg-red-100 text-red-700"
-      }`}
+                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                        invoice.status === "Paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
                     >
                       {invoice.status}
                     </span>
@@ -339,14 +341,7 @@ function InvoiceHistory() {
                             },
                           })
                         }
-                        disabled={invoice.status === "Pending"}
-                        className={`flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition-all
-
-                            ${
-                              invoice.status === "Pending"
-                                ? "cursor-not-allowed bg-slate-200 text-slate-400"
-                                : "bg-emerald-600 text-white hover:bg-emerald-700"
-                            }`}
+                        className="flex items-center gap-2 rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-all hover:bg-emerald-700"
                       >
                         <Download size={15} />
                       </button>

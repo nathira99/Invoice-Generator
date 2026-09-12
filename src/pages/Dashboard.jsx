@@ -217,10 +217,13 @@ function Dashboard() {
 
   const pendingAmount = currentMonthInvoices.reduce((total, invoice) => {
     const courseFee = Number(invoice.courseFee || 0);
+    const paymentMonths = Number(invoice.paymentMonths || 1);
     const discount = Number(invoice.discount || 0);
     const paidAmount = Number(invoice.paidAmount || 0);
 
-    const payableAmount = Math.max(0, courseFee - discount);
+    const totalFee = courseFee * paymentMonths;
+
+    const payableAmount = Math.max(0, totalFee - discount);
 
     const remaining = Math.max(0, payableAmount - paidAmount);
 
