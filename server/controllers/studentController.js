@@ -1,5 +1,5 @@
 import Student from "../models/studentModel.js";
-import { syncStudentToSheet, syncStudentEnrollmentsToSheet } from "../services/studentSheetSync.js";
+import { syncStudentToSheet, syncAllStudentsToSheet, syncStudentEnrollmentsToSheet } from "../services/studentSheetSync.js";
 
 /* GET STUDENTS */
 
@@ -92,6 +92,31 @@ export const updateStudent = async (req, res) => {
 
     res.status(500).json({
       message: "Failed to update student",
+    });
+  }
+};
+
+/* ----------------------------------------
+   SYNC ALL STUDENTS + ENROLLMENTS
+----------------------------------------- */
+
+export const syncAllStudents = async (req, res) => {
+  try {
+    const result = await syncAllStudentsToSheet();
+
+    await syncStudentEnrollmentsToSheet();
+
+    res.status(200).json({
+      success: true,
+      message: "All students and enrollments synced to Google Sheets",
+      count: result.count,
+    });
+  } catch (error) {
+    console.error("Sync all students error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 };

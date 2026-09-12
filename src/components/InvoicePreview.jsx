@@ -11,6 +11,38 @@ function InvoicePreview({ invoiceData }) {
 
   const paidAmount = Number(invoiceData.paidAmount) || 0;
 
+  const getPaymentPeriod = () => {
+    if (!invoiceData.paidMonth) return "-";
+
+    const startDate = new Date(`1 ${invoiceData.paidMonth}`);
+
+    if (isNaN(startDate.getTime())) {
+      return invoiceData.paidMonth;
+    }
+
+    const endDate = new Date(startDate);
+
+    endDate.setMonth(endDate.getMonth() + paymentMonths - 1);
+
+    const startMonth = startDate.toLocaleString("default", {
+      month: "long",
+    });
+
+    const endMonth = endDate.toLocaleString("default", {
+      month: "long",
+    });
+
+    const year = endDate.getFullYear();
+
+    if (paymentMonths === 1) {
+      return `${startMonth} ${startDate.getFullYear()}`;
+    }
+
+    return `${startMonth} ${startDate.getFullYear()} – ${endMonth} ${year}`;
+  };
+
+  const paymentPeriod = getPaymentPeriod();
+
   const formattedDate = invoiceData.invoiceDate
     ? new Date(invoiceData.invoiceDate).toLocaleDateString("en-US", {
         day: "2-digit",
@@ -120,9 +152,9 @@ function InvoicePreview({ invoiceData }) {
 
                 <p>
                   <span className="font-semibold text-gray-900">
-                    Paid Month:
+                    Payment Period:
                   </span>{" "}
-                  {invoiceData.paidMonth || "-"}
+                  {paymentPeriod}
                 </p>
               </div>
             </div>
@@ -204,10 +236,8 @@ function InvoicePreview({ invoiceData }) {
                 </p>
 
                 <p className="mt-1 text-xs text-gray-500">
-                  {invoiceData.paidMonth || "-"}{" "}
-                  {paymentMonths > 1
-                    ? `• ${paymentMonths} Months Payment`
-                    : "Payment"}
+                  {paymentPeriod}
+                  {paymentMonths > 1 ? " Payment" : " Payment"}
                 </p>
               </div>
 

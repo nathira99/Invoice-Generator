@@ -5,10 +5,17 @@ import {
   createStudent,
   updateStudent,
   deleteStudent,
+  syncAllStudents,
 } from "../controllers/studentController.js";
 
 const router =
   express.Router();
+
+  
+/* SYNC ALL STUDENTS */
+
+router.post("/sync-all", syncAllStudents);
+
 
 /* GET + CREATE */
 

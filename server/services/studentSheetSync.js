@@ -96,6 +96,65 @@ export const syncStudentToSheet = async (student) => {
 };
 
 /* ----------------------------------------
+   SYNC ALL STUDENTS
+----------------------------------------- */
+
+export const syncAllStudentsToSheet = async () => {
+  try {
+    const spreadsheetId = process.env.GOOGLE_SHEET_ID;
+
+    if (!spreadsheetId) {
+      throw new Error("GOOGLE_SHEET_ID is not loaded");
+    }
+
+    /* Get all students from MongoDB */
+
+    const students = await Student.find().sort({
+      createdAt: 1,
+    });
+
+    const studentRows = students.map((student) =>
+      getStudentValues(student)
+    );
+
+    /* Clear old student data, keeping row 1 header */
+
+    await sheets.spreadsheets.values.clear({
+      spreadsheetId,
+      range: "Students!A2:I",
+    });
+
+    /* Write all current students */
+
+    if (studentRows.length > 0) {
+      await sheets.spreadsheets.values.update({
+        spreadsheetId,
+        range: "Students!A2:I",
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+          values: studentRows,
+        },
+      });
+    }
+
+    console.log(
+      `All ${students.length} students synced to Google Sheets`
+    );
+
+    return {
+      count: students.length,
+    };
+  } catch (error) {
+    console.error(
+      "All Students Google Sheets sync error:",
+      error.message
+    );
+
+    throw error;
+  }
+};
+
+/* ----------------------------------------
    SYNC STUDENT ENROLLMENTS
 ----------------------------------------- */
 

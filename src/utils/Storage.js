@@ -121,6 +121,12 @@ export const getStudents = async () => {
   return res.data;
 };
 
+export const syncAllStudents = async () => {
+  const res = await api.post("/students/sync-all");
+
+  return res.data;
+};
+
 export const saveStudent = async (student) => {
   const res = await api.post("/students", student);
 

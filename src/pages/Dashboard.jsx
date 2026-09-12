@@ -10,6 +10,7 @@ import Header from "../components/Header";
 
 import {
   getStudents,
+  syncAllStudents,
   getCourses,
   getInvoices,
   generateInvoiceNumber,
@@ -32,6 +33,8 @@ function Dashboard() {
   const [editId, setEditId] = useState(location.state?._id || null);
 
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(true);
+
+  const [isSyncingStudents, setIsSyncingStudents] = useState(false);
 
   /* INVOICE DATA */
 
@@ -243,6 +246,29 @@ function Dashboard() {
 
   const closedCourses = courses.filter((c) => c.status === "Closed").length;
 
+  /* SYNC ALL STUDENTS */
+
+const handleSyncAllStudents = async () => {
+  try {
+    setIsSyncingStudents(true);
+
+    const result = await syncAllStudents();
+
+    toast.success(
+      `${result.count} students synced to Google Sheets`,
+    );
+  } catch (error) {
+    console.error("Failed to sync students:", error);
+
+    toast.error(
+      error.response?.data?.message ||
+        "Failed to sync students to Google Sheets",
+    );
+  } finally {
+    setIsSyncingStudents(false);
+  }
+};
+
   /* STATS */
 
   const stats = [
@@ -309,12 +335,26 @@ function Dashboard() {
         <div className="pt-28 p-4 lg:p-8 lg:pt-8">
           {/* PAGE HEADER */}
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-              Dashboard
-            </h1>
-          </div>
+<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+  <div>
+    <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+      Dashboard
+    </h1>
 
+    <p className="mt-1 text-sm font-medium text-slate-500">
+      Manage your students, courses, and invoices
+    </p>
+  </div>
+
+  <button
+    type="button"
+    onClick={handleSyncAllStudents}
+    disabled={isSyncingStudents}
+    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+  >
+    {isSyncingStudents ? "Syncing Students..." : "Sync Students to Google Sheets"}
+  </button>
+</div>
           {/* STATS */}
 
           <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-6">
