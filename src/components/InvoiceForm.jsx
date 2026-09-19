@@ -15,6 +15,8 @@ import Swal from "sweetalert2";
 
 import Select from "react-select";
 
+import CreatableSelect from "react-select/creatable";
+
 import { useEffect, useState } from "react";
 
 function InvoiceForm({
@@ -102,6 +104,10 @@ function InvoiceForm({
 
       contactNumber: "",
 
+      age: "",
+
+      place: "",
+
       courseName: "",
 
       paidMonth: new Date().toLocaleString("default", {
@@ -135,76 +141,65 @@ function InvoiceForm({
     const existingInvoices = await getInvoices();
 
     const getMonthIndex = (paidMonth) => {
-  if (!paidMonth) return null;
+      if (!paidMonth) return null;
 
-  const date = new Date(`1 ${paidMonth}`);
+      const date = new Date(`1 ${paidMonth}`);
 
-  if (isNaN(date.getTime())) {
-    return null;
-  }
+      if (isNaN(date.getTime())) {
+        return null;
+      }
 
-  return date.getFullYear() * 12 + date.getMonth();
-};
+      return date.getFullYear() * 12 + date.getMonth();
+    };
 
-const newStartMonth = getMonthIndex(invoiceData.paidMonth);
+    const newStartMonth = getMonthIndex(invoiceData.paidMonth);
 
-const newPaymentMonths =
-  Number(invoiceData.paymentMonths) || 1;
+    const newPaymentMonths = Number(invoiceData.paymentMonths) || 1;
 
-const newEndMonth =
-  newStartMonth !== null
-    ? newStartMonth + newPaymentMonths
-    : null;
+    const newEndMonth =
+      newStartMonth !== null ? newStartMonth + newPaymentMonths : null;
 
-const overlappingInvoice = existingInvoices.find((invoice) => {
-  if (invoice._id === editId) {
-    return false;
-  }
+    const overlappingInvoice = existingInvoices.find((invoice) => {
+      if (invoice._id === editId) {
+        return false;
+      }
 
-  const sameStudent =
-    invoice.studentId &&
-    invoiceData.studentId
-      ? invoice.studentId === invoiceData.studentId
-      : invoice.studentName?.trim().toLowerCase() ===
-        invoiceData.studentName?.trim().toLowerCase();
+      const sameStudent =
+        invoice.studentId && invoiceData.studentId
+          ? invoice.studentId === invoiceData.studentId
+          : invoice.studentName?.trim().toLowerCase() ===
+            invoiceData.studentName?.trim().toLowerCase();
 
-  const sameCourse =
-    invoice.courseName?.trim().toLowerCase() ===
-    invoiceData.courseName?.trim().toLowerCase();
+      const sameCourse =
+        invoice.courseName?.trim().toLowerCase() ===
+        invoiceData.courseName?.trim().toLowerCase();
 
-  if (!sameStudent || !sameCourse) {
-    return false;
-  }
+      if (!sameStudent || !sameCourse) {
+        return false;
+      }
 
-  const existingStartMonth =
-    getMonthIndex(invoice.paidMonth);
+      const existingStartMonth = getMonthIndex(invoice.paidMonth);
 
-  const existingPaymentMonths =
-    Number(invoice.paymentMonths) || 1;
+      const existingPaymentMonths = Number(invoice.paymentMonths) || 1;
 
-  if (
-    existingStartMonth === null ||
-    newStartMonth === null
-  ) {
-    return false;
-  }
+      if (existingStartMonth === null || newStartMonth === null) {
+        return false;
+      }
 
-  const existingEndMonth =
-    existingStartMonth + existingPaymentMonths;
+      const existingEndMonth = existingStartMonth + existingPaymentMonths;
 
-  return (
-    newStartMonth < existingEndMonth &&
-    existingStartMonth < newEndMonth
-  );
-});
+      return (
+        newStartMonth < existingEndMonth && existingStartMonth < newEndMonth
+      );
+    });
 
-if (overlappingInvoice) {
-  toast.error(
-    `${invoiceData.studentName} already has a payment covering ${invoiceData.paidMonth}.`,
-  );
+    if (overlappingInvoice) {
+      toast.error(
+        `${invoiceData.studentName} already has a payment covering ${invoiceData.paidMonth}.`,
+      );
 
-  return false;
-}
+      return false;
+    }
 
     if (editId) {
       return await updateInvoice(editId, invoiceData);
@@ -334,7 +329,7 @@ if (overlappingInvoice) {
               Student Name
             </label>
 
-            <Select
+            <CreatableSelect
               options={students.map((student) => ({
                 value: student.studentId,
                 label: `${student.name} (${student.studentId})`,
@@ -353,7 +348,12 @@ if (overlappingInvoice) {
                           }
                         : null;
                     })()
-                  : null
+                  : invoiceData.studentName
+                    ? {
+                        value: invoiceData.studentName,
+                        label: invoiceData.studentName,
+                      }
+                    : null
               }
               onChange={(selectedStudent) => {
                 if (!selectedStudent) {
@@ -362,6 +362,8 @@ if (overlappingInvoice) {
                     studentId: "",
                     studentName: "",
                     contactNumber: "",
+                    age: "",
+                    place: "",
                     courseName: "",
                     courseFee: "",
                     paidAmount: "",
@@ -385,6 +387,10 @@ if (overlappingInvoice) {
 
                   contactNumber: student?.contact || "",
 
+                  age: student?.age || "",
+
+                  place: student?.place || "",
+
                   courseName: "",
 
                   courseFee: "",
@@ -396,6 +402,30 @@ if (overlappingInvoice) {
 
                 setStudentCourses(student?.enrollments || []);
               }}
+              onCreateOption={(newStudentName) => {
+                const name = newStudentName.trim();
+
+                if (!name) return;
+
+                setInvoiceData({
+                  ...invoiceData,
+                  studentId: "",
+                  studentName: name,
+                  contactNumber: "",
+                  age: "",
+                  place: "",
+                  courseName: "",
+                  courseFee: "",
+                  paidAmount: "",
+                  daysPerWeek: "",
+                });
+
+                setStudentCourses([]);
+              }}
+              createOptionPosition="first"
+              formatCreateLabel={(inputValue) =>
+                `Create new student "${inputValue}"`
+              }
               placeholder="Search Student"
               isSearchable
               className="text-sm"
@@ -441,9 +471,65 @@ if (overlappingInvoice) {
 
             <input
               type="text"
-              value={invoiceData.contactNumber}
-              readOnly
-              className={readOnlyStyle}
+              value={invoiceData.contactNumber || ""}
+              onChange={(e) => {
+                setInvoiceData({
+                  ...invoiceData,
+                  contactNumber: e.target.value,
+                });
+              }}
+              readOnly={students.some(
+                (student) => student.studentId === invoiceData.studentId,
+              )}
+              placeholder="Enter contact number"
+              className={`w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-4 text-sm font-medium outline-none focus:border-blue-500 ${
+                students.some(
+                  (student) => student.studentId === invoiceData.studentId,
+                )
+                  ? "cursor-not-allowed"
+                  : ""
+              }`}
+            />
+          </div>
+          {/* AGE */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Age (Optional)
+            </label>
+
+            <input
+              type="number"
+              min="0"
+              value={invoiceData.age || ""}
+              onChange={(e) => {
+                setInvoiceData({
+                  ...invoiceData,
+                  age: e.target.value,
+                });
+              }}
+              placeholder="Enter age"
+              readOnly={Boolean(invoiceData.studentId)}
+              className={inputStyle}
+            />
+          </div>
+          {/* PLACE */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Place (Optional)
+            </label>
+
+            <input
+              type="text"
+              value={invoiceData.place || ""}
+              onChange={(e) => {
+                setInvoiceData({
+                  ...invoiceData,
+                  place: e.target.value,
+                });
+              }}
+              placeholder="Enter place"
+              readOnly={Boolean(invoiceData.studentId)}
+              className={inputStyle}
             />
           </div>
           {/* COURSE */}
@@ -453,10 +539,17 @@ if (overlappingInvoice) {
             </label>
 
             <Select
-              options={studentCourses.map((enrollment) => ({
-                value: enrollment.courseName,
-                label: enrollment.courseName,
-              }))}
+              options={
+                invoiceData.studentId
+                  ? studentCourses.map((enrollment) => ({
+                      value: enrollment.courseName,
+                      label: enrollment.courseName,
+                    }))
+                  : courses.map((course) => ({
+                      value: course.courseName,
+                      label: course.courseName,
+                    }))
+              }
               value={
                 invoiceData.courseName
                   ? {

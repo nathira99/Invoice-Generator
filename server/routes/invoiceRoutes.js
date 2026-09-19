@@ -21,7 +21,7 @@ router.post(
   generateInvoicesByCourse
 );
 
-router.get("/sync-all", syncAllInvoices);
+router.post("/sync-all", syncAllInvoices);
 
 router.put("/from-sheet", updateInvoiceFromSheet);
 

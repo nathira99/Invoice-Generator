@@ -11,6 +11,7 @@ import Header from "../components/Header";
 import {
   getStudents,
   syncAllStudents,
+  syncAllInvoices,
   getCourses,
   getInvoices,
   generateInvoiceNumber,
@@ -47,6 +48,10 @@ function Dashboard() {
       studentName: "",
 
       contactNumber: "",
+
+      age: "",
+
+      place: "",
 
       courseName: "",
 
@@ -218,20 +223,10 @@ function Dashboard() {
 
   /* CURRENT MONTH PENDING */
 
-  const pendingAmount = currentMonthInvoices.reduce((total, invoice) => {
-    const courseFee = Number(invoice.courseFee || 0);
-    const paymentMonths = Number(invoice.paymentMonths || 1);
-    const discount = Number(invoice.discount || 0);
-    const paidAmount = Number(invoice.paidAmount || 0);
-
-    const totalFee = courseFee * paymentMonths;
-
-    const payableAmount = Math.max(0, totalFee - discount);
-
-    const remaining = Math.max(0, payableAmount - paidAmount);
-
-    return total + remaining;
-  }, 0);
+  const pendingAmount = currentMonthInvoices.reduce(
+    (total, invoice) => total + Number(invoice.balanceAmount || 0),
+    0,
+  );
 
   /* COLLECTION RATE */
 
@@ -248,26 +243,43 @@ function Dashboard() {
 
   /* SYNC ALL STUDENTS */
 
-const handleSyncAllStudents = async () => {
-  try {
-    setIsSyncingStudents(true);
+  const handleSyncAllStudents = async () => {
+    try {
+      setIsSyncingStudents(true);
 
-    const result = await syncAllStudents();
+      const result = await syncAllStudents();
 
-    toast.success(
-      `${result.count} students synced to Google Sheets`,
-    );
-  } catch (error) {
-    console.error("Failed to sync students:", error);
+      toast.success(`${result.count} students synced to Google Sheets`);
+    } catch (error) {
+      console.error("Failed to sync students:", error);
 
-    toast.error(
-      error.response?.data?.message ||
-        "Failed to sync students to Google Sheets",
-    );
-  } finally {
-    setIsSyncingStudents(false);
-  }
-};
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to sync students to Google Sheets",
+      );
+    } finally {
+      setIsSyncingStudents(false);
+    }
+  };
+
+  /* SYNC ALL INVOICES */
+
+  const handleSyncAllInvoices = async () => {
+    try {
+      const result = await syncAllInvoices();
+
+      toast.success(`${result.count} invoices synced to Google Sheets`);
+
+      await loadInvoices();
+    } catch (error) {
+      console.error("Failed to sync invoices:", error);
+
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to sync invoices to Google Sheets",
+      );
+    }
+  };
 
   /* STATS */
 
@@ -305,13 +317,13 @@ const handleSyncAllStudents = async () => {
     },
 
     {
-      title: "Upcoming Payments",
+      title: "Discount",
       value: isLoadingInvoices
         ? "..."
-        : `Rs. ${upcomingPayments.toLocaleString()}`,
-      icon: Wallet,
-      bg: "bg-blue-100",
-      color: "text-blue-700",
+        : `Rs. ${totalDiscount.toLocaleString()}`,
+      icon: Receipt,
+      bg: "bg-amber-100",
+      color: "text-amber-700",
     },
 
     {
@@ -335,26 +347,36 @@ const handleSyncAllStudents = async () => {
         <div className="pt-28 p-4 lg:p-8 lg:pt-8">
           {/* PAGE HEADER */}
 
-<div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-  <div>
-    <h1 className="text-3xl font-bold tracking-tight text-slate-950">
-      Dashboard
-    </h1>
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight text-slate-950">
+                Dashboard
+              </h1>
 
-    <p className="mt-1 text-sm font-medium text-slate-500">
-      Manage your students, courses, and invoices
-    </p>
-  </div>
+              <p className="mt-1 text-sm font-medium text-slate-500">
+                Manage your students, courses, and invoices
+              </p>
+            </div>
 
-  <button
-    type="button"
-    onClick={handleSyncAllStudents}
-    disabled={isSyncingStudents}
-    className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-  >
-    {isSyncingStudents ? "Syncing Students..." : "Sync Students to Google Sheets"}
-  </button>
-</div>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <button
+                type="button"
+                onClick={handleSyncAllStudents}
+                disabled={isSyncingStudents}
+                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isSyncingStudents ? "Syncing Students..." : "Sync Students"}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSyncAllInvoices}
+                className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700"
+              >
+                Sync Invoices
+              </button>
+            </div>
+          </div>
           {/* STATS */}
 
           <div className="mb-8 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-6">

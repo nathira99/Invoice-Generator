@@ -1,11 +1,17 @@
-import mongoose from 'mongoose';
-import Invoice from '../models/InvoiceModel.js';
-import Course from '../models/courseModel.js';
+import mongoose from "mongoose";
+import Invoice from "../models/InvoiceModel.js";
+import Course from "../models/courseModel.js";
+import Student from "../models/studentModel.js";
 import {
   syncInvoiceToSheet,
   syncAllInvoicesToSheet,
-  deleteInvoiceFromSheet
+  deleteInvoiceFromSheet,
 } from "../services/invoiceSheetSync.js";
+
+import {
+  syncStudentToSheet,
+  syncStudentEnrollmentsToSheet,
+} from "../services/studentSheetSync.js";
 
 const calculateStatus = (
   courseFee,
@@ -17,10 +23,7 @@ const calculateStatus = (
   const months = Number(paymentMonths || 1);
   const totalFee = monthlyFee * months;
 
-  const payable = Math.max(
-    totalFee - Number(discount || 0),
-    0,
-  );
+  const payable = Math.max(totalFee - Number(discount || 0), 0);
 
   const paid = Number(paidAmount || 0);
 
@@ -29,27 +32,27 @@ const calculateStatus = (
 
 const handleInvoiceError = (error, res) => {
   if (error.name === "ValidationError") {
-  return res.status(400).json({
-    message: "Invoice validation failed",
-    errors: Object.values(error.errors).map((err) => err.message),
-  });
-}
-
-  if (error.code === 11000) {
-    return res.status(409).json({
-      message: 'Invoice number already exists',
+    return res.status(400).json({
+      message: "Invoice validation failed",
+      errors: Object.values(error.errors).map((err) => err.message),
     });
   }
 
-  if (error.name === 'CastError') {
+  if (error.code === 11000) {
+    return res.status(409).json({
+      message: "Invoice number already exists",
+    });
+  }
+
+  if (error.name === "CastError") {
     return res.status(400).json({
-      message: 'Invalid invoice id',
+      message: "Invalid invoice id",
     });
   }
 
   console.error(error);
   return res.status(500).json({
-    message: 'Server error',
+    message: "Server error",
   });
 };
 
@@ -57,26 +60,132 @@ export const createInvoice = async (req, res) => {
   try {
     const invoiceData = { ...req.body };
 
+    /*
+     * ----------------------------------------
+     * CHECK / CREATE STUDENT
+     * ----------------------------------------
+     */
+
+    const contactNumber = String(invoiceData.contactNumber || "").trim();
+
+    const studentName = String(invoiceData.studentName || "").trim();
+
+    let student = null;
+
+    if (contactNumber) {
+      // Check whether student already exists
+      student = await Student.findOne({
+        contact: contactNumber,
+        name: {
+          $regex: `^${studentName.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`,
+          $options: "i",
+        },
+      });
+
+      // Create new student if not found
+      if (!student) {
+        // Get all existing student IDs
+        const students = await Student.find({}, { studentId: 1 }).lean();
+
+        let highestStudentNumber = 0;
+
+        for (const existingStudent of students) {
+          const match = String(existingStudent.studentId || "").match(
+            /^STU(\d+)$/,
+          );
+
+          if (match) {
+            const number = Number(match[1]);
+
+            if (number > highestStudentNumber) {
+              highestStudentNumber = number;
+            }
+          }
+        }
+
+        const nextStudentNumber = highestStudentNumber + 1;
+
+        const newStudentId = `STU${nextStudentNumber}`;
+
+        const course = await Course.findOne({
+          courseName: invoiceData.courseName,
+        });
+
+        if (!course) {
+          return res.status(400).json({
+            message: "Selected course not found",
+          });
+        }
+        student = await Student.create({
+          studentId: newStudentId,
+          name: studentName,
+          contact: contactNumber,
+          age: invoiceData.age ? Number(invoiceData.age) : undefined,
+          place: invoiceData.place?.trim() || undefined,
+          enrollments: [
+            {
+              courseId: course._id,
+              courseName: course.courseName,
+            },
+          ],
+        });
+
+        if (
+          !course.enrolledStudents.some(
+            (id) => id.toString() === student._id.toString(),
+          )
+        ) {
+          course.enrolledStudents.push(student._id);
+
+          await course.save();
+        }
+
+        /*
+         * Sync newly created student
+         * to Google Sheets
+         */
+        try {
+          await syncStudentToSheet(student);
+          await syncStudentEnrollmentsToSheet();
+        } catch (syncError) {
+          console.error(
+            "Google Sheets student sync failed:",
+            syncError.message,
+          );
+        }
+
+        console.log(
+          `New student created automatically: ${newStudentId} - ${studentName}`,
+        );
+      }
+    }
+
+    /*
+     * ----------------------------------------
+     * CREATE INVOICE
+     * ----------------------------------------
+     */
+
     const invoice = await Invoice.create({
-  ...invoiceData,
-  status: calculateStatus(
-    invoiceData.courseFee,
-    invoiceData.discount,
-    invoiceData.paidAmount,
-    invoiceData.paymentMonths
-  ),
-});
+      ...invoiceData,
+      status: calculateStatus(
+        invoiceData.courseFee,
+        invoiceData.discount,
+        invoiceData.paidAmount,
+        invoiceData.paymentMonths,
+      ),
+    });
 
-try {
-  await syncInvoiceToSheet(invoice);
-} catch (syncError) {
-  console.error(
-    "Google Sheets invoice sync failed:",
-    syncError.message
-  );
-}
+    /*
+     * Sync invoice to Google Sheets
+     */
+    try {
+      await syncInvoiceToSheet(invoice);
+    } catch (syncError) {
+      console.error("Google Sheets invoice sync failed:", syncError.message);
+    }
 
-return res.status(201).json(invoice);
+    return res.status(201).json(invoice);
   } catch (error) {
     console.error(error);
     return handleInvoiceError(error, res);
@@ -87,9 +196,7 @@ export const generateInvoicesByCourse = async (req, res) => {
   try {
     const { courseId, paidMonth } = req.body;
 
-    const course = await Course.findById(courseId).populate(
-      "enrolledStudents"
-    );
+    const course = await Course.findById(courseId).populate("enrolledStudents");
 
     if (!course) {
       return res.status(404).json({
@@ -123,11 +230,7 @@ export const generateInvoicesByCourse = async (req, res) => {
 
         discountType: "Discount",
 
-        status: calculateStatus(
-          course.fee,
-          0,
-          0
-        ),
+        status: calculateStatus(course.fee, 0, 0),
       };
 
       invoices.push(invoice);
@@ -135,21 +238,21 @@ export const generateInvoicesByCourse = async (req, res) => {
 
     const createdInvoices = await Invoice.insertMany(invoices);
 
-for (const invoice of createdInvoices) {
-  try {
-    await syncInvoiceToSheet(invoice);
-  } catch (syncError) {
-    console.error(
-      `Google Sheets sync failed for invoice ${invoice.invoiceNumber}:`,
-      syncError.message
-    );
-  }
-}
+    for (const invoice of createdInvoices) {
+      try {
+        await syncInvoiceToSheet(invoice);
+      } catch (syncError) {
+        console.error(
+          `Google Sheets sync failed for invoice ${invoice.invoiceNumber}:`,
+          syncError.message,
+        );
+      }
+    }
 
-res.status(201).json({
-  message: `${createdInvoices.length} invoices generated`,
-  invoices: createdInvoices,
-});
+    res.status(201).json({
+      message: `${createdInvoices.length} invoices generated`,
+      invoices: createdInvoices,
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -174,13 +277,13 @@ export const getInvoices = async (req, res) => {
 export const getInvoiceById = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid invoice id' });
+      return res.status(400).json({ message: "Invalid invoice id" });
     }
 
     const invoice = await Invoice.findById(req.params.id);
 
     if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
+      return res.status(404).json({ message: "Invoice not found" });
     }
 
     return res.status(200).json(invoice);
@@ -192,36 +295,33 @@ export const getInvoiceById = async (req, res) => {
 export const updateInvoice = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(400).json({ message: 'Invalid invoice id' });
+      return res.status(400).json({ message: "Invalid invoice id" });
     }
 
     const invoice = await Invoice.findById(req.params.id);
 
     if (!invoice) {
-      return res.status(404).json({ message: 'Invoice not found' });
+      return res.status(404).json({ message: "Invoice not found" });
     }
 
-invoice.set(req.body);
+    invoice.set(req.body);
 
-invoice.status = calculateStatus(
-  invoice.courseFee,
-  invoice.discount,
-  invoice.paidAmount,
-  invoice.paymentMonths
-);
+    invoice.status = calculateStatus(
+      invoice.courseFee,
+      invoice.discount,
+      invoice.paidAmount,
+      invoice.paymentMonths,
+    );
 
-const updatedInvoice = await invoice.save();
+    const updatedInvoice = await invoice.save();
 
-try {
-  await syncInvoiceToSheet(updatedInvoice);
-} catch (syncError) {
-  console.error(
-    "Google Sheets invoice sync failed:",
-    syncError.message
-  );
-}
+    try {
+      await syncInvoiceToSheet(updatedInvoice);
+    } catch (syncError) {
+      console.error("Google Sheets invoice sync failed:", syncError.message);
+    }
 
-return res.status(200).json(updatedInvoice);
+    return res.status(200).json(updatedInvoice);
   } catch (error) {
     return handleInvoiceError(error, res);
   }
@@ -241,27 +341,27 @@ export const deleteInvoice = async (req, res) => {
         isDeleted: true,
         deletedAt: new Date(),
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
 
     if (!invoice) {
-  return res.status(404).json({
-    message: "Invoice not found",
-  });
-}
+      return res.status(404).json({
+        message: "Invoice not found",
+      });
+    }
 
-try {
-  await syncInvoiceToSheet(invoice);
-} catch (syncError) {
-  console.error(
-    "Google Sheets invoice delete sync failed:",
-    syncError.message
-  );
-}
+    try {
+      await syncInvoiceToSheet(invoice);
+    } catch (syncError) {
+      console.error(
+        "Google Sheets invoice delete sync failed:",
+        syncError.message,
+      );
+    }
 
-return res.status(200).json({
-  message: "Invoice moved to trash",
-});
+    return res.status(200).json({
+      message: "Invoice moved to trash",
+    });
   } catch (error) {
     return handleInvoiceError(error, res);
   }
@@ -289,7 +389,7 @@ export const restoreInvoice = async (req, res) => {
         isDeleted: false,
         deletedAt: null,
       },
-      { returnDocument: "after" }
+      { returnDocument: "after" },
     );
 
     if (!invoice) {
@@ -303,7 +403,7 @@ export const restoreInvoice = async (req, res) => {
     } catch (syncError) {
       console.error(
         "Google Sheets invoice restore sync failed:",
-        syncError.message
+        syncError.message,
       );
     }
 
@@ -313,14 +413,9 @@ export const restoreInvoice = async (req, res) => {
   }
 };
 
-export const permanentlyDeleteInvoice = async (
-  req,
-  res
-) => {
+export const permanentlyDeleteInvoice = async (req, res) => {
   try {
-    const invoice = await Invoice.findByIdAndDelete(
-      req.params.id
-    );
+    const invoice = await Invoice.findByIdAndDelete(req.params.id);
 
     if (!invoice) {
       return res.status(404).json({
@@ -333,7 +428,7 @@ export const permanentlyDeleteInvoice = async (
     } catch (syncError) {
       console.error(
         "Google Sheets invoice permanent delete sync failed:",
-        syncError.message
+        syncError.message,
       );
     }
 
@@ -422,16 +517,13 @@ export const updateInvoiceFromSheet = async (req, res) => {
     invoice.status = calculateStatus(
       invoice.courseFee,
       invoice.discount,
-      invoice.paidAmount
+      invoice.paidAmount,
     );
 
-    invoice.isDeleted =
-      String(isDeleted).toLowerCase() === "yes";
+    invoice.isDeleted = String(isDeleted).toLowerCase() === "yes";
 
     invoice.deletedAt =
-      invoice.isDeleted && deletedAt
-        ? new Date(deletedAt)
-        : null;
+      invoice.isDeleted && deletedAt ? new Date(deletedAt) : null;
 
     const updatedInvoice = await invoice.save();
 
@@ -441,10 +533,7 @@ export const updateInvoiceFromSheet = async (req, res) => {
       invoice: updatedInvoice,
     });
   } catch (error) {
-    console.error(
-      "Google Sheets → MongoDB invoice sync error:",
-      error
-    );
+    console.error("Google Sheets → MongoDB invoice sync error:", error);
 
     return handleInvoiceError(error, res);
   }

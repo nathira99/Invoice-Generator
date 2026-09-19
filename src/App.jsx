@@ -9,24 +9,17 @@ import Settings from "./pages/Settings";
 import Trash from "./pages/Trash";
 import Teachers from "./pages/Teachers";
 import Staff from "./pages/Staff";
-
+import BulkInvoiceGenerator from "./pages/BulkInvoiceGenerator";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-
   return (
-
     <BrowserRouter>
-
       <Routes>
-
         {/* LOGIN */}
 
-        <Route
-          path="/login"
-          element={<Login />}
-        />
+        <Route path="/login" element={<Login />} />
 
         {/* PROTECTED ROUTES */}
 
@@ -94,20 +87,25 @@ function App() {
         />
 
         <Route
-  path="/trash"
-  element={
-  <ProtectedRoute>
-  <Trash />
-  </ProtectedRoute>
-  }
-/>
+          path="/bulk-invoice-generator"
+          element={
+            <ProtectedRoute>
+              <BulkInvoiceGenerator />
+            </ProtectedRoute>
+          }
+        />
 
+        <Route
+          path="/trash"
+          element={
+            <ProtectedRoute>
+              <Trash />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
-
     </BrowserRouter>
-
   );
-
 }
 
 export default App;

@@ -59,8 +59,14 @@ export const deleteInvoice = async (id) => {
   return res.data;
 };
 
+export const syncAllInvoices = async () => {
+  const res = await api.post("/invoices/sync-all");
+
+  return res.data;
+};
+
 export const permanentlyDeleteInvoice = async (id) => {
-  const res = await api.delete(`/invoices/${id}`);
+  const res = await api.delete(`/invoices/permanent/${id}`);
 
   return res.data;
 };
