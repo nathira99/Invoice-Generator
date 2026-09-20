@@ -165,6 +165,7 @@ export const createInvoice = async (req, res) => {
      * CREATE INVOICE
      * ----------------------------------------
      */
+    console.log("INVOICE DATA RECEIVED:", invoiceData);
 
     const invoice = await Invoice.create({
       ...invoiceData,

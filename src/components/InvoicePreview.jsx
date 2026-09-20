@@ -146,16 +146,23 @@ function InvoicePreview({ invoiceData }) {
                 </p>
 
                 <p>
-                  <span className="font-semibold text-gray-900">Course:</span>{" "}
-                  {invoiceData.courseName || "-"}
-                </p>
+  <span className="font-semibold text-gray-900">Course:</span>{" "}
+  {invoiceData.courseName || "-"}
+</p>
 
-                <p>
-                  <span className="font-semibold text-gray-900">
-                    Payment Period:
-                  </span>{" "}
-                  {paymentPeriod}
-                </p>
+{invoiceData.subject && (
+  <p>
+    <span className="font-semibold text-gray-900">Subject:</span>{" "}
+    {invoiceData.subject}
+  </p>
+)}
+
+<p>
+  <span className="font-semibold text-gray-900">
+    Payment Period:
+  </span>{" "}
+  {paymentPeriod}
+</p>
               </div>
             </div>
 
@@ -192,16 +199,12 @@ function InvoicePreview({ invoiceData }) {
                     className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wide ${
                       invoiceData.status === "Paid"
                         ? "bg-green-100 text-green-700"
-                        : invoiceData.status === "Partially Paid"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                        : "bg-red-100 text-red-700"
                     }`}
                   >
                     {invoiceData.status === "Paid"
                       ? "✓ Payment Received"
-                      : invoiceData.status === "Partially Paid"
-                        ? "◐ Partially Paid"
-                        : "⚠ Payment Pending"}
+                      : "⚠ Payment Pending"}
                   </span>
                 </div>
               </div>
@@ -235,10 +238,6 @@ function InvoicePreview({ invoiceData }) {
                   {invoiceData.courseName || "Course"}
                 </p>
 
-                <p className="mt-1 text-xs text-gray-500">
-                  {paymentPeriod}
-                  {paymentMonths > 1 ? " Payment" : " Payment"}
-                </p>
               </div>
 
               <div className="text-right text-sm text-gray-700">

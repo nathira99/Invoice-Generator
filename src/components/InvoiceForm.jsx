@@ -174,7 +174,11 @@ function InvoiceForm({
         invoice.courseName?.trim().toLowerCase() ===
         invoiceData.courseName?.trim().toLowerCase();
 
-      if (!sameStudent || !sameCourse) {
+      const sameSubject =
+        invoice.subject?.trim().toLowerCase() ===
+        invoiceData.subject?.trim().toLowerCase();
+
+      if (!sameStudent || !sameCourse || !sameSubject) {
         return false;
       }
 
@@ -212,6 +216,7 @@ function InvoiceForm({
       invoiceNumber: nextInvoiceNumber,
     });
   };
+  
 
   /* SAVE */
 
@@ -228,6 +233,8 @@ function InvoiceForm({
       await loadInvoices();
 
       toast.success("Invoice saved successfully");
+
+      
 
       await resetInvoiceForm();
     } catch (error) {
@@ -624,6 +631,25 @@ function InvoiceForm({
                   zIndex: 9999,
                 }),
               }}
+            />
+          </div>
+          {/* SUBJECT */}
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-gray-700">
+              Subject
+            </label>
+
+            <input
+              type="text"
+              value={invoiceData.subject || ""}
+              onChange={(e) =>
+                setInvoiceData({
+                  ...invoiceData,
+                  subject: e.target.value,
+                })
+              }
+              placeholder="Enter Subject"
+              className="w-full rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-900 outline-none focus:border-gray-400"
             />
           </div>
           {/* PAID MONTH */}

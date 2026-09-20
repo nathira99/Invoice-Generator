@@ -27,6 +27,11 @@ const invoiceSchema = new mongoose.Schema(
       trim: true,
       maxlength: [100, "Course cannot exceed 100 characters"],
     },
+    subject: {
+      type: String,
+      trim: true,
+      maxlength: [100, "Subject cannot exceed 100 characters"],
+    },
     paidMonth: {
       type: String,
       required: [true, "Paid month is required"],
@@ -64,35 +69,27 @@ const invoiceSchema = new mongoose.Schema(
       default: "Discount",
     },
     paidAmount: {
-  type: Number,
-  required: [true, "Paid amount is required"],
-  min: [0, "Paid amount cannot be negative"],
-  validate: {
-    validator(value) {
-      if (
-        this.courseFee === undefined ||
-        this.discount === undefined
-      ) {
-        return true;
-      }
+      type: Number,
+      required: [true, "Paid amount is required"],
+      min: [0, "Paid amount cannot be negative"],
+      validate: {
+        validator(value) {
+          if (this.courseFee === undefined || this.discount === undefined) {
+            return true;
+          }
 
-      const paymentMonths = Number(this.paymentMonths) || 1;
+          const paymentMonths = Number(this.paymentMonths) || 1;
 
-      const totalFee =
-        Number(this.courseFee) * paymentMonths;
+          const totalFee = Number(this.courseFee) * paymentMonths;
 
-      const payableAmount =
-        Math.max(
-          0,
-          totalFee - Number(this.discount),
-        );
+          const payableAmount = Math.max(0, totalFee - Number(this.discount));
 
-      return value <= payableAmount;
+          return value <= payableAmount;
+        },
+
+        message: "Paid amount cannot exceed payable amount",
+      },
     },
-
-    message: "Paid amount cannot exceed payable amount",
-  },
-},
 
     paymentMonths: {
       type: Number,

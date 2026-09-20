@@ -55,6 +55,8 @@ function Dashboard() {
 
       courseName: "",
 
+      subjects: "",
+
       paidMonth: new Date().toLocaleString("default", {
         month: "long",
         year: "numeric",
