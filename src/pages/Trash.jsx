@@ -34,33 +34,40 @@ function Trash() {
     loadTrash();
   };
 
- const handlePermanentDelete = async (id) => {
-  const result = await Swal.fire({
-    title: "Delete Invoice Forever?",
-    text: "This invoice will be permanently removed.",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#ef4444",
-    cancelButtonColor: "#64748b",
-    confirmButtonText: "Delete Forever",
-    cancelButtonText: "Cancel",
-    borderRadius: "20px",
-  });
+  const handleDeleteAll = async () => {
+    if (invoices.length === 0) {
+      toast.error("Trash is already empty");
+      return;
+    }
 
-  if (!result.isConfirmed) return;
+    const result = await Swal.fire({
+      title: "Delete All Invoices Forever?",
+      text: `This will permanently delete all ${invoices.length} invoices in Trash. This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Delete All Forever",
+      cancelButtonText: "Cancel",
+      borderRadius: "20px",
+    });
 
-  try {
-    await permanentlyDeleteInvoice(id);
+    if (!result.isConfirmed) return;
 
-    toast.success("Invoice permanently deleted");
+    try {
+      await Promise.all(
+        invoices.map((invoice) => permanentlyDeleteInvoice(invoice._id)),
+      );
 
-    await loadTrash();
-  } catch (error) {
-    console.error(error);
+      toast.success("All invoices permanently deleted");
 
-    toast.error("Failed to delete invoice");
-  }
-};
+      await loadTrash();
+    } catch (error) {
+      console.error(error);
+
+      toast.error("Failed to delete all invoices");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 lg:flex">
@@ -75,11 +82,20 @@ function Trash() {
               <Trash2 size={28} />
             </div>
 
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold">Trash</h1>
 
               <p className="text-slate-500">Deleted invoices</p>
             </div>
+            {invoices.length > 0 && (
+              <button
+                onClick={handleDeleteAll}
+                className="flex items-center gap-2 rounded-xl bg-red-500 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-red-600"
+              >
+                <TrashIcon size={18} />
+                Delete All Forever
+              </button>
+            )}
           </div>
 
           <div className="overflow-hidden rounded-3xl border bg-white shadow-sm">
@@ -121,7 +137,7 @@ function Trash() {
                           onClick={() => handlePermanentDelete(invoice._id)}
                           className="w-min flex items-center gap-2 rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-600"
                         >
-                            <TrashIcon size={20} />
+                          <TrashIcon size={20} />
                           Delete Forever
                         </button>
                       </div>

@@ -15,7 +15,7 @@ const studentSchema = new mongoose.Schema(
 
     contact: {
       type: String,
-      required: true,
+      required: false,
        match: /^[0-9+\-\s()]{7,20}$/,
     },
 
@@ -28,15 +28,32 @@ const studentSchema = new mongoose.Schema(
       trim: true,
     },
 
-    enrollments: [
+enrollments: [
   {
     courseId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Course"
+      ref: "Course",
     },
+
     courseName: String,
-    courseRegistrationNo: String
-  }
+
+    courseRegistrationNo: String,
+
+    tutor: {
+      type: String,
+      trim: true,
+    },
+
+    daysPerWeek: {
+      type: Number,
+      min: 1,
+    },
+
+    customFee: {
+      type: Number,
+      min: 0,
+    },
+  },
 ],
 
     email: {

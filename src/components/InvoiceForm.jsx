@@ -40,7 +40,12 @@ function InvoiceForm({
 
     const finalAmount = Math.max(0, totalFee - discount);
 
-    const status = paidAmount >= finalAmount ? "Paid" : "Pending";
+    const status =
+  !invoiceData.courseFee
+    ? "Pending"
+    : paidAmount >= finalAmount
+      ? "Paid"
+      : "Pending";
 
     if (invoiceData.status !== status) {
       setInvoiceData((prev) => ({
@@ -385,6 +390,8 @@ function InvoiceForm({
                   (s) => s.studentId === selectedStudent.value,
                 );
 
+                console.log("SELECTED STUDENT:", student);
+
                 setInvoiceData({
                   ...invoiceData,
 
@@ -582,7 +589,17 @@ function InvoiceForm({
                   (c) => c.courseName === selectedCourse.value,
                 );
 
-                const monthlyFee = Number(course?.fee) || 0;
+                
+const selectedEnrollment = studentCourses.find(
+  (enrollment) => enrollment.courseName === selectedCourse.value,
+);
+
+const monthlyFee =
+  selectedEnrollment?.customFee !== undefined &&
+  selectedEnrollment?.customFee !== ""
+    ? Number(selectedEnrollment.customFee)
+    : Number(course?.fee) || 0;
+
                 const months = Number(invoiceData.paymentMonths) || 1;
                 const discount = Number(invoiceData.discount) || 0;
 
@@ -593,7 +610,7 @@ function InvoiceForm({
                   ...invoiceData,
                   courseName: course?.courseName || selectedCourse.value,
                   courseFee: monthlyFee,
-                  paidAmount: finalAmount,
+                  paidAmount: "0",
                   daysPerWeek: course?.daysPerWeek || "",
                 });
               }}

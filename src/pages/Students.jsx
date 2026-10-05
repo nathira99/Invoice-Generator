@@ -339,94 +339,152 @@ function Students() {
               />
 
               {/* COURSES */}
-              <div className="grid grid-cols-1 gap-4 xs:grid-cols-2 xl:grid-cols-1">
-                <Select
-                  isMulti
-                  options={courses.map((course) => ({
-                    value: course.courseName,
-                    label: course.courseName,
-                  }))}
-                  value={studentData.enrollments.map((enrollment) => ({
-                    value: enrollment.courseName,
-                    label: enrollment.courseName,
-                  }))}
-                  onChange={(selectedOptions) => {
-                    const selectedEnrollments = selectedOptions || [];
+<div className="xl:col-span-1">
+  <Select
+    isMulti
+    options={courses.map((course) => ({
+      value: course.courseName,
+      label: course.courseName,
+    }))}
+    value={studentData.enrollments.map((enrollment) => ({
+      value: enrollment.courseName,
+      label: enrollment.courseName,
+    }))}
+    onChange={(selectedOptions) => {
+      const selectedEnrollments = selectedOptions || [];
 
-                    const newEnrollments = selectedEnrollments.map((option) => {
-                      const existingEnrollment = studentData.enrollments.find(
-                        (enrollment) => enrollment.courseName === option.value,
-                      );
+      const newEnrollments = selectedEnrollments.map((option) => {
+        const existingEnrollment = studentData.enrollments.find(
+          (enrollment) => enrollment.courseName === option.value,
+        );
 
-                      return (
-                        existingEnrollment || {
-                          courseName: option.value,
-                          courseRegistrationNo: "",
-                        }
-                      );
-                    });
+        return (
+          existingEnrollment || {
+            courseName: option.value,
+            courseRegistrationNo: "",
+            customFee: "",
+          }
+        );
+      });
 
-                    setStudentData({
-                      ...studentData,
-                      enrollments: newEnrollments,
-                    });
-                  }}
-                  placeholder="Select Courses"
-                  className="text-sm"
-                  styles={{
-                    control: (base) => ({
-                      ...base,
-                      minHeight: "48px",
-                      borderRadius: "12px",
-                      borderColor: "#e2e8f0",
-                      backgroundColor: "#f8fafc",
-                      boxShadow: "none",
-                      paddingLeft: "4px",
-                    }),
+      setStudentData({
+        ...studentData,
+        enrollments: newEnrollments,
+      });
+    }}
+    placeholder="Select Courses"
+    className="text-sm"
+    styles={{
+      control: (base) => ({
+        ...base,
+        minHeight: "48px",
+        borderRadius: "12px",
+        borderColor: "#e2e8f0",
+        backgroundColor: "#f8fafc",
+        boxShadow: "none",
+        paddingLeft: "4px",
+      }),
 
-                    multiValue: (base) => ({
-                      ...base,
-                      borderRadius: "8px",
-                      backgroundColor: "#dbeafe",
-                    }),
+      multiValue: (base) => ({
+        ...base,
+        borderRadius: "8px",
+        backgroundColor: "#dbeafe",
+      }),
 
-                    multiValueLabel: (base) => ({
-                      ...base,
-                      color: "#1e40af",
-                      fontWeight: 800,
-                      fontSize: "14px",
-                    }),
+      multiValueLabel: (base) => ({
+        ...base,
+        color: "#1e40af",
+        fontWeight: 800,
+        fontSize: "14px",
+      }),
 
-                    multiValueRemove: (base) => ({
-                      ...base,
-                      color: "#1e40af",
-                      fontWeight: 800,
-                      fontSize: "14px",
-                    }),
+      multiValueRemove: (base) => ({
+        ...base,
+        color: "#1e40af",
+        fontWeight: 800,
+        fontSize: "14px",
+      }),
 
-                    placeholder: (base) => ({
-                      ...base,
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#94a3b8",
-                    }),
+      placeholder: (base) => ({
+        ...base,
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#94a3b8",
+      }),
 
-                    input: (base) => ({
-                      ...base,
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#0f172a",
-                    }),
+      input: (base) => ({
+        ...base,
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#0f172a",
+      }),
 
-                    singleValue: (base) => ({
-                      ...base,
-                      fontSize: "14px",
-                      fontWeight: 500,
-                      color: "#0f172a",
-                    }),
-                  }}
-                />
-              </div>
+      singleValue: (base) => ({
+        ...base,
+        fontSize: "14px",
+        fontWeight: 500,
+        color: "#0f172a",
+      }),
+    }}
+  />
+
+  {/* CUSTOM FEE FOR EACH ENROLLMENT */}
+  {studentData.enrollments.length > 0 && (
+    <div className="mt-3 space-y-3">
+      {studentData.enrollments.map((enrollment, index) => (
+        <div
+          key={enrollment.courseName}
+          className="rounded-xl border border-slate-200 bg-slate-50 p-3"
+        >
+          <p className="mb-2 text-sm font-semibold text-slate-700">
+            {enrollment.courseName}
+          </p>
+
+          <input
+            type="number"
+            min="0"
+            value={enrollment.customFee || ""}
+            onChange={(e) => {
+              const updatedEnrollments = [...studentData.enrollments];
+
+              updatedEnrollments[index] = {
+                ...updatedEnrollments[index],
+                customFee: e.target.value,
+              };
+
+              setStudentData({
+                ...studentData,
+                enrollments: updatedEnrollments,
+              });
+            }}
+            placeholder="Custom Fee (Optional)"
+            className={inputStyle}
+          />
+
+          <input
+            type="text"
+            value={enrollment.courseRegistrationNo || ""}
+            onChange={(e) => {
+              const updatedEnrollments = [...studentData.enrollments];
+
+              updatedEnrollments[index] = {
+                ...updatedEnrollments[index],
+                courseRegistrationNo: e.target.value,
+              };
+
+              setStudentData({
+                ...studentData,
+                enrollments: updatedEnrollments,
+              });
+            }}
+            placeholder="Course Registration Number (Optional)"
+            className={inputStyle}
+          />
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
               <textarea
                 name="notes"
